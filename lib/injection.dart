@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:mixer_sonca/features/counter/counter_repository.dart';
-import 'package:mixer_sonca/features/counter/counter_viewmodel.dart';
+import 'package:mixer_sonca/features/counter/counter_logic.dart';
 
 
 final getIt = GetIt.instance;

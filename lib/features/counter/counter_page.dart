@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/widgets/app_scaffold.dart';
-import 'package:mixer_sonca/features/counter/counter_viewmodel.dart';
+import 'package:mixer_sonca/features/counter/counter_logic.dart';
 import 'package:mixer_sonca/features/counter/widgets/counter_button.dart';
 
 class CounterPage extends StatelessWidget {
