@@ -8,9 +8,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mixer_sonca/main.dart';
+import 'package:mixer_sonca/app.dart';
+import 'package:mixer_sonca/injection.dart';
 
 void main() {
+  setUpAll(() {
+    setupInjection();
+  });
+
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());

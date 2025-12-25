@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/theme/app_theme.dart';
-import 'package:mixer_sonca/features/counter/presentation/pages/counter_page.dart';
-import 'package:mixer_sonca/features/counter/presentation/viewmodels/counter_viewmodel.dart';
+import 'package:mixer_sonca/features/counter/counter_page.dart';
+import 'package:mixer_sonca/features/counter/counter_viewmodel.dart';
 import 'package:mixer_sonca/injection.dart';
 
 class MyApp extends StatelessWidget {

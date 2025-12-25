@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/widgets/app_scaffold.dart';
-import 'package:mixer_sonca/features/counter/presentation/viewmodels/counter_viewmodel.dart';
-import 'package:mixer_sonca/features/counter/presentation/widgets/counter_button.dart';
+import 'package:mixer_sonca/features/counter/counter_viewmodel.dart';
+import 'package:mixer_sonca/features/counter/widgets/counter_button.dart';
 
 class CounterPage extends StatelessWidget {
   const CounterPage({super.key});
@@ -12,7 +12,7 @@ class CounterPage extends StatelessWidget {
     final viewModel = context.watch<CounterViewModel>();
     
     return AppScaffold(
-      title: 'Clean Architecture Counter',
+      title: 'Simplified Architecture Counter',
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
