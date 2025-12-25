@@ -59,13 +59,23 @@ class BleRepositoryImpl implements BleRepository {
 
   @override
   Future<bool> checkPermissions() async {
-    // Basic permission check for simplicity.
-    // In production, handle specific denied states individually.
-    var status = await Permission.bluetoothScan.request();
-    var connectStatus = await Permission.bluetoothConnect.request();
-    var locationStatus = await Permission.location.request();
+    // On iOS, Bluetooth permissions are handled automatically by the system
+    // when Info.plist keys are present. No need to request via permission_handler.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return true;
+    }
     
-    return status.isGranted && connectStatus.isGranted && locationStatus.isGranted;
+    // On Android, we need to explicitly request permissions
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      var status = await Permission.bluetoothScan.request();
+      var connectStatus = await Permission.bluetoothConnect.request();
+      var locationStatus = await Permission.location.request();
+      
+      return status.isGranted && connectStatus.isGranted && locationStatus.isGranted;
+    }
+    
+    // For other platforms, assume granted
+    return true;
   }
 
   @override

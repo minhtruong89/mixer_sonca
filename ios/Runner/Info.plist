@@ -32,6 +32,10 @@
 	<string>This app needs Bluetooth to connect to the Sonca Mixer device.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>This app needs Bluetooth to connect to the Sonca Mixer device.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access to scan for Bluetooth devices.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access to scan for Bluetooth devices.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
