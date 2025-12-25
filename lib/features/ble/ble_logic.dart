@@ -27,6 +27,9 @@ class BleDevice extends Equatable {
   List<Object?> get props => [id, name, rssi, manufacturerData, serviceUuids, isConnectable, txPower];
 }
 
+
+const String SONCA_SERVICE = "5343";
+
 // --- Repository ---
 abstract class BleRepository {
   Future<bool> checkPermissions();
@@ -41,10 +44,7 @@ class BleRepositoryImpl implements BleRepository {
   @override
   Stream<List<BleDevice>> get scanResults => FlutterBluePlus.scanResults.map(
         (results) => results
-            // Filter out empty names? Maybe keep them if we want to see everything like nRF Connect. 
-            // The image showed a device "N/A" so we should keep items with empty names too, or handle them.
-            // Let's keep them but maybe filter strictly empty ones if that was the original intent, 
-            // but the user wants "like the picture" which implies showing raw data even if name is N/A.
+            .where((r) => r.advertisementData.serviceUuids.any((u) => u.toString().contains(SONCA_SERVICE.toLowerCase())))
             .map((r) => BleDevice(
                   id: r.device.remoteId.str,
                   name: r.device.platformName.isNotEmpty ? r.device.platformName : "N/A",
