@@ -61,7 +61,7 @@ class _BlePageState extends State<BlePage> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    viewModel.selectedDevice!.name,
+                    viewModel.selectedDevice!.soncaName,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   Text(viewModel.selectedDevice!.id),
@@ -167,7 +167,7 @@ class _BlePageState extends State<BlePage> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    device.name,
+                                                    device.soncaName,
                                                     style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
                                                   ),
                                                   Text(

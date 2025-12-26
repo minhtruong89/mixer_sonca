@@ -2,11 +2,13 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:mixer_sonca/core/services/config_service.dart';
 
 // --- Model ---
 class BleDevice extends Equatable {
   final String id;
   final String name;
+  final String soncaName;
   final int rssi;
   final Map<int, List<int>> manufacturerData;
   final List<String> serviceUuids;
@@ -16,6 +18,7 @@ class BleDevice extends Equatable {
   const BleDevice({
     required this.id,
     required this.name,
+    required this.soncaName,
     required this.rssi,
     required this.manufacturerData,
     required this.serviceUuids,
@@ -24,7 +27,7 @@ class BleDevice extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, rssi, manufacturerData, serviceUuids, isConnectable, txPower];
+  List<Object?> get props => [id, name, soncaName, rssi, manufacturerData, serviceUuids, isConnectable, txPower];
 }
 
 
@@ -41,19 +44,72 @@ abstract class BleRepository {
 }
 
 class BleRepositoryImpl implements BleRepository {
+  final ConfigService _configService;
+
+  BleRepositoryImpl({required ConfigService configService}) 
+      : _configService = configService;
+
+  String _extractSoncaName(Map<int, List<int>> manufacturerData) {
+    try {
+      // Iterate through manufacturer data entries
+      for (var entry in manufacturerData.entries) {
+        final data = entry.value;
+        
+        // Need at least 2 bytes to extract model ID
+        if (data.length >= 2) {
+          // Extract first 2 bytes and convert to hex string (e.g., 0x41 0x37 -> "4137")
+          final byte1 = data[0].toRadixString(16).padLeft(2, '0');
+          final byte2 = data[1].toRadixString(16).padLeft(2, '0');
+          final hexString = byte1 + byte2;
+          //debugPrint('BLE: _extractSoncaName hexString = ' + hexString);
+          
+          // Convert hex to decimal (e.g., "4137" -> 16695, but we want "413" -> 1043)
+          // Actually, looking at the example: 0x413 means we take 3 hex digits
+          // Let's try with 3 bytes for 3 hex digits
+          if (data.length >= 2) {
+            // Take first 3 hex digits: byte1 (2 digits) + first digit of byte2
+            final modelIdHex = hexString.substring(0, 3); // "413"
+            final modelId = int.tryParse(modelIdHex, radix: 16); // Convert hex to decimal
+            
+            if (modelId != null) {
+              //debugPrint('BLE: Extracted model ID: $modelId (hex: 0x$modelIdHex) from mfg data');
+              
+              // Match against config models
+              for (var model in _configService.models) {
+                if (model.modelId == modelId) {
+                  //debugPrint('BLE: Matched model: ${model.modelName}');
+                  return model.modelName;
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('BLE: Error extracting Sonca name: $e');
+    }
+    
+    return "N/A";
+  }
+
   @override
   Stream<List<BleDevice>> get scanResults => FlutterBluePlus.scanResults.map(
         (results) => results
             .where((r) => r.advertisementData.serviceUuids.any((u) => u.toString().contains(SONCA_SERVICE.toLowerCase())))
-            .map((r) => BleDevice(
-                  id: r.device.remoteId.str,
-                  name: r.device.platformName.isNotEmpty ? r.device.platformName : "N/A",
-                  rssi: r.rssi,
-                  manufacturerData: r.advertisementData.manufacturerData,
-                  serviceUuids: r.advertisementData.serviceUuids.map((u) => u.toString()).toList(),
-                  isConnectable: r.advertisementData.connectable,
-                  txPower: r.advertisementData.txPowerLevel ?? 0,
-                ))
+            .map((r) {
+              final soncaName = _extractSoncaName(r.advertisementData.manufacturerData);
+              
+              return BleDevice(
+                id: r.device.remoteId.str,
+                name: r.device.platformName.isNotEmpty ? r.device.platformName : "N/A",
+                soncaName: soncaName,
+                rssi: r.rssi,
+                manufacturerData: r.advertisementData.manufacturerData,
+                serviceUuids: r.advertisementData.serviceUuids.map((u) => u.toString()).toList(),
+                isConnectable: r.advertisementData.connectable,
+                txPower: r.advertisementData.txPowerLevel ?? 0,
+              );
+            })
             .toList(),
       );
 

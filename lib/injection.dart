@@ -17,7 +17,7 @@ void setupInjection() {
     () => CounterRepositoryImpl(),
   );
   getIt.registerLazySingleton<BleRepository>(
-    () => BleRepositoryImpl(),
+    () => BleRepositoryImpl(configService: getIt()),
   );
 
   // ViewModels - Factory because they are disposable and tied to UI lifecycle
