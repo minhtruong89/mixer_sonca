@@ -43,6 +43,7 @@ abstract class BleRepository {
   Future<void> turnOnBluetooth();
   Future<void> connect(BleDevice device);
   Future<void> disconnect(BleDevice device);
+  Future<List<BluetoothService>> discoverServices(BleDevice device);
 }
 
 class BleRepositoryImpl implements BleRepository {
@@ -177,6 +178,12 @@ class BleRepositoryImpl implements BleRepository {
     final bluetoothDevice = BluetoothDevice.fromId(device.id);
     await bluetoothDevice.disconnect();
   }
+
+  @override
+  Future<List<BluetoothService>> discoverServices(BleDevice device) async {
+    final bluetoothDevice = BluetoothDevice.fromId(device.id);
+    return await bluetoothDevice.discoverServices();
+  }
 }
 
 // --- ViewModel ---
@@ -278,6 +285,11 @@ class BleViewModel extends ChangeNotifier {
     try {
       await _repository.connect(device);
       _selectedDevice = device;
+      
+      // Discover services after connection
+      final services = await _repository.discoverServices(device);
+      _logServices(services);
+      
     } catch (e) {
       debugPrint("Error connecting to device: $e");
       // Handle error (maybe clear selection or show toast)
@@ -286,6 +298,29 @@ class BleViewModel extends ChangeNotifier {
       _connectingDeviceId = null;
       notifyListeners();
     }
+  }
+
+  void _logServices(List<BluetoothService> services) {
+    // Filter for the specific Sonca service
+    final soncaServices = services.where((s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase())).toList();
+
+    debugPrint('--------------------------------------------------');
+    debugPrint('SONCA SERVICES FOUND: ${soncaServices.length}');
+    for (var service in soncaServices) {
+      debugPrint('Service UUID: 0x${service.uuid.str.toUpperCase()}');
+      debugPrint('  Primary: ${service.isPrimary}');
+      
+      for (var characteristic in service.characteristics) {
+        debugPrint('  Characteristic UUID: 0x${characteristic.uuid.str.toUpperCase()}');
+        debugPrint('    Properties: ${characteristic.properties.toString()}');
+        
+        for (var descriptor in characteristic.descriptors) {
+          debugPrint('    Descriptor UUID: 0x${descriptor.uuid.str.toUpperCase()}');
+        }
+      }
+      debugPrint(''); // Empty line between services
+    }
+    debugPrint('--------------------------------------------------');
   }
 
   Future<void> disconnectDevice() async {
