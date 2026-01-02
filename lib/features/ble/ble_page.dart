@@ -107,6 +107,7 @@ class _BlePageState extends State<BlePage> {
                         ),
                       ],
                     ),
+                    clipBehavior: Clip.hardEdge,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -131,7 +132,8 @@ class _BlePageState extends State<BlePage> {
                             child: Text('Không tìm thấy thiết bị'),
                           )
                         else
-                          Flexible(
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 440),
                             child: ListView.separated(
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,

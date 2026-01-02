@@ -187,7 +187,12 @@ class BleViewModel extends ChangeNotifier {
       : _repository = repository;
 
   List<BleDevice> _devices = [];
-  List<BleDevice> get devices => _devices;
+  List<BleDevice> get devices {
+    if (_selectedDevice != null && !_devices.any((d) => d.id == _selectedDevice!.id)) {
+      return [_selectedDevice!, ..._devices];
+    }
+    return _devices;
+  }
 
   bool _isScanning = false;
   bool get isScanning => _isScanning;
