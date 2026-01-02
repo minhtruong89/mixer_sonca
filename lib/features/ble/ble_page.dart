@@ -127,9 +127,12 @@ class _BlePageState extends State<BlePage> {
                         
                         // Device List
                         if (viewModel.devices.isEmpty && !viewModel.isScanning)
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text('Không tìm thấy thiết bị'),
+                          ListTile(
+                            title: const Text('Không tìm thấy thiết bị', style: TextStyle(color: Colors.white)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.refresh, color: Colors.blue),
+                              onPressed: () => viewModel.scanDevices(),
+                            ),
                           )
                         else
                           ConstrainedBox(
