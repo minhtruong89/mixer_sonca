@@ -221,10 +221,15 @@ class BleViewModel extends ChangeNotifier {
   }
 
   Future<void> scanDevices() async {
+    _isScanning = true;
+    notifyListeners();
+
     // 1. Check Permissions
     final granted = await _repository.checkPermissions();
     if (!granted) {
       debugPrint("Permissions not granted");
+      _isScanning = false;
+      notifyListeners();
       return;
     }
 
@@ -238,16 +243,17 @@ class BleViewModel extends ChangeNotifier {
         isOn = await _repository.isBluetoothOn;
         if (!isOn) {
            debugPrint("Bluetooth could not be turned on");
+           _isScanning = false;
+           notifyListeners();
            return; // Or notify UI to show message
         }
       } catch (e) {
         debugPrint("Error turning on Bluetooth: $e");
+        _isScanning = false;
+        notifyListeners();
         return;
       }
     }
-
-    _isScanning = true;
-    notifyListeners();
 
     try {
       await _repository.startScan();
