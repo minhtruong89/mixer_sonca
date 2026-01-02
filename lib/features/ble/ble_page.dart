@@ -143,7 +143,13 @@ class _BlePageState extends State<BlePage> {
                                 
                                 return InkWell(
                                   onTap: () {
-                                    viewModel.selectDevice(device);
+                                    if (viewModel.isConnecting) return;
+                                    
+                                    if (viewModel.selectedDevice?.id == device.id) {
+                                      viewModel.disconnectDevice();
+                                    } else {
+                                      viewModel.connectToDevice(device);
+                                    }
                                     setState(() => _isDropdownOpen = false);
                                   },
                                   child: Container(
@@ -177,11 +183,23 @@ class _BlePageState extends State<BlePage> {
                                                 ],
                                               ),
                                             ),
-                                            // Action Button Placeholder (OPEN TAB)
+                                            // Action Button
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              color: Colors.blueGrey.shade800,
-                                              child: const Text('CONNECT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                              color: (viewModel.selectedDevice?.id == device.id) 
+                                                  ? Colors.red.shade900 
+                                                  : (viewModel.connectingDeviceId == device.id) 
+                                                      ? Colors.orange.shade900 
+                                                      : Colors.blueGrey.shade800,
+                                              child: viewModel.connectingDeviceId == device.id
+                                                ? const SizedBox(
+                                                    width: 12, height: 12, 
+                                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                                                  )
+                                                : Text(
+                                                    (viewModel.selectedDevice?.id == device.id) ? 'DISCONNECT' : 'CONNECT',
+                                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)
+                                                  ),
                                             )
                                           ],
                                         ),
@@ -189,8 +207,12 @@ class _BlePageState extends State<BlePage> {
                                         Row(
                                           children: [
                                             Text(
-                                              device.isConnectable ? "CONNECTABLE" : "NOT CONNECTABLE",
-                                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                              (viewModel.selectedDevice?.id == device.id) ? "CONNECTED" : (device.isConnectable ? "CONNECTABLE" : "NOT CONNECTABLE"),
+                                              style: TextStyle(
+                                                color: (viewModel.selectedDevice?.id == device.id) ? Colors.greenAccent : Colors.white70, 
+                                                fontSize: 12,
+                                                fontWeight: (viewModel.selectedDevice?.id == device.id) ? FontWeight.bold : FontWeight.normal
+                                              ),
                                             ),
                                             const Spacer(),
                                             Icon(Icons.signal_cellular_alt, color: Colors.grey.shade400, size: 14),

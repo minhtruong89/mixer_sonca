@@ -41,6 +41,8 @@ abstract class BleRepository {
   Future<void> stopScan();
   Future<bool> get isBluetoothOn;
   Future<void> turnOnBluetooth();
+  Future<void> connect(BleDevice device);
+  Future<void> disconnect(BleDevice device);
 }
 
 class BleRepositoryImpl implements BleRepository {
@@ -162,6 +164,19 @@ class BleRepositoryImpl implements BleRepository {
       await FlutterBluePlus.turnOn();
     }
   }
+
+  @override
+  Future<void> connect(BleDevice device) async {
+    // Reconstruct BluetoothDevice from ID/remoteId
+    final bluetoothDevice = BluetoothDevice.fromId(device.id);
+    await bluetoothDevice.connect(autoConnect: false);
+  }
+
+  @override
+  Future<void> disconnect(BleDevice device) async {
+    final bluetoothDevice = BluetoothDevice.fromId(device.id);
+    await bluetoothDevice.disconnect();
+  }
 }
 
 // --- ViewModel ---
@@ -179,6 +194,12 @@ class BleViewModel extends ChangeNotifier {
 
   BleDevice? _selectedDevice;
   BleDevice? get selectedDevice => _selectedDevice;
+
+  bool _isConnecting = false;
+  bool get isConnecting => _isConnecting;
+
+  String? _connectingDeviceId;
+  String? get connectingDeviceId => _connectingDeviceId;
 
   void init() {
     _repository.scanResults.listen((devices) {
@@ -233,5 +254,44 @@ class BleViewModel extends ChangeNotifier {
   void selectDevice(BleDevice? device) {
     _selectedDevice = device;
     notifyListeners();
+  }
+
+  Future<void> connectToDevice(BleDevice device) async {
+    _isConnecting = true;
+    _connectingDeviceId = device.id;
+    notifyListeners();
+    
+    // Stop scanning before connecting to avoid interference
+    try {
+      if (_isScanning) {
+        await _repository.stopScan();
+        _isScanning = false;
+        notifyListeners(); // Update UI scan button
+      }
+    } catch(e) { /* ignore scan stop error */ }
+
+    try {
+      await _repository.connect(device);
+      _selectedDevice = device;
+    } catch (e) {
+      debugPrint("Error connecting to device: $e");
+      // Handle error (maybe clear selection or show toast)
+    } finally {
+      _isConnecting = false;
+      _connectingDeviceId = null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> disconnectDevice() async {
+    if (_selectedDevice != null) {
+       try {
+        await _repository.disconnect(_selectedDevice!);
+        _selectedDevice = null;
+        notifyListeners();
+      } catch (e) {
+        debugPrint("Error disconnecting device: $e");
+      }
+    }
   }
 }
