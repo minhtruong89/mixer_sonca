@@ -17,8 +17,6 @@ class ConfigService {
 
   Future<void> loadConfig() async {
     try {
-      debugPrint('ConfigService: Downloading config from $_configUrl');
-      
       final response = await http.get(Uri.parse(_configUrl));
       
       if (response.statusCode == 200) {
@@ -31,7 +29,6 @@ class ConfigService {
             jsonString.codeUnitAt(0) == 0xEF && 
             jsonString.codeUnitAt(1) == 0xBB && 
             jsonString.codeUnitAt(2) == 0xBF) {
-          debugPrint('ConfigService: Removing UTF-8 BOM');
           jsonString = jsonString.substring(3);
         }
         
@@ -45,16 +42,17 @@ class ConfigService {
               .toList();
           
           _isLoaded = true;
-          
-          debugPrint('ConfigService: Config downloaded and parsed successfully');
+
+          debugPrint('');
+          debugPrint('--- Model Config ---');
           debugPrint('ConfigService: Found ${_models.length} device models');
           for (var model in _models) {
-            debugPrint('  - ${model.modelName} (ID: ${model.modelId})');
+            debugPrint('  - ${model.modelName} (ID: ${model.modelId}, Sub: ${model.modelIdSub})');
           }
+          debugPrint('-----------------------');
         } catch (e, stackTrace) {
           debugPrint('ConfigService: Error parsing JSON: $e');
           debugPrint('ConfigService: Stack trace: $stackTrace');
-          debugPrint('ConfigService: First char code: ${jsonString.isNotEmpty ? jsonString.codeUnitAt(0) : "empty"}');
         }
       } else {
         debugPrint('ConfigService: Failed to download config. Status code: ${response.statusCode}');

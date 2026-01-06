@@ -15,12 +15,13 @@ void main() async {
 
   
   setupInjection();
-  
-  // Download config file on startup
-  await getIt<ConfigService>().loadConfig();
 
   // Download mixer define on startup
   await getIt<MixerService>().loadMixerDefine();
+
+  // Download config file on startup
+  await getIt<ConfigService>().loadConfig();
+
   
   runApp(const MyApp());
 }

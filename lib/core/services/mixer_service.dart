@@ -19,7 +19,8 @@ class MixerService {
         final Map<String, dynamic> jsonMap = json.decode(content);
         
         final mixerDefines = _parseMap(jsonMap);
-        
+
+        debugPrint('');
         debugPrint('--- Mixer Define Tree ---');
         for (var define in mixerDefines) {
           define.debugPrintTree();
