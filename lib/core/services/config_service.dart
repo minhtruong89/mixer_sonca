@@ -94,28 +94,51 @@ class ConfigService {
           result.add(match);
         }
       } else if (criterion is Map<String, dynamic>) {
-        // Map match e.g. {"GLOBAL": [...]}
-        // Should have only one key usually
-        criterion.forEach((key, value) {
-           final match = source.firstWhere((e) => e.name == key, orElse: () => MixerDefine(name: 'NOT_FOUND', children: []));
-           if (match.name != 'NOT_FOUND') {
-             if (value is List) {
-               // Recursively filter children
-               final filteredChildren = _filterMixerDefines(match.children, value);
-               // Create a new node with filtered children
-               result.add(MixerDefine(
-                 name: match.name,
-                 index: match.index,
-                 children: filteredChildren,
-                 itemValue: match.itemValue,
-                 itemType: match.itemType,
-               ));
-             } else {
-               // If value is not a list (e.g. null), maybe just include parent?
-               // Assuming strict format per example
+        if (criterion.containsKey('name')) {
+          // Explicit item definition with properties: {"name": "BT", "displayType": 1}
+          final String name = criterion['name'];
+          final match = source.firstWhere((e) => e.name == name, orElse: () => MixerDefine(name: 'NOT_FOUND', children: []));
+          
+          if (match.name != 'NOT_FOUND') {
+            int displayType = match.displayType;
+            if (criterion.containsKey('displayType')) {
+              displayType = criterion['displayType'] as int;
+            }
+            
+            result.add(MixerDefine(
+              name: match.name,
+              index: match.index,
+              children: match.children, // We assume explicit items don't redefine children structure here, or copy them as is? 
+                                        // The example shows explicit items as leaves. 
+                                        // But if they have children in source, we should keep them unless filtered?
+                                        // For now, let's copy source children (unfiltered) or empty? 
+                                        // Ideally we shouldn't deep copy unfiltered children if we are filtering?
+                                        // But in this case (leafs), children are likely empty.
+                                        // Let's use match.children for now.
+              itemValue: match.itemValue,
+              displayType: displayType,
+            ));
+          }
+        } else {
+          // Nesting Map e.g. {"GLOBAL": [...]}
+          criterion.forEach((key, value) {
+             final match = source.firstWhere((e) => e.name == key, orElse: () => MixerDefine(name: 'NOT_FOUND', children: []));
+             if (match.name != 'NOT_FOUND') {
+               if (value is List) {
+                 // Recursively filter children
+                 final filteredChildren = _filterMixerDefines(match.children, value);
+                 // Create a new node with filtered children
+                 result.add(MixerDefine(
+                   name: match.name,
+                   index: match.index,
+                   children: filteredChildren,
+                   itemValue: match.itemValue,
+                   displayType: match.displayType,
+                 ));
+               }
              }
-           }
-        });
+          });
+        }
       }
     }
     return result;
