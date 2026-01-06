@@ -280,7 +280,7 @@ class BleViewModel extends ChangeNotifier {
     notifyListeners();
     
     // Stop scanning before connecting to avoid interference
-    try {
+    try {      
       if (_isScanning) {
         await _repository.stopScan();
         _isScanning = false;

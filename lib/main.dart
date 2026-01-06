@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mixer_sonca/app.dart';
 import 'package:mixer_sonca/injection.dart';
 import 'package:mixer_sonca/core/services/config_service.dart';
+import 'package:mixer_sonca/core/services/mixer_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,10 @@ void main() async {
   setupInjection();
   
   // Download config file on startup
-  await getIt<ConfigService>().loadConfig();
+  //await getIt<ConfigService>().loadConfig();
+
+  // Download and parse mixer define
+  await getIt<MixerService>().loadMixerDefine();
   
   runApp(const MyApp());
 }
