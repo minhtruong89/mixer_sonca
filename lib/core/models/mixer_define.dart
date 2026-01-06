@@ -5,6 +5,7 @@ class MixerDefine {
   int itemValue;
   
   /*
+    -1 - unknown
     0 - vertical slider
     1 - radio button
     2 - switch button
@@ -16,7 +17,7 @@ class MixerDefine {
     this.index,
     this.children = const [],
     this.itemValue = 0,
-    this.displayType = 0,
+    this.displayType = -1,
   });
 
   @override
@@ -30,7 +31,7 @@ class MixerDefine {
     if (index != null) {
       display += ' ($index)';
     }
-    if (displayType != 0) {
+    if (displayType != -1) {
       display += ' | Display Type : $displayType';
     }
     if (itemValue != 0) {
