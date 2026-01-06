@@ -40,35 +40,14 @@ class _BlePageState extends State<BlePage> {
     final viewModel = context.watch<BleViewModel>();
 
     return AppScaffold(
-      title: 'BLE Scanner',
+      title: '',
       // We use a Stack to float our custom UI over the main content
       body: Stack(
+        fit: StackFit.expand,
         children: [
           // Main Content Layer
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (viewModel.selectedDevice == null)
-                  Text(
-                    'Chưa kết nối',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  )
-                else ...[
-                  Text(
-                    'Đã kết nối',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    viewModel.selectedDevice!.soncaName,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  Text(viewModel.selectedDevice!.id),
-                ],
-              ],
-            ),
-          ),
+          // Main Content removed
+          const SizedBox.shrink(),
 
           // Custom "Floating" UI Layer (Top Right)
           Positioned(
@@ -78,16 +57,33 @@ class _BlePageState extends State<BlePage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 // The Action Button
-                FloatingActionButton(
-                  onPressed: _toggleScan,
-                  backgroundColor: viewModel.isScanning ? Colors.grey : Colors.blue,
-                  child: viewModel.isScanning 
-                    ? const SizedBox(
-                        width: 24, 
-                        height: 24, 
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                // Status and Action Button Row
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (viewModel.selectedDevice == null)
+                      Text(
+                        'Chưa kết nối',
+                        style: Theme.of(context).textTheme.titleMedium,
                       )
-                    : const Icon(Icons.bluetooth_searching),
+                    else
+                      Text(
+                        viewModel.selectedDevice!.soncaName,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    const SizedBox(width: 16),
+                    FloatingActionButton(
+                      onPressed: _toggleScan,
+                      backgroundColor: viewModel.isScanning ? Colors.grey : Colors.blue,
+                      child: viewModel.isScanning 
+                        ? const SizedBox(
+                            width: 24, 
+                            height: 24, 
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          )
+                        : const Icon(Icons.bluetooth_searching),
+                    ),
+                  ],
                 ),
                 
                 // The Dropdown List (Visible only when open)

@@ -11,14 +11,15 @@ void main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
   
   setupInjection();
   
   // Download config file on startup
-  //await getIt<ConfigService>().loadConfig();
+  await getIt<ConfigService>().loadConfig();
 
-  // Download and parse mixer define
+  // Download mixer define on startup
   await getIt<MixerService>().loadMixerDefine();
   
   runApp(const MyApp());

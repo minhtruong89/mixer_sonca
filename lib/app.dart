@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Sonca Mixer',
         theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
         home: const BlePage(),
       ),
     );

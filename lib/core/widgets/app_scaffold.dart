@@ -15,10 +15,10 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: title.isEmpty ? null : AppBar(
         title: Text(title),
       ),
-      body: SafeArea(child: body),
+      body: body,
       floatingActionButton: floatingActionButton,
     );
   }
