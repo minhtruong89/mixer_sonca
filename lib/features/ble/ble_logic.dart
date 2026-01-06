@@ -295,6 +295,9 @@ class BleViewModel extends ChangeNotifier {
       // Discover services after connection
       final services = await _repository.discoverServices(device);
       _logServices(services);
+
+      // Start display _mixerCurrent
+
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");

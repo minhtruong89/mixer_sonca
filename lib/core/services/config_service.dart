@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:mixer_sonca/core/models/device_model.dart';
+import 'package:mixer_sonca/core/models/mixer_define.dart';
+import 'package:mixer_sonca/core/services/mixer_service.dart';
+import 'package:mixer_sonca/injection.dart';
 
 class ConfigService {
   static const String _configUrl = 'http://data.soncamedia.com/firmware/smartbox/model_config_new.txt';
@@ -11,6 +14,9 @@ class ConfigService {
   
   List<DeviceModel> _models = [];
   List<DeviceModel> get models => _models;
+  
+  List<MixerDefine> _mixerCurrent = [];
+  List<MixerDefine> get mixerCurrent => _mixerCurrent;
   
   bool _isLoaded = false;
   bool get isLoaded => _isLoaded;
@@ -41,6 +47,21 @@ class ConfigService {
               .map((m) => DeviceModel.fromJson(m as Map<String, dynamic>))
               .toList();
           
+          // Filter Mixer Defines
+          if (jsonData.containsKey('defaultDisplayMixer')) {
+             final mixerService = getIt<MixerService>();
+             final defaultDisplayMixer = jsonData['defaultDisplayMixer'] as List;
+             
+             _mixerCurrent = _filterMixerDefines(mixerService.mixerDefines, defaultDisplayMixer);
+             
+             debugPrint('');
+             debugPrint('--- Mixer Current Tree (Filtered) ---');
+             for (var define in _mixerCurrent) {
+               define.debugPrintTree();
+             }
+             debugPrint('-------------------------------------');
+          }
+
           _isLoaded = true;
 
           debugPrint('');
@@ -60,5 +81,41 @@ class ConfigService {
     } catch (e) {
       debugPrint('ConfigService: Error downloading config: $e');
     }
+  }
+
+  List<MixerDefine> _filterMixerDefines(List<MixerDefine> source, List<dynamic> whitelist) {
+    List<MixerDefine> result = [];
+    
+    for (var criterion in whitelist) {
+      if (criterion is String) {
+        // Simple string match: Include the whole node as-is
+        final match = source.firstWhere((e) => e.name == criterion, orElse: () => MixerDefine(name: 'NOT_FOUND', children: [])); // Dummy fallback
+        if (match.name != 'NOT_FOUND') {
+          result.add(match);
+        }
+      } else if (criterion is Map<String, dynamic>) {
+        // Map match e.g. {"GLOBAL": [...]}
+        // Should have only one key usually
+        criterion.forEach((key, value) {
+           final match = source.firstWhere((e) => e.name == key, orElse: () => MixerDefine(name: 'NOT_FOUND', children: []));
+           if (match.name != 'NOT_FOUND') {
+             if (value is List) {
+               // Recursively filter children
+               final filteredChildren = _filterMixerDefines(match.children, value);
+               // Create a new node with filtered children
+               result.add(MixerDefine(
+                 name: match.name,
+                 index: match.index,
+                 children: filteredChildren,
+               ));
+             } else {
+               // If value is not a list (e.g. null), maybe just include parent?
+               // Assuming strict format per example
+             }
+           }
+        });
+      }
+    }
+    return result;
   }
 }

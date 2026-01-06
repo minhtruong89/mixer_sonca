@@ -6,6 +6,9 @@ import 'package:mixer_sonca/core/models/mixer_define.dart';
 class MixerService {
   static const String _url = 'http://data.soncamedia.com/firmware/smartbox/mixer_define.txt';
 
+  List<MixerDefine> _mixerDefines = [];
+  List<MixerDefine> get mixerDefines => _mixerDefines;
+
   Future<void> loadMixerDefine() async {
     try {
       final response = await http.get(Uri.parse(_url));
@@ -18,11 +21,11 @@ class MixerService {
         
         final Map<String, dynamic> jsonMap = json.decode(content);
         
-        final mixerDefines = _parseMap(jsonMap);
+        _mixerDefines = _parseMap(jsonMap);
 
         debugPrint('');
         debugPrint('--- Mixer Define Tree ---');
-        for (var define in mixerDefines) {
+        for (var define in _mixerDefines) {
           define.debugPrintTree();
         }
         debugPrint('-----------------------');
