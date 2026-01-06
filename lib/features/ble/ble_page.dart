@@ -52,8 +52,8 @@ class _BlePageState extends State<BlePage> {
 
           // Fixed Header: Bluetooth Button and Dropdown (Top Right)
           Positioned(
-            top: 20,
-            right: 20,
+            top: 10,
+            right: 10,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
@@ -220,7 +220,7 @@ class _BlePageState extends State<BlePage> {
           // Scrollable Mixer Area (Below the button)
           if (!_isDropdownOpen && viewModel.displayMixerCurrent.isNotEmpty)
             Positioned(
-              top: 80, // Below the button
+              top: 75, // Below the button
               right: 5,
               bottom: 5,
               child: Container(
