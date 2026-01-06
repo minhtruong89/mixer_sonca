@@ -50,59 +50,51 @@ class _BlePageState extends State<BlePage> {
           // Main Content removed
           const SizedBox.shrink(),
 
-          // Custom "Floating" UI Layer (Top Right)
+          // Fixed Header: Bluetooth Button and Dropdown (Top Right)
           Positioned(
             top: 20,
             right: 20,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 350,
-                maxHeight: MediaQuery.of(context).size.height - 40,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Status and Action Button Row
+                Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // The Action Button
-                    // Status and Action Button Row
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (viewModel.selectedDevice == null)
-                          Text(
-                            'Chưa kết nối',
-                            style: Theme.of(context).textTheme.titleMedium,
+                    if (viewModel.selectedDevice == null)
+                      Text(
+                        'Chưa kết nối',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      )
+                    else
+                      Text(
+                        viewModel.selectedDevice!.soncaName,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    const SizedBox(width: 16),
+                    FloatingActionButton(
+                      onPressed: _toggleScan,
+                      backgroundColor: viewModel.isScanning ? Colors.grey : Colors.blue,
+                      child: viewModel.isScanning 
+                        ? const SizedBox(
+                            width: 24, 
+                            height: 24, 
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                           )
-                        else
-                          Text(
-                            viewModel.selectedDevice!.soncaName,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        const SizedBox(width: 16),
-                        FloatingActionButton(
-                          onPressed: _toggleScan,
-                          backgroundColor: viewModel.isScanning ? Colors.grey : Colors.blue,
-                          child: viewModel.isScanning 
-                            ? const SizedBox(
-                                width: 24, 
-                                height: 24, 
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                              )
-                            : const Icon(Icons.bluetooth_searching),
-                        ),
-                      ],
+                        : const Icon(Icons.bluetooth_searching),
                     ),
+                  ],
+                ),
                 
                 // The Dropdown List (Visible only when open)
                 if (_isDropdownOpen) ...[
                   const SizedBox(height: 10),
-                  // ... Dropdown content (kept as is) ...
                   Container(
                     width: 350,
                     constraints: const BoxConstraints(maxHeight: 500),
                     decoration: BoxDecoration(
-                      color: Colors.black, // Dark background for the whole list container
+                      color: Colors.black,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -163,21 +155,19 @@ class _BlePageState extends State<BlePage> {
                                     setState(() => _isDropdownOpen = false);
                                   },
                                   child: Container(
-                                    color: Colors.black87, // Dark background like the picture
+                                    color: Colors.black87,
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
-                                            // Icon
                                             const CircleAvatar(
                                               backgroundColor: Colors.blueGrey,
                                               radius: 16,
                                               child: Icon(Icons.bluetooth, color: Colors.white, size: 16),
                                             ),
                                             const SizedBox(width: 10),
-                                            // Name and ID
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +183,6 @@ class _BlePageState extends State<BlePage> {
                                                 ],
                                               ),
                                             ),
-                                            // Action Button
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                               color: (viewModel.selectedDevice?.id == device.id) 
@@ -213,7 +202,6 @@ class _BlePageState extends State<BlePage> {
                                             )
                                           ],
                                         ),
-                                        // ... Connection status and metadata hidden to save space in code snippet ...
                                       ],
                                     ),
                                   ),
@@ -225,74 +213,77 @@ class _BlePageState extends State<BlePage> {
                     ),
                   ),
                 ],
-                
-                // Dynamic Mixer UI (Visible when dropdown is closed and config loaded)
-                if (!_isDropdownOpen && viewModel.displayMixerCurrent.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      width: 350,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.black87,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Builder(
-                            builder: (context) {
-                              debugPrint('BlePage: Rendering ${viewModel.displayMixerCurrent.length} mixer items');
-                              for (var item in viewModel.displayMixerCurrent) {
-                                debugPrint('  - ${item.name} (children: ${item.children.length}, displayType: ${item.displayType})');
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                          // We iterate through the GLOBAL children
-                          for (var item in viewModel.displayMixerCurrent) 
-                            if (item.children.isNotEmpty)
-                              // Group (like INPUT_LINE)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 12),
-                                      child: Text(
-                                        "${item.name}: ", 
-                                        style: const TextStyle(color: Colors.white, fontSize: 16)
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: item.children.map((child) => _buildMixerItem(context, child, viewModel)).toList(),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              // Simple item (like MIC_FBX)
-                              _buildMixerItem(context, item, viewModel),
-                        ],
-                      ),
-                    ),
-                ],
               ],
+            ),
+          ),
+
+          // Scrollable Mixer Area (Below the button)
+          if (!_isDropdownOpen && viewModel.displayMixerCurrent.isNotEmpty)
+            Positioned(
+              top: 100, // Below the button
+              right: 20,
+              bottom: 20,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.3,
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Builder(
+                        builder: (context) {
+                          debugPrint('BlePage: Rendering ${viewModel.displayMixerCurrent.length} mixer items');
+                          for (var item in viewModel.displayMixerCurrent) {
+                            debugPrint('  - ${item.name} (children: ${item.children.length}, displayType: ${item.displayType})');
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      // We iterate through the GLOBAL children
+                      for (var item in viewModel.displayMixerCurrent) 
+                        if (item.children.isNotEmpty)
+                          // Group (like INPUT_LINE)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Text(
+                                    "${item.name} ", 
+                                    style: const TextStyle(color: Colors.white, fontSize: 16)
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: item.children.map((child) => _buildMixerItem(context, child, viewModel)).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          // Simple item (like MIC_FBX)
+                          _buildMixerItem(context, item, viewModel),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
       // Disable default FAB
@@ -312,7 +303,7 @@ class _BlePageState extends State<BlePage> {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
