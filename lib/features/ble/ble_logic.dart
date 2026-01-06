@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mixer_sonca/core/services/config_service.dart';
+import 'package:mixer_sonca/core/models/mixer_define.dart';
+import 'package:mixer_sonca/injection.dart';
 
 // --- Model ---
 class BleDevice extends Equatable {
@@ -297,6 +299,7 @@ class BleViewModel extends ChangeNotifier {
       _logServices(services);
 
       // Start display _mixerCurrent
+      _updateDisplayMixer();
 
       
     } catch (e) {
@@ -307,6 +310,45 @@ class BleViewModel extends ChangeNotifier {
       _connectingDeviceId = null;
       notifyListeners();
     }
+  }
+
+  List<MixerDefine> _displayMixerCurrent = [];
+  List<MixerDefine> get displayMixerCurrent => _displayMixerCurrent;
+
+  void _updateDisplayMixer() {
+     try {
+       final configService = getIt<ConfigService>();
+       final globalItem = configService.mixerCurrent.firstWhere((e) => e.name == "GLOBAL", orElse: () => MixerDefine(name: 'NOT_FOUND', children: []));
+       
+       if (globalItem.name != 'NOT_FOUND') {
+         _displayMixerCurrent = globalItem.children;
+         debugPrint('BleViewModel: Updated display mixer with ${_displayMixerCurrent.length} items');
+       } else {
+         _displayMixerCurrent = [];
+         debugPrint('BleViewModel: GLOBAL item not found in mixerCurrent');
+       }
+       notifyListeners();
+     } catch (e) {
+       debugPrint('BleViewModel: Error updating display mixer: $e');
+     }
+  }
+
+  void toggleMixerItem(MixerDefine item) {
+    item.itemValue = item.itemValue == 0 ? 1 : 0;
+    notifyListeners();
+  }
+  
+  void setMixerItemValue(MixerDefine item, int value) {
+    item.itemValue = value;
+    notifyListeners();
+  }
+
+  void selectRadioItem(MixerDefine item, List<MixerDefine> group) {
+    for (var i in group) {
+      i.itemValue = 0;
+    }
+    item.itemValue = 1;
+    notifyListeners();
   }
 
   void _logServices(List<BluetoothService> services) {
