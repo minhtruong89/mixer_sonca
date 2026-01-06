@@ -91,7 +91,7 @@ class _BlePageState extends State<BlePage> {
                 if (_isDropdownOpen) ...[
                   const SizedBox(height: 10),
                   Container(
-                    width: 350,
+                    width: MediaQuery.of(context).size.width * 0.31,
                     constraints: const BoxConstraints(maxHeight: 500),
                     decoration: BoxDecoration(
                       color: Colors.black,
