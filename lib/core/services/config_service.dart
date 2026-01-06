@@ -70,7 +70,7 @@ class ConfigService {
           for (var model in _models) {
             debugPrint('  - ${model.modelName} (ID: ${model.modelId}, Sub: ${model.modelIdSub})');
           }
-          debugPrint('-----------------------');
+          debugPrint('-------------------------------------');
         } catch (e, stackTrace) {
           debugPrint('ConfigService: Error parsing JSON: $e');
           debugPrint('ConfigService: Stack trace: $stackTrace');
@@ -107,6 +107,8 @@ class ConfigService {
                  name: match.name,
                  index: match.index,
                  children: filteredChildren,
+                 itemValue: match.itemValue,
+                 itemType: match.itemType,
                ));
              } else {
                // If value is not a list (e.g. null), maybe just include parent?

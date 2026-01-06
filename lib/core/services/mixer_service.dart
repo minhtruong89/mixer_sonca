@@ -28,7 +28,7 @@ class MixerService {
         for (var define in _mixerDefines) {
           define.debugPrintTree();
         }
-        debugPrint('-----------------------');
+        debugPrint('-------------------------------------');
       } else {
         debugPrint('MixerService: Failed to load data. Status code: ${response.statusCode}');
       }
