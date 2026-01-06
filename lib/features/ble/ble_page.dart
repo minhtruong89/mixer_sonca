@@ -220,11 +220,11 @@ class _BlePageState extends State<BlePage> {
           // Scrollable Mixer Area (Below the button)
           if (!_isDropdownOpen && viewModel.displayMixerCurrent.isNotEmpty)
             Positioned(
-              top: 100, // Below the button
-              right: 20,
-              bottom: 20,
+              top: 80, // Below the button
+              right: 5,
+              bottom: 5,
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.3,
+                width: MediaQuery.of(context).size.width * 0.28,
                 decoration: BoxDecoration(
                   color: Colors.black87,
                   borderRadius: BorderRadius.circular(12),
@@ -303,7 +303,7 @@ class _BlePageState extends State<BlePage> {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+        padding: const EdgeInsets.symmetric(vertical: 2.5, horizontal: 4.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
