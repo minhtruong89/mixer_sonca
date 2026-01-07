@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/widgets/app_scaffold.dart';
@@ -91,7 +92,7 @@ class _BlePageState extends State<BlePage> {
                 if (_isDropdownOpen) ...[
                   const SizedBox(height: 10),
                   Container(
-                    width: MediaQuery.of(context).size.width * 0.31,
+                    width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.4 : 0.31),
                     constraints: const BoxConstraints(maxHeight: 500),
                     decoration: BoxDecoration(
                       color: Colors.black,
@@ -224,7 +225,7 @@ class _BlePageState extends State<BlePage> {
               right: 5,
               bottom: 5,
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.28,
+                width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
                 decoration: BoxDecoration(
                   color: Colors.black87,
                   borderRadius: BorderRadius.circular(12),

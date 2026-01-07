@@ -295,8 +295,8 @@ class BleViewModel extends ChangeNotifier {
       _selectedDevice = device;
       
       // Discover services after connection
-      final services = await _repository.discoverServices(device);
-      _logServices(services);
+      //final services = await _repository.discoverServices(device);
+      //_logServices(services);
 
       // Start display _mixerCurrent
       _updateDisplayMixer();
