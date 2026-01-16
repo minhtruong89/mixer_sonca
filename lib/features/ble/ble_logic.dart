@@ -34,6 +34,7 @@ class BleDevice extends Equatable {
 
 
 const String SONCA_SERVICE = "5343";
+const String READ_WRITE_SERVICE = "AB00";
 
 // --- Repository ---
 abstract class BleRepository {
@@ -56,42 +57,34 @@ class BleRepositoryImpl implements BleRepository {
 
   String _extractSoncaName(Map<int, List<int>> manufacturerData) {
     try {
-      // Iterate through manufacturer data entries
-      for (var entry in manufacturerData.entries) {
-        final data = entry.value;
+      // Manufacturer data format: CompanyID(0x5343) + ModelID(2 bytes) + Version(4 bytes) + BluetoothName(ASCII)
+      // The key in the map is the CompanyID (0x5343 = 21315 in decimal)
+      
+      // Look for the Sonca company ID (0x5343)
+      const soncaCompanyId = 0x5343;
+      
+      if (manufacturerData.containsKey(soncaCompanyId)) {
+        final data = manufacturerData[soncaCompanyId]!;
         
-        // Need at least 2 bytes to extract model ID
-        if (data.length >= 2) {
-          // Extract first 2 bytes and convert to hex string (e.g., 0x41 0x37 -> "4137")
-          final byte1 = data[0].toRadixString(16).padLeft(2, '0');
-          final byte2 = data[1].toRadixString(16).padLeft(2, '0');
-          final hexString = byte1 + byte2;
-          //debugPrint('BLE: _extractSoncaName hexString = ' + hexString);
+        // Data format: ModelID(2 bytes) + Version(4 bytes) + BluetoothName(ASCII)
+        // Minimum length: 2 (ModelID) + 4 (Version) = 6 bytes before the name
+        if (data.length > 6) {
+          // Extract BluetoothName starting from byte 6 (after ModelID and Version)
+          final nameBytes = data.sublist(6);
           
-          // Convert hex to decimal (e.g., "4137" -> 16695, but we want "413" -> 1043)
-          // Actually, looking at the example: 0x413 means we take 3 hex digits
-          // Let's try with 3 bytes for 3 hex digits
-          if (data.length >= 2) {
-            // Take first 3 hex digits: byte1 (2 digits) + first digit of byte2
-            final modelIdHex = hexString.substring(0, 3); // "413"
-            final modelId = int.tryParse(modelIdHex, radix: 16); // Convert hex to decimal
-            
-            if (modelId != null) {
-              //debugPrint('BLE: Extracted model ID: $modelId (hex: 0x$modelIdHex) from mfg data');
-              
-              // Match against config models
-              for (var model in _configService.models) {
-                if (model.modelId == modelId) {
-                  //debugPrint('BLE: Matched model: ${model.modelName}');
-                  return model.modelName;
-                }
-              }
-            }
-          }
+          // Convert ASCII bytes to string
+          final soncaName = String.fromCharCodes(nameBytes);
+          
+          //debugPrint('BLE: Extracted Sonca name: "$soncaName" from manufacturer data');
+          return soncaName.trim();
+        } else {
+          //debugPrint('BLE: Manufacturer data too short (${data.length} bytes), expected > 6');
         }
+      } else {
+        //debugPrint('BLE: Sonca company ID (0x5343) not found in manufacturer data');
       }
     } catch (e) {
-      debugPrint('BLE: Error extracting Sonca name: $e');
+      //debugPrint('BLE: Error extracting Sonca name: $e');
     }
     
     return "N/A";
@@ -302,9 +295,8 @@ class BleViewModel extends ChangeNotifier {
       _updateDisplayMixer();
 
       // Test send and receive BLE
-      await sendDataToBLE([0x01, 0x02, 0x03]); // Example test data
+      await sendDataToBLE([0x02, 0x80, 0x01, 0x00, 0xF4]); // Example test data
       await receiveDataFromBLE();
-
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");
@@ -395,7 +387,7 @@ class BleViewModel extends ChangeNotifier {
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
-        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
+        (s) => s.uuid.toString().toLowerCase().contains(READ_WRITE_SERVICE.toLowerCase()),
         orElse: () => throw Exception('Sonca service not found'),
       );
       
@@ -433,7 +425,7 @@ class BleViewModel extends ChangeNotifier {
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
-        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
+        (s) => s.uuid.toString().toLowerCase().contains(READ_WRITE_SERVICE.toLowerCase()),
         orElse: () => throw Exception('Sonca service not found'),
       );
       
