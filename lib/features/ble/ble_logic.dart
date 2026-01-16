@@ -301,6 +301,10 @@ class BleViewModel extends ChangeNotifier {
       // Start display _mixerCurrent
       _updateDisplayMixer();
 
+      // Test send and receive BLE
+      await sendDataToBLE([0x01, 0x02, 0x03]); // Example test data
+      await receiveDataFromBLE();
+
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");
@@ -372,6 +376,90 @@ class BleViewModel extends ChangeNotifier {
       debugPrint(''); // Empty line between services
     }
     debugPrint('--------------------------------------------------');
+  }
+
+  /// Send byte array to the currently connected BLE device
+  Future<void> sendDataToBLE(List<int> data) async {
+    if (_selectedDevice == null) {
+      debugPrint('BLE Send: No device connected');
+      return;
+    }
+
+    try {
+      debugPrint('\n--- BLE Send ---');
+      debugPrint('BLE Send: Sending ${data.length} bytes to device ${_selectedDevice!.name}');
+      debugPrint('BLE Send: Data = ${data.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+      
+      final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
+      final services = await bluetoothDevice.discoverServices();
+      
+      // Find the Sonca service
+      final soncaService = services.firstWhere(
+        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
+        orElse: () => throw Exception('Sonca service not found'),
+      );
+      
+      // Find a writable characteristic
+      final writableChar = soncaService.characteristics.firstWhere(
+        (c) => c.properties.write || c.properties.writeWithoutResponse,
+        orElse: () => throw Exception('No writable characteristic found'),
+      );
+      
+      debugPrint('BLE Send: Using characteristic UUID: 0x${writableChar.uuid.str.toUpperCase()}');
+      
+      // Write data to the characteristic
+      await writableChar.write(data, withoutResponse: writableChar.properties.writeWithoutResponse);
+      
+      debugPrint('BLE Send: Data sent successfully');
+    } catch (e) {
+      debugPrint('BLE Send: Error sending data: $e');
+    }
+    debugPrint('-------------------------------------');
+  }
+
+  /// Receive byte array from the currently connected BLE device
+  Future<void> receiveDataFromBLE() async {
+    if (_selectedDevice == null) {
+      debugPrint('BLE Receive: No device connected');
+      return;
+    }
+
+    try {
+      debugPrint('\n--- BLE Receive ---');
+      debugPrint('BLE Receive: Setting up notification listener for device ${_selectedDevice!.name}');
+      
+      final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
+      final services = await bluetoothDevice.discoverServices();
+      
+      // Find the Sonca service
+      final soncaService = services.firstWhere(
+        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
+        orElse: () => throw Exception('Sonca service not found'),
+      );
+      
+      // Find a notifiable characteristic
+      final notifiableChar = soncaService.characteristics.firstWhere(
+        (c) => c.properties.notify || c.properties.indicate,
+        orElse: () => throw Exception('No notifiable characteristic found'),
+      );
+      
+      debugPrint('BLE Receive: Using characteristic UUID: 0x${notifiableChar.uuid.str.toUpperCase()}');
+      
+      // Enable notifications
+      await notifiableChar.setNotifyValue(true);
+      
+      // Listen for incoming data
+      notifiableChar.lastValueStream.listen((value) {
+        debugPrint('BLE Receive: Received ${value.length} bytes');
+        debugPrint('BLE Receive: Data = ${value.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+
+        debugPrint('-------------------------------------');
+      });
+
+      debugPrint('BLE Receive: Notification listener set up successfully');
+    } catch (e) {
+      debugPrint('BLE Receive: Error setting up receiver: $e');
+    }
   }
 
   Future<void> disconnectDevice() async {

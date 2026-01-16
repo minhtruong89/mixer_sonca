@@ -245,10 +245,10 @@ class _BlePageState extends State<BlePage> {
                     children: [
                       Builder(
                         builder: (context) {
-                          debugPrint('BlePage: Rendering ${viewModel.displayMixerCurrent.length} mixer items');
+                          /*debugPrint('BlePage: Rendering ${viewModel.displayMixerCurrent.length} mixer items');
                           for (var item in viewModel.displayMixerCurrent) {
                             debugPrint('  - ${item.name} (children: ${item.children.length}, displayType: ${item.displayType})');
-                          }
+                          }*/
                           return const SizedBox.shrink();
                         },
                       ),
