@@ -2,8 +2,10 @@ import 'package:get_it/get_it.dart';
 import 'package:mixer_sonca/features/counter/counter_logic.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
 import 'package:mixer_sonca/core/services/config_service.dart';
-
 import 'package:mixer_sonca/core/services/mixer_service.dart';
+import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
+import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
+import 'package:mixer_sonca/features/ble/protocol/protocol_helper.dart';
 
 final getIt = GetIt.instance;
 
@@ -14,6 +16,15 @@ void setupInjection() {
   );
   getIt.registerLazySingleton<MixerService>(
     () => MixerService(),
+  );
+  getIt.registerLazySingleton<ProtocolService>(
+    () => ProtocolService(),
+  );
+  getIt.registerLazySingleton<DynamicCommandBuilder>(
+    () => DynamicCommandBuilder(getIt()),
+  );
+  getIt.registerLazySingleton<ProtocolHelper>(
+    () => ProtocolHelper(getIt(), getIt()),
   );
 
   // Repositories

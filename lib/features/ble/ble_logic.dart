@@ -5,6 +5,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:mixer_sonca/core/services/config_service.dart';
 import 'package:mixer_sonca/core/models/mixer_define.dart';
 import 'package:mixer_sonca/injection.dart';
+import 'protocol/protocol_handler.dart';
+import 'protocol/protocol_constants.dart';
+import 'protocol/protocol_frame.dart';
+import 'protocol/command_payload.dart';
+import 'protocol/commands/system_commands.dart';
+import 'protocol/commands/mic_commands.dart';
+import 'protocol/dynamic_command_builder.dart';
+import 'protocol/protocol_helper.dart';
 
 // --- Model ---
 class BleDevice extends Equatable {
@@ -34,7 +42,7 @@ class BleDevice extends Equatable {
 
 
 const String SONCA_SERVICE = "5343";
-const String READ_WRITE_SERVICE = "AB00";
+const String READ_WRITE_SERVICE = "5343";
 
 // --- Repository ---
 abstract class BleRepository {
@@ -55,47 +63,17 @@ class BleRepositoryImpl implements BleRepository {
   BleRepositoryImpl({required ConfigService configService}) 
       : _configService = configService;
 
-  String _extractSoncaName(Map<int, List<int>> manufacturerData) {
-    try {
-      // Manufacturer data format: CompanyID(0x5343) + ModelID(2 bytes) + Version(4 bytes) + BluetoothName(ASCII)
-      // The key in the map is the CompanyID (0x5343 = 21315 in decimal)
-      
-      // Look for the Sonca company ID (0x5343)
-      const soncaCompanyId = 0x5343;
-      
-      if (manufacturerData.containsKey(soncaCompanyId)) {
-        final data = manufacturerData[soncaCompanyId]!;
-        
-        // Data format: ModelID(2 bytes) + Version(4 bytes) + BluetoothName(ASCII)
-        // Minimum length: 2 (ModelID) + 4 (Version) = 6 bytes before the name
-        if (data.length > 6) {
-          // Extract BluetoothName starting from byte 6 (after ModelID and Version)
-          final nameBytes = data.sublist(6);
-          
-          // Convert ASCII bytes to string
-          final soncaName = String.fromCharCodes(nameBytes);
-          
-          //debugPrint('BLE: Extracted Sonca name: "$soncaName" from manufacturer data');
-          return soncaName.trim();
-        } else {
-          //debugPrint('BLE: Manufacturer data too short (${data.length} bytes), expected > 6');
-        }
-      } else {
-        //debugPrint('BLE: Sonca company ID (0x5343) not found in manufacturer data');
-      }
-    } catch (e) {
-      //debugPrint('BLE: Error extracting Sonca name: $e');
-    }
-    
-    return "N/A";
-  }
+
 
   @override
   Stream<List<BleDevice>> get scanResults => FlutterBluePlus.scanResults.map(
         (results) => results
             .where((r) => r.advertisementData.serviceUuids.any((u) => u.toString().contains(SONCA_SERVICE.toLowerCase())))
             .map((r) {
-              final soncaName = _extractSoncaName(r.advertisementData.manufacturerData);
+              // Use complete local name from advertisement data for soncaName
+              final soncaName = r.advertisementData.localName.isNotEmpty 
+                  ? r.advertisementData.localName 
+                  : (r.device.platformName.isNotEmpty ? r.device.platformName : "N/A");
               
               return BleDevice(
                 id: r.device.remoteId.str,
@@ -184,6 +162,7 @@ class BleRepositoryImpl implements BleRepository {
 // --- ViewModel ---
 class BleViewModel extends ChangeNotifier {
   final BleRepository _repository;
+  final ProtocolHandler _protocolHandler = ProtocolHandler();
 
   BleViewModel({required BleRepository repository})
       : _repository = repository;
@@ -212,6 +191,13 @@ class BleViewModel extends ChangeNotifier {
     _repository.scanResults.listen((devices) {
       _devices = devices;
       notifyListeners();
+    });
+
+    // Listen for incoming protocol frames
+    _protocolHandler.incomingFrames.listen((frame) {
+      debugPrint('Protocol: Received frame - ${frame.header}');
+      // Handle incoming frames (ACK, responses, etc.)
+      _handleProtocolFrame(frame);
     });
   }
 
@@ -294,9 +280,46 @@ class BleViewModel extends ChangeNotifier {
       // Start display _mixerCurrent
       _updateDisplayMixer();
 
+      // Setup protocol listener for incoming frames
+      await _setupProtocolListener();
+
       // Test send and receive BLE
-      await sendDataToBLE([0x02, 0x80, 0x01, 0x00, 0xF4]); // Example test data
-      await receiveDataFromBLE();
+      //await sendDataToBLE([0x02, 0x80, 0x01, 0x00, 0xF4]); // Example test data
+      //await receiveDataFromBLE();
+
+      // ========== APPROACH 1: Using ProtocolHelper (RECOMMENDED - Most Readable) ==========
+      // This is the easiest and most readable way!
+      final helper = getIt<ProtocolHelper>();
+      final command1 = helper.setAppMode(AppModeValue.lineIn);
+      await _sendProtocolCommand(command1);
+
+      /* ========== APPROACH 2: Using DynamicCommandBuilder with Constants ==========
+      // More flexible but requires knowing command IDs
+      final builder = getIt<DynamicCommandBuilder>();
+      final command2 = builder.buildCommand(
+        categoryName: 'SYSTEM',
+        cmdId: SystemCmd.appMode,  // Use constant instead of 0x01
+        operation: CommandOperation.set,
+        parameters: {
+          'app_mode': AppModeValue.lineIn.value, // Use enum instead of 2
+        },
+      );
+      await _sendProtocolCommand(command2);
+      */
+
+      /* ========== APPROACH 3: Fully Dynamic (Most Flexible) ==========
+      // Use this when you need maximum flexibility
+      final builder = getIt<DynamicCommandBuilder>();
+      final command3 = builder.buildCommand(
+        categoryName: 'SYSTEM',
+        cmdId: 0x01,
+        operation: CommandOperation.set,
+        parameters: {
+          'app_mode': 2, // Line In - value read from JSON
+        },
+      );
+      await _sendProtocolCommand(command3);
+      */
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");
@@ -451,6 +474,108 @@ class BleViewModel extends ChangeNotifier {
       debugPrint('BLE Receive: Notification listener set up successfully');
     } catch (e) {
       debugPrint('BLE Receive: Error setting up receiver: $e');
+    }
+  }
+
+  /// Send a protocol command to the connected BLE device
+  Future<void> _sendProtocolCommand(CommandPayload payload, {bool requireAck = false}) async {
+    if (_selectedDevice == null) {
+      debugPrint('Protocol: No device connected');
+      return;
+    }
+
+    try {
+      // Build the protocol frame
+      final frame = _protocolHandler.buildCommandFrame(payload, requireAck: requireAck);
+      final frameBytes = frame.encode();
+
+      debugPrint('\n--- Protocol Send ---');
+      debugPrint('Protocol: Sending command frame');
+      debugPrint('Protocol: Category=${payload.category}, CmdId=0x${payload.cmdId.toRadixString(16)}, Op=${payload.operation}');
+      debugPrint('Protocol: Frame size=${frameBytes.length} bytes');
+      debugPrint('Protocol: Data=${frameBytes.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+
+      // Send via BLE
+      await sendDataToBLE(frameBytes);
+
+      // Wait for ACK if required
+      if (requireAck) {
+        try {
+          final ackFrame = await _protocolHandler.waitForAck(frame.header.msgId);
+          debugPrint('Protocol: Received ACK - ${ackFrame.header}');
+        } catch (e) {
+          debugPrint('Protocol: ACK timeout or error: $e');
+        }
+      }
+
+      debugPrint('Protocol: Command sent successfully');
+      debugPrint('-------------------------------------');
+    } catch (e) {
+      debugPrint('Protocol: Error sending command: $e');
+    }
+  }
+
+  /// Handle incoming protocol frames
+  void _handleProtocolFrame(ProtocolFrame frame) {
+    // Check if this is an ACK response
+    if ((frame.header.flags & FrameFlags.ackResponse) != 0) {
+      if ((frame.header.flags & FrameFlags.error) != 0) {
+        debugPrint('Protocol: Received error response');
+        if (frame.payload.isNotEmpty) {
+          final errorCode = AckStatus.fromValue(frame.payload[0]);
+          debugPrint('Protocol: Error code: $errorCode');
+        }
+      } else {
+        debugPrint('Protocol: Received ACK');
+      }
+    }
+    // Handle other frame types as needed
+  }
+
+  /// Setup protocol notification listener for the connected device
+  Future<void> _setupProtocolListener() async {
+    if (_selectedDevice == null) {
+      debugPrint('Protocol: No device connected');
+      return;
+    }
+
+    try {
+      debugPrint('\n--- Protocol Listener Setup ---');
+      debugPrint('Protocol: Setting up notification listener for device ${_selectedDevice!.name}');
+      
+      final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
+      final services = await bluetoothDevice.discoverServices();
+      
+      // Find the Sonca service
+      final soncaService = services.firstWhere(
+        (s) => s.uuid.toString().toLowerCase().contains(READ_WRITE_SERVICE.toLowerCase()),
+        orElse: () => throw Exception('Sonca service not found'),
+      );
+      
+      // Find a notifiable characteristic
+      final notifiableChar = soncaService.characteristics.firstWhere(
+        (c) => c.properties.notify || c.properties.indicate,
+        orElse: () => throw Exception('No notifiable characteristic found'),
+      );
+      
+      debugPrint('Protocol: Using characteristic UUID: 0x${notifiableChar.uuid.str.toUpperCase()}');
+      
+      // Enable notifications
+      await notifiableChar.setNotifyValue(true);
+      
+      // Listen for incoming data and pass to protocol handler
+      notifiableChar.lastValueStream.listen((value) {
+        debugPrint('Protocol: Received ${value.length} bytes from BLE');
+        debugPrint('Protocol: Raw data = ${value.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+        
+        // Pass to protocol handler for decoding
+        _protocolHandler.handleIncomingFrame(value);
+      });
+
+      debugPrint('Protocol: Notification listener set up successfully');
+      debugPrint('-------------------------------------');
+    } catch (e) {
+      debugPrint('Protocol: Error setting up listener: $e');
     }
   }
 
