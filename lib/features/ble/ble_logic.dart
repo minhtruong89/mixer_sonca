@@ -2,8 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:mixer_sonca/core/services/config_service.dart';
-import 'package:mixer_sonca/core/models/mixer_define.dart';
+
 import 'package:mixer_sonca/injection.dart';
 import 'protocol/protocol_handler.dart';
 import 'protocol/protocol_constants.dart';
@@ -58,10 +57,7 @@ abstract class BleRepository {
 }
 
 class BleRepositoryImpl implements BleRepository {
-  final ConfigService _configService;
-
-  BleRepositoryImpl({required ConfigService configService}) 
-      : _configService = configService;
+  BleRepositoryImpl();
 
 
 
@@ -277,9 +273,6 @@ class BleViewModel extends ChangeNotifier {
       //final services = await _repository.discoverServices(device);
       //_logServices(services);
 
-      // Start display _mixerCurrent
-      _updateDisplayMixer();
-
       // Setup protocol listener for incoming frames
       await _setupProtocolListener();
 
@@ -291,7 +284,7 @@ class BleViewModel extends ChangeNotifier {
       // This is the easiest and most readable way!
       final helper = getIt<ProtocolHelper>();
       final command1 = helper.setAppMode(AppModeValue.lineIn);
-      await _sendProtocolCommand(command1);
+      await sendProtocolCommand(command1);
 
       /* ========== APPROACH 2: Using DynamicCommandBuilder with Constants ==========
       // More flexible but requires knowing command IDs
@@ -331,44 +324,7 @@ class BleViewModel extends ChangeNotifier {
     }
   }
 
-  List<MixerDefine> _displayMixerCurrent = [];
-  List<MixerDefine> get displayMixerCurrent => _displayMixerCurrent;
 
-  void _updateDisplayMixer() {
-     try {
-       final configService = getIt<ConfigService>();
-       final globalItem = configService.mixerCurrent.firstWhere((e) => e.name == "GLOBAL", orElse: () => MixerDefine(name: 'NOT_FOUND', children: []));
-       
-       if (globalItem.name != 'NOT_FOUND') {
-         _displayMixerCurrent = globalItem.children;
-         debugPrint('BleViewModel: Updated display mixer with ${_displayMixerCurrent.length} items');
-       } else {
-         _displayMixerCurrent = [];
-         debugPrint('BleViewModel: GLOBAL item not found in mixerCurrent');
-       }
-       notifyListeners();
-     } catch (e) {
-       debugPrint('BleViewModel: Error updating display mixer: $e');
-     }
-  }
-
-  void toggleMixerItem(MixerDefine item) {
-    item.itemValue = item.itemValue == 0 ? 1 : 0;
-    notifyListeners();
-  }
-  
-  void setMixerItemValue(MixerDefine item, int value) {
-    item.itemValue = value;
-    notifyListeners();
-  }
-
-  void selectRadioItem(MixerDefine item, List<MixerDefine> group) {
-    for (var i in group) {
-      i.itemValue = 0;
-    }
-    item.itemValue = 1;
-    notifyListeners();
-  }
 
   void _logServices(List<BluetoothService> services) {
     // Filter for the specific Sonca service
@@ -478,7 +434,7 @@ class BleViewModel extends ChangeNotifier {
   }
 
   /// Send a protocol command to the connected BLE device
-  Future<void> _sendProtocolCommand(CommandPayload payload, {bool requireAck = false}) async {
+  Future<void> sendProtocolCommand(CommandPayload payload, {bool requireAck = false}) async {
     if (_selectedDevice == null) {
       debugPrint('Protocol: No device connected');
       return;

@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/widgets/app_scaffold.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
-import 'package:mixer_sonca/core/models/mixer_define.dart';
+
+import 'package:mixer_sonca/core/services/mixer_service.dart';
+import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
+import 'package:mixer_sonca/features/ble/protocol/protocol_constants.dart';
+import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
+import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
+import 'package:mixer_sonca/injection.dart';
 
 class BlePage extends StatefulWidget {
   const BlePage({super.key});
@@ -49,9 +55,67 @@ class _BlePageState extends State<BlePage> {
         children: [
           // Main Content Layer
           // Main Content removed
-          const SizedBox.shrink(),
+          // Main Content Layer
+          // Main Content removed
+          Container(color: Colors.black),
 
-          // Fixed Header: Bluetooth Button and Dropdown (Top Right)
+          // Scrollable Area 2 (moved to background layer, using Column for relative positioning)
+          Column(
+            children: [
+              SizedBox(height: 80), // Reserve space for Fixed Header
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
+                    margin: const EdgeInsets.only(right: 5, bottom: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                      border: Border.all(color: Colors.white24, width: 0.5),
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                           // Dynamic Content from JSON
+                           Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                                final section = getIt<MixerService>().getItemsForSection("Area 2");
+                                
+                                if (section != null) {
+                                   return Column(
+                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                     mainAxisSize: MainAxisSize.min,
+                                     children: [
+                                        ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
+                                     ],
+                                   );
+                                } else {
+                                   return const Padding(
+                                     padding: EdgeInsets.all(8.0),
+                                     child: Text("Loading controls...", style: TextStyle(color: Colors.white54)),
+                                   );
+                                }
+                           }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Fixed Header: Bluetooth Button and Dropdown (Top Right) - MOVED TO END FOR Z-INDEX
           Positioned(
             top: 10,
             right: 10,
@@ -66,24 +130,28 @@ class _BlePageState extends State<BlePage> {
                     if (viewModel.selectedDevice == null)
                       Text(
                         'Chưa kết nối',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
                       )
                     else
                       Text(
                         viewModel.selectedDevice!.soncaName,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     const SizedBox(width: 16),
                     FloatingActionButton(
                       onPressed: _toggleScan,
-                      backgroundColor: viewModel.isScanning ? Colors.grey : Colors.blue,
+                      backgroundColor: viewModel.isScanning ? Colors.grey : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: Colors.white24, width: 1),
+                      ),
                       child: viewModel.isScanning 
                         ? const SizedBox(
                             width: 24, 
                             height: 24, 
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                           )
-                        : const Icon(Icons.bluetooth_searching),
+                        : const Icon(Icons.bluetooth_searching, color: Colors.white),
                     ),
                   ],
                 ),
@@ -95,7 +163,7 @@ class _BlePageState extends State<BlePage> {
                     width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.4 : 0.31),
                     constraints: const BoxConstraints(maxHeight: 500),
                     decoration: BoxDecoration(
-                      color: Colors.black,
+                      color: Colors.grey[900], // Dark background for dropdown
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -104,6 +172,7 @@ class _BlePageState extends State<BlePage> {
                           offset: const Offset(0, 5),
                         ),
                       ],
+                      border: Border.all(color: Colors.white24, width: 0.5),
                     ),
                     clipBehavior: Clip.hardEdge,
                     child: Column(
@@ -121,14 +190,14 @@ class _BlePageState extends State<BlePage> {
                             onPressed: () => setState(() => _isDropdownOpen = false),
                           ),
                         ),
-                        const Divider(height: 1, color: Colors.grey),
+                        const Divider(height: 1, color: Colors.white24),
                         
                         // Device List
                         if (viewModel.devices.isEmpty && !viewModel.isScanning)
                           ListTile(
-                            title: const Text('Không tìm thấy thiết bị', style: TextStyle(color: Colors.white)),
+                            title: const Text('Không tìm thấy thiết bị', style: TextStyle(color: Colors.white70)),
                             trailing: IconButton(
-                              icon: const Icon(Icons.refresh, color: Colors.blue),
+                              icon: const Icon(Icons.refresh, color: Colors.blueAccent),
                               onPressed: () => viewModel.scanDevices(),
                             ),
                           )
@@ -139,7 +208,7 @@ class _BlePageState extends State<BlePage> {
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,
                               itemCount: viewModel.devices.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.grey),
+                              separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white10),
                               itemBuilder: (context, index) {
                                 final device = viewModel.devices[index];
                                 final mfgData = device.manufacturerData.entries.map((e) => "ID: <0x${e.key.toRadixString(16).padLeft(4, '0')}> 0x${e.value.map((v) => v.toRadixString(16).padLeft(2, '0')).join('').toUpperCase()}").join('\n');
@@ -156,7 +225,7 @@ class _BlePageState extends State<BlePage> {
                                     setState(() => _isDropdownOpen = false);
                                   },
                                   child: Container(
-                                    color: Colors.black87,
+                                    color: Colors.transparent, 
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,11 +255,14 @@ class _BlePageState extends State<BlePage> {
                                             ),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              color: (viewModel.selectedDevice?.id == device.id) 
-                                                  ? Colors.red.shade900 
-                                                  : (viewModel.connectingDeviceId == device.id) 
-                                                      ? Colors.orange.shade900 
-                                                      : Colors.blueGrey.shade800,
+                                              decoration: BoxDecoration(
+                                                color: (viewModel.selectedDevice?.id == device.id) 
+                                                    ? Colors.red.shade900 
+                                                    : (viewModel.connectingDeviceId == device.id) 
+                                                        ? Colors.orange.shade900 
+                                                        : Colors.blueGrey.shade800,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
                                               child: viewModel.connectingDeviceId == device.id
                                                 ? const SizedBox(
                                                     width: 12, height: 12, 
@@ -218,73 +290,7 @@ class _BlePageState extends State<BlePage> {
             ),
           ),
 
-          // Scrollable Mixer Area (Below the button)
-          if (!_isDropdownOpen && viewModel.displayMixerCurrent.isNotEmpty)
-            Positioned(
-              top: 75, // Below the button
-              right: 5,
-              bottom: 5,
-              child: Container(
-                width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
-                decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Builder(
-                        builder: (context) {
-                          /*debugPrint('BlePage: Rendering ${viewModel.displayMixerCurrent.length} mixer items');
-                          for (var item in viewModel.displayMixerCurrent) {
-                            debugPrint('  - ${item.name} (children: ${item.children.length}, displayType: ${item.displayType})');
-                          }*/
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                      // We iterate through the GLOBAL children
-                      for (var item in viewModel.displayMixerCurrent) 
-                        if (item.children.isNotEmpty)
-                          // Group (like INPUT_LINE)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Text(
-                                    "${item.name} ", 
-                                    style: const TextStyle(color: Colors.white, fontSize: 16)
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: item.children.map((child) => _buildMixerItem(context, child, viewModel)).toList(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          // Simple item (like MIC_FBX)
-                          _buildMixerItem(context, item, viewModel),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+
         ],
       ),
       // Disable default FAB
@@ -292,57 +298,172 @@ class _BlePageState extends State<BlePage> {
     );
   }
 
-  Widget _buildMixerItem(BuildContext context, MixerDefine item, BleViewModel viewModel) {
-    return InkWell(
-      onTap: () {
-        if (item.displayType == 1) {
-          // Radio button - need to handle mutual exclusion
-          // For now, just toggle
-          viewModel.toggleMixerItem(item);
-        } else {
-          viewModel.toggleMixerItem(item);
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.5, horizontal: 4.0),
+  Widget _buildDynamicControl(BuildContext context, DisplayItem item, BleViewModel viewModel) {
+    // 1. Radio Group
+    if (item.control.isRadio) {
+      // Find current selected value - for now we don't have bi-directional sync fully set up for reading values back 
+      // from device state easily without a more complex state management.
+      // We will just use a local state or visual indication for now.
+      
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, // Label "Ngõ vào" on left
+          children: [
+            Text(item.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
+            // Align options to the right
+            Align(
+              alignment: Alignment.centerRight,
+              child: IntrinsicWidth(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: item.control.options.map((option) {
+                    return InkWell(
+                      onTap: () {
+                         _handleDynamicControlChange(item, option.value, viewModel);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12.0),
+                            child: Text(
+                              option.label, 
+                              style: const TextStyle(color: Colors.white, fontSize: 18),
+                            ),
+                          ),
+                          Radio<String>(
+                            value: option.value,
+                            groupValue: null, // TODO: Bind state
+                            onChanged: (val) {
+                               if (val != null) {
+                                 _handleDynamicControlChange(item, val, viewModel);
+                               }
+                            },
+                            activeColor: Colors.greenAccent,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } 
+    // 2. Switch Button
+    else if (item.control.isSwitch) {
+       return Padding(
+        padding: EdgeInsets.zero,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              item.name,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+            Text(item.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Switch(
+              value: false, // TODO: Bind to actual state
+              activeColor: Colors.white,
+              activeTrackColor: Colors.greenAccent,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: Colors.grey,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onChanged: (val) {
+                 _handleDynamicControlChange(item, val ? 1 : 0, viewModel);
+              },
             ),
-            if (item.displayType == 1) 
-              // Radio button
-              Icon(
-                item.itemValue == 1 ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: item.itemValue == 1 ? Colors.greenAccent : Colors.grey,
-                size: 28,
-              )
-            else if (item.displayType == 2)
-              // Switch button
-              Transform.scale(
-                scale: 0.9,
-                child: Switch(
-                  value: item.itemValue == 1,
-                  activeColor: Colors.white,
-                  activeTrackColor: Colors.greenAccent,
-                  inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: Colors.grey,
-                  onChanged: (val) {
-                    viewModel.setMixerItemValue(item, val ? 1 : 0);
-                  },
-                ),
-              )
-            else
-              // Type 0 or other - show value
-              Text(
-                "[${item.itemValue}]", 
-                style: const TextStyle(color: Colors.grey, fontSize: 14)
-              ),
           ],
         ),
-      ),
+      );
+    }
+    
+    // Default fallback
+    return ListTile(
+      title: Text(item.label, style: const TextStyle(color: Colors.white)),
+      subtitle: Text('Unknown type: ${item.control.typeDisplay}', style: const TextStyle(color: Colors.grey)),
     );
   }
+
+  Future<void> _handleDynamicControlChange(DisplayItem item, dynamic value, BleViewModel viewModel) async {
+      final protocolService = getIt<ProtocolService>();
+      
+      // 1. Find Command ID from Category + Parameter Name
+      final cmdDef = protocolService.findCommand(item.category, item.paramName);
+      
+      if (cmdDef == null) {
+        debugPrint('Error: Could not find command for category ${item.category} and param ${item.paramName}');
+        return;
+      }
+      
+      // 2. Build parameter map & Resolve Value
+      dynamic finalValue = value;
+      // Special handling for Radio options that might need value mapping (String -> ID)
+      if (item.control.isRadio && value is String) {
+         if (cmdDef.valueMap != null) {
+            for (var entry in cmdDef.valueMap!.entries) {
+               if (entry.value.toString().toLowerCase() == value.toString().toLowerCase()) {
+                  finalValue = int.tryParse(entry.key); // "2" -> 2
+                  break;
+               }
+            }
+         }
+      }
+      
+      debugPrint('UI Change: ${item.label} -> $finalValue (Cmd: ${item.category}.${item.paramName})');
+
+      if (viewModel.selectedDevice == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            // Center vertically using bottom margin
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height / 2 - 50,
+            ),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  child: const Text(
+                    "Vui lòng kết nối thiết bị",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        return;
+      }
+
+      try {
+        final builder = getIt<DynamicCommandBuilder>();
+        final command = builder.buildCommand(
+          categoryName: item.category,
+          cmdId: cmdDef.id,
+          operation: CommandOperation.set,
+          parameters: {
+             item.paramName: finalValue
+          },
+        );
+        
+        await viewModel.sendProtocolCommand(command);
+        
+      } catch (e) {
+        debugPrint('Error sending dynamic command: $e');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+  }
+
 }

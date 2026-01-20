@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:mixer_sonca/features/counter/counter_logic.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
-import 'package:mixer_sonca/core/services/config_service.dart';
 import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
@@ -11,9 +10,7 @@ final getIt = GetIt.instance;
 
 void setupInjection() {
   // Services
-  getIt.registerLazySingleton<ConfigService>(
-    () => ConfigService(),
-  );
+
   getIt.registerLazySingleton<MixerService>(
     () => MixerService(),
   );
@@ -32,7 +29,7 @@ void setupInjection() {
     () => CounterRepositoryImpl(),
   );
   getIt.registerLazySingleton<BleRepository>(
-    () => BleRepositoryImpl(configService: getIt()),
+    () => BleRepositoryImpl(),
   );
 
   // ViewModels - Factory because they are disposable and tied to UI lifecycle

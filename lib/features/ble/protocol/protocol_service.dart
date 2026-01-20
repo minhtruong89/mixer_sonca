@@ -134,4 +134,27 @@ class ProtocolService {
     
     return command.indexRule!.getFieldType(fieldName);
   }
+
+  /// Find a command definition by parameter name (index name)
+  /// 
+  /// Example: findCommand('SYSTEM', 'app_mode') -> Returns command definition for ID 0x01
+  CommandDefinition? findCommand(String categoryName, String paramName) {
+    if (!_isLoaded || _definition == null) return null;
+
+    final category = getCategoryByName(categoryName);
+    if (category == null) return null;
+
+    // Search through all commands in the category
+    if (category.commands != null) {
+      for (final command in category.commands!.values) {
+        // Check if this command contains the parameter (index)
+        final index = command.getIndexByName(paramName);
+        if (index != null) {
+          return command;
+        }
+      }
+    }
+    
+    return null;
+  }
 }
