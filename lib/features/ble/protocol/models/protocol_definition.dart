@@ -134,6 +134,16 @@ class CategoryDefinition {
   CommandDefinition? getCommand(int cmdId) {
     return commands[cmdId];
   }
+
+  /// Get command by name
+  CommandDefinition? getCommandByName(String commandName) {
+    for (final command in commands.values) {
+      if (command.name == commandName) {
+        return command;
+      }
+    }
+    return null;
+  }
 }
 
 /// Command definition

@@ -76,6 +76,12 @@ class ProtocolService {
     return category?.getCommand(cmdId);
   }
 
+  /// Get command by category name and command name
+  CommandDefinition? getCommandByName(String categoryName, String commandName) {
+    final category = getCategoryByName(categoryName);
+    return category?.getCommandByName(commandName);
+  }
+
   /// Get command by category ID and command ID
   CommandDefinition? getCommandById(int categoryId, int cmdId) {
     final category = getCategoryById(categoryId);

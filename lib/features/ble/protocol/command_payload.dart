@@ -163,3 +163,45 @@ class CommandPayload {
   }
 }
 
+/// ACK Payload structure (Status + Category + CmdId + Data)
+class AckPayload {
+  final int status; // 0x00 = OK, other = error
+  final CommandCategory category;
+  final int cmdId;
+  final List<int> data;
+
+  const AckPayload({
+    required this.status,
+    required this.category,
+    required this.cmdId,
+    required this.data,
+  });
+
+  /// Decode ACK payload from bytes
+  static AckPayload decode(List<int> bytes) {
+    if (bytes.length < 3) {
+      throw Exception('ACK payload too short: ${bytes.length}');
+    }
+
+    final status = bytes[0];
+    final category = CommandCategory.fromValue(bytes[1]);
+    final cmdId = bytes[2];
+    
+    // Data starts at offset 3 and continues to the end
+    final data = bytes.length > 3 ? bytes.sublist(3) : <int>[];
+
+    return AckPayload(
+      status: status,
+      category: category,
+      cmdId: cmdId,
+      data: data,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'AckPayload(status: 0x${status.toRadixString(16)}, category: $category, '
+        'cmdId: 0x${cmdId.toRadixString(16)}, dataSize: ${data.length})';
+  }
+}
+

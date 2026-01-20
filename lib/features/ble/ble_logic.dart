@@ -12,6 +12,9 @@ import 'protocol/commands/system_commands.dart';
 import 'protocol/commands/mic_commands.dart';
 import 'protocol/dynamic_command_builder.dart';
 import 'protocol/protocol_helper.dart';
+import 'protocol/protocol_types.dart';
+import 'protocol/protocol_service.dart';
+import 'protocol/models/protocol_definition.dart';
 
 // --- Model ---
 class BleDevice extends Equatable {
@@ -183,6 +186,20 @@ class BleViewModel extends ChangeNotifier {
   String? _connectingDeviceId;
   String? get connectingDeviceId => _connectingDeviceId;
 
+  /// Map to store dynamic control states (e.g., {'mic_bass_gain': 50, 'app_mode': 1})
+  final Map<String, dynamic> _controlStates = {};
+  Map<String, dynamic> get controlStates => _controlStates;
+
+  dynamic getControlValue(String key, {dynamic defaultValue}) {
+    return _controlStates[key] ?? defaultValue;
+  }
+
+  void updateControlValue(String key, dynamic value, {bool notify = true}) {
+    if (_controlStates[key] == value) return;
+    _controlStates[key] = value;
+    if (notify) notifyListeners();
+  }
+
   void init() {
     _repository.scanResults.listen((devices) {
       _devices = devices;
@@ -284,6 +301,8 @@ class BleViewModel extends ChangeNotifier {
       final command1 = helper.setAppMode(AppModeValue.lineIn);
       await sendProtocolCommand(command1);*/
 
+      // Test get data and save value into display item
+      await fetchInitialStates();
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");
@@ -444,6 +463,8 @@ class BleViewModel extends ChangeNotifier {
 
   /// Handle incoming protocol frames
   void _handleProtocolFrame(ProtocolFrame frame) {
+    debugPrint('Protocol: Handling frame - msgId=${frame.header.msgId}, flags=0x${frame.header.flags.toRadixString(16)}');
+
     // Check if this is an ACK response
     if ((frame.header.flags & FrameFlags.ackResponse) != 0) {
       if ((frame.header.flags & FrameFlags.error) != 0) {
@@ -456,7 +477,125 @@ class BleViewModel extends ChangeNotifier {
         debugPrint('Protocol: Received ACK');
       }
     }
-    // Handle other frame types as needed
+
+    // Check if frame has data payload (responses to GET or unsolicited updates)
+    if (frame.payload.isNotEmpty) {
+      if((frame.header.flags & FrameFlags.ackResponse) == 0){
+        try {
+          final payload = CommandPayload.decode(frame.payload);
+          debugPrint('Protocol: Decoded data payload - category=${payload.category}, cmdId=0x${payload.cmdId.toRadixString(16)}, op=${payload.operation}');
+
+          final protocolService = getIt<ProtocolService>();
+          final category = protocolService.getCategoryById(payload.category.value);
+          if (category == null) return;
+
+          final command = category.getCommand(payload.cmdId);
+          if (command == null) return;
+
+          // Manual Parsing of pair data: [NumPairs, Index1, Val1, Index2, Val2...]
+          if (payload.data.isNotEmpty) {
+            final numPairs = payload.data[0];
+            int offset = 1;
+            for (int i = 0; i < numPairs; i++) {
+              if (offset >= payload.data.length) break;
+
+              final index = payload.data[offset++];
+              final indexDef = command.getIndex(index);
+
+              if (indexDef != null) {
+                final typeSize = getTypeSize(indexDef.type);
+                if (offset + typeSize <= payload.data.length) {
+                  final valueBytes = payload.data.sublist(offset, offset + typeSize);
+                  final value = decodeValue(valueBytes, indexDef.type);
+                  offset += typeSize;
+
+                  final stateKey = "${command.name}_${indexDef.name}";
+                  debugPrint('Protocol: Updating state - $stateKey = $value');
+                  updateControlValue(stateKey, value);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Protocol: Error decoding payload: $e');
+        }
+
+      } else {
+        try {
+          final payload = AckPayload.decode(frame.payload);
+          debugPrint('Protocol: Decoded ack payload - status=0x${payload.status.toRadixString(16)}, category=${payload.category}, cmdId=0x${payload.cmdId.toRadixString(16)}');
+
+          final protocolService = getIt<ProtocolService>();
+          final category = protocolService.getCategoryById(payload.category.value);
+          if (category == null) return;
+
+          final command = category.getCommand(payload.cmdId);
+          if (command == null) return;
+
+          // Manual Parsing of pair data: [NumPairs, Index1, Val1, Index2, Val2...]
+          if (payload.data.isNotEmpty) {
+            final numPairs = payload.data[0];
+            debugPrint('numPairs = $numPairs');
+            int offset = 1;
+            for (int i = 0; i < numPairs; i++) {
+              if (offset >= payload.data.length) break;
+
+              final index = payload.data[offset++];
+              final indexDef = command.getIndex(index);
+
+              if (indexDef != null) {
+                final typeSize = getTypeSize(indexDef.type);
+                if (offset + typeSize <= payload.data.length) {
+                  final valueBytes = payload.data.sublist(offset, offset + typeSize);
+                  final value = decodeValue(valueBytes, indexDef.type);
+                  offset += typeSize;
+
+                  final stateKey = "${command.name}_${indexDef.name}";
+                  debugPrint('Protocol: Updating state - $stateKey = $value');
+                  updateControlValue(stateKey, value);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Protocol: Error decoding payload: $e');
+        }
+
+      }
+
+    }
+
+  }
+
+  /// Fetch initial states for important controls
+  Future<void> fetchInitialStates() async {
+    if (_selectedDevice == null) return;
+
+    debugPrint('Protocol: Fetching initial states...');
+    final builder = getIt<DynamicCommandBuilder>();
+
+    // List of controls to fetch (Category, CmdId, ParamName)
+    final toFetch = [
+      {'cat': 'MIC', 'id': 0x08, 'param': 'enable'},
+      {'cat': 'MUSIC', 'id': 0x04, 'param': 'enable'},
+      {'cat': 'MUSIC', 'id': 0x05, 'param': 'enable'}
+    ];
+
+    for (final item in toFetch) {
+      try {
+        final command = builder.buildCommand(
+          categoryName: item['cat'] as String,
+          cmdId: item['id'] as int,
+          operation: CommandOperation.get,
+          parameters: {item['param'] as String: 0},
+        );
+        await sendProtocolCommand(command);
+        // Small delay between commands to avoid overwhelming the device
+        await Future.delayed(const Duration(milliseconds: 100));
+      } catch (e) {
+        debugPrint('Protocol: Error fetching state for ${item['param']}: $e');
+      }
+    }
   }
 
   /// Setup protocol notification listener for the connected device

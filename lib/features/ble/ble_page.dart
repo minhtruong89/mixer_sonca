@@ -8,6 +8,7 @@ import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_constants.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
+import 'package:mixer_sonca/features/ble/protocol/models/protocol_definition.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
 import 'package:mixer_sonca/features/ble/widgets/mixer_slider.dart';
 import 'package:mixer_sonca/injection.dart';
@@ -160,7 +161,10 @@ class _BlePageState extends State<BlePage> {
                     else
                       Text(
                         viewModel.selectedDevice!.soncaName,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.greenAccent,
+                        ),
                       ),
                     const SizedBox(width: 16),
                     FloatingActionButton(
@@ -176,7 +180,10 @@ class _BlePageState extends State<BlePage> {
                             height: 24, 
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                           )
-                        : const Icon(Icons.bluetooth_searching, color: Colors.white),
+                        : Icon(
+                            Icons.bluetooth_searching, 
+                            color: viewModel.selectedDevice != null ? Colors.greenAccent : Colors.white
+                          ),
                     ),
                   ],
                 ),
@@ -327,11 +334,12 @@ class _BlePageState extends State<BlePage> {
 
   Widget _buildDynamicControl(BuildContext context, DisplayItem item, BleViewModel viewModel) {
     // 1. Radio Group
+    final stateKey = "${item.command}_${item.paramName ?? ''}";
+
+    // 1. Radio Group
     if (item.control.isRadio) {
-      // Find current selected value - for now we don't have bi-directional sync fully set up for reading values back 
-      // from device state easily without a more complex state management.
-      // We will just use a local state or visual indication for now.
-      
+      final currentValue = viewModel.getControlValue(stateKey, defaultValue: item.control.options.firstOrNull?.value ?? '');
+
       return Padding(
         padding: EdgeInsets.zero,
         child: Column(
@@ -360,6 +368,7 @@ class _BlePageState extends State<BlePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: item.control.options.map((option) {
+                    final isSelected = currentValue == option.value;
                     return InkWell(
                       onTap: () {
                          _handleDynamicControlChange(item, option.value, viewModel);
@@ -371,12 +380,15 @@ class _BlePageState extends State<BlePage> {
                             padding: const EdgeInsets.only(right: 12.0),
                             child: Text(
                               option.label, 
-                              style: const TextStyle(color: Colors.white, fontSize: 18),
+                              style: TextStyle(
+                                color: isSelected ? Colors.greenAccent : Colors.white, 
+                                fontSize: 18
+                              ),
                             ),
                           ),
                           Radio<String>(
                             value: option.value,
-                            groupValue: null, // TODO: Bind state
+                            groupValue: currentValue,
                             onChanged: (val) {
                                if (val != null) {
                                  _handleDynamicControlChange(item, val, viewModel);
@@ -399,6 +411,8 @@ class _BlePageState extends State<BlePage> {
     } 
     // 2. Switch Button
     else if (item.control.isSwitch) {
+      final isSwitchedOn = viewModel.getControlValue(stateKey, defaultValue: 0) == 1;
+
        return Padding(
         padding: EdgeInsets.zero,
         child: Row(
@@ -419,7 +433,7 @@ class _BlePageState extends State<BlePage> {
               ),
             ),
             Switch(
-              value: false, // TODO: Bind to actual state
+              value: isSwitchedOn,
               activeColor: Colors.white,
               activeTrackColor: Colors.greenAccent,
               inactiveThumbColor: Colors.white,
@@ -448,11 +462,21 @@ class _BlePageState extends State<BlePage> {
       } else {
         volumeParam = item.paramName;
       }
+
+      final volumeStateKey = "${item.command}_${volumeParam ?? ''}";
+      final muteStateKey = muteParam != null ? "${item.command}_$muteParam" : null;
+
+      final volumeValue = (volumeParam != null) 
+          ? viewModel.getControlValue(volumeStateKey, defaultValue: 50).toDouble() 
+          : 50.0;
+      final isMuted = (muteParam != null) 
+          ? viewModel.getControlValue(muteStateKey!, defaultValue: 0) == 1 
+          : false;
       
       return MixerSlider(
         label: item.label,
-        value: 50, // TODO: Bind to state
-        isMuted: false, // TODO: Bind to state
+        value: volumeValue,
+        isMuted: isMuted,
         showMute: muteParam != null,
         min: item.control.minValue,
         max: item.control.maxValue,
@@ -539,13 +563,24 @@ class _BlePageState extends State<BlePage> {
       
       if (paramName.isEmpty) return;
 
-      // 1. Find Command ID from Category + Parameter Name
-      final cmdDef = protocolService.findCommand(item.category, paramName);
+      // 1. Find Command Definition
+      CommandDefinition? cmdDef;
+      
+      if (item.command.isNotEmpty) {
+        cmdDef = protocolService.getCommandByName(item.category, item.command);
+      }
+      
+      // Fallback search by parameter name (less precise)
+      cmdDef ??= protocolService.findCommand(item.category, paramName);
       
       if (cmdDef == null) {
-        debugPrint('Error: Could not find command for category ${item.category} and param $paramName');
+        debugPrint('Error: Could not find command for category ${item.category} and param $paramName (Cmd: ${item.command})');
         return;
       }
+
+      // Update Local State in ViewModel immediately for visual feedback
+      final stateKey = "${item.command}_$paramName";
+      viewModel.updateControlValue(stateKey, value);
       
       // 2. Build parameter map & Resolve Value
       dynamic finalValue = value;
