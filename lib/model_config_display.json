@@ -98,17 +98,6 @@
 				}
 			  },
 			  
-			  "ECHO DELAY": {
-				  "category": "MIC",
-				  "command": "mic_effects_volume",
-				  "index": "mic_echo_delay_gain",
-				  "control": {
-					  "typeDisplay": "vertical slider",
-					  "minValue": "0",
-					  "maxValue": "100"
-				}
-			  },
-			  
 			  "FC": {
 				  "category": "MIC",
 				  "command": "mic_echo",
@@ -142,17 +131,6 @@
 				}
 			  },
 			  
-			  "Reserved": {
-				  "category": "MIC",
-				  "command": "mic_echo",
-				  "index": "reserved",
-				  "control": {
-					  "typeDisplay": "vertical slider",
-					  "minValue": "0",
-					  "maxValue": "100"
-				}
-			  },
-			  
 			  "Max Delay": {
 				  "category": "MIC",
 				  "command": "mic_echo",
@@ -169,10 +147,9 @@
 				  "command": "mic_echo",
 				  "index": "high_quality_enable",
 				  "control": {
-					  "typeDisplay": "vertical slider",
-					  "minValue": "0",
-					  "maxValue": "100"
-				}
+					  "typeDisplay": "swicht button",
+					  "valueType": "uint16"
+					}
 			  },
 			  
 			  "Dry": {

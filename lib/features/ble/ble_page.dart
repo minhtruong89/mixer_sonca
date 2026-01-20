@@ -54,10 +54,6 @@ class _BlePageState extends State<BlePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Main Content Layer
-          // Main Content removed
-          // Main Content Layer
-          // Main Content removed
           Container(color: Colors.black),
 
           // Main Content Layers
