@@ -277,42 +277,13 @@ class BleViewModel extends ChangeNotifier {
       await _setupProtocolListener();
 
       // Test send and receive BLE
-      //await sendDataToBLE([0x02, 0x80, 0x01, 0x00, 0xF4]); // Example test data
-      //await receiveDataFromBLE();
+      /*await sendDataToBLE([0x02, 0x80, 0x01, 0x00, 0xF4]);
+      await receiveDataFromBLE();
 
-      // ========== APPROACH 1: Using ProtocolHelper (RECOMMENDED - Most Readable) ==========
-      // This is the easiest and most readable way!
       final helper = getIt<ProtocolHelper>();
       final command1 = helper.setAppMode(AppModeValue.lineIn);
-      await sendProtocolCommand(command1);
+      await sendProtocolCommand(command1);*/
 
-      /* ========== APPROACH 2: Using DynamicCommandBuilder with Constants ==========
-      // More flexible but requires knowing command IDs
-      final builder = getIt<DynamicCommandBuilder>();
-      final command2 = builder.buildCommand(
-        categoryName: 'SYSTEM',
-        cmdId: SystemCmd.appMode,  // Use constant instead of 0x01
-        operation: CommandOperation.set,
-        parameters: {
-          'app_mode': AppModeValue.lineIn.value, // Use enum instead of 2
-        },
-      );
-      await _sendProtocolCommand(command2);
-      */
-
-      /* ========== APPROACH 3: Fully Dynamic (Most Flexible) ==========
-      // Use this when you need maximum flexibility
-      final builder = getIt<DynamicCommandBuilder>();
-      final command3 = builder.buildCommand(
-        categoryName: 'SYSTEM',
-        cmdId: 0x01,
-        operation: CommandOperation.set,
-        parameters: {
-          'app_mode': 2, // Line In - value read from JSON
-        },
-      );
-      await _sendProtocolCommand(command3);
-      */
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");

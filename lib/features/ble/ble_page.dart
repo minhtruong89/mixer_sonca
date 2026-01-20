@@ -412,7 +412,7 @@ class _BlePageState extends State<BlePage> {
          }
       }
       
-      debugPrint('UI Change: ${item.label} -> $finalValue (Cmd: ${item.category}.${item.paramName})');
+      debugPrint('\nUI Change: ${item.label} -> $finalValue (Cmd: ${item.category}.${item.paramName})');
 
       if (viewModel.selectedDevice == null) {
         ScaffoldMessenger.of(context).showSnackBar(
