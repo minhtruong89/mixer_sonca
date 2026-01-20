@@ -20,6 +20,7 @@ class BlePage extends StatefulWidget {
 
 class _BlePageState extends State<BlePage> {
   bool _isDropdownOpen = false;
+  String? _currentOverlayArea;
 
   @override
   void initState() {
@@ -318,7 +319,9 @@ class _BlePageState extends State<BlePage> {
             ),
           ),
 
-
+          // Overlay Layer
+          if (_currentOverlayArea != null)
+            _buildOverlayArea(context, viewModel),
         ],
       ),
       // Disable default FAB
@@ -338,7 +341,21 @@ class _BlePageState extends State<BlePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start, // Label "Ngõ vào" on left
           children: [
-            Text(item.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            GestureDetector(
+              onTap: item.event?.click != null 
+                ? () => setState(() => _currentOverlayArea = item.event!.click)
+                : null,
+              child: Text(
+                item.label, 
+                style: TextStyle(
+                  color: Colors.white, 
+                  fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
+                  decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 16
+                )
+              ),
+            ),
             const SizedBox(height: 4),
             // Align options to the right
             Align(
@@ -391,7 +408,20 @@ class _BlePageState extends State<BlePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(item.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            GestureDetector(
+              onTap: item.event?.click != null 
+                ? () => setState(() => _currentOverlayArea = item.event!.click)
+                : null,
+              child: Text(
+                item.label, 
+                style: TextStyle(
+                  color: Colors.white, 
+                  fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
+                  decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
+                  fontWeight: FontWeight.bold
+                )
+              ),
+            ),
             Switch(
               value: false, // TODO: Bind to actual state
               activeColor: Colors.white,
@@ -410,20 +440,29 @@ class _BlePageState extends State<BlePage> {
     // 3. Vertical Slider (Mixer Style)
     else if (item.control.isVerticalSlider) {
       // For mixer sliders, we look for _mute and _volume in indexList
+      // If indexList is empty, we fallback to item.paramName (no mute)
       String? muteParam;
       String? volumeParam;
       
-      for (final p in item.indexList) {
-        if (p.endsWith('_mute')) muteParam = p;
-        if (p.endsWith('_volume')) volumeParam = p;
+      if (item.indexList.isNotEmpty) {
+        for (final p in item.indexList) {
+          if (p.endsWith('_mute')) muteParam = p;
+          if (p.endsWith('_volume')) volumeParam = p;
+        }
+      } else {
+        volumeParam = item.paramName;
       }
       
       return MixerSlider(
         label: item.label,
         value: 50, // TODO: Bind to state
         isMuted: false, // TODO: Bind to state
+        showMute: muteParam != null,
         min: item.control.minValue,
         max: item.control.maxValue,
+        onLabelTap: item.event?.click != null 
+          ? () => setState(() => _currentOverlayArea = item.event!.click)
+          : null,
         onChanged: (val) {
           if (volumeParam != null) {
             _handleDynamicControlChange(item, val.toInt(), viewModel, paramOverride: volumeParam);
@@ -442,6 +481,60 @@ class _BlePageState extends State<BlePage> {
       title: Text(item.label, style: const TextStyle(color: Colors.white)),
       subtitle: Text('Unknown type: ${item.control.typeDisplay}', style: const TextStyle(color: Colors.grey)),
     );
+  }
+
+  Widget _buildOverlayArea(BuildContext context, BleViewModel viewModel) {
+      return Container(
+        color: Colors.black.withOpacity(0.95), // Deep dark overlay
+        child: Stack(
+          children: [
+            // Left Content (Same width as Area 1)
+            Positioned(
+              left: 0,
+              top: 10,
+              bottom: 10,
+              right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28) + 5, // Leave right part empty (Area 2 width + margin)
+              child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                  final section = getIt<MixerService>().getItemsForSection(_currentOverlayArea!);
+                  
+                  if (section != null) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: section.items.values.map((item) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: _buildDynamicControl(context, item, viewModel),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    );
+                  }
+                  return const Center(child: Text("Area not found", style: TextStyle(color: Colors.white24)));
+              }),
+            ),
+
+            // Home Icon (Bottom Right)
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: FloatingActionButton(
+                onPressed: () => setState(() => _currentOverlayArea = null),
+                backgroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Colors.white24, width: 1),
+                ),
+                child: const Icon(Icons.home, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
   }
 
   Future<void> _handleDynamicControlChange(DisplayItem item, dynamic value, BleViewModel viewModel, {String? paramOverride}) async {

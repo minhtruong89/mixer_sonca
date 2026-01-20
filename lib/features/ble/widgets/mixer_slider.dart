@@ -4,8 +4,10 @@ class MixerSlider extends StatelessWidget {
   final String label;
   final double value;
   final bool isMuted;
+  final bool showMute;
   final double min;
   final double max;
+  final VoidCallback? onLabelTap;
   final ValueChanged<double> onChanged;
   final ValueChanged<bool> onMuteChanged;
 
@@ -14,8 +16,10 @@ class MixerSlider extends StatelessWidget {
     required this.label,
     required this.value,
     required this.isMuted,
+    this.showMute = true,
     this.min = 0,
     this.max = 100,
+    this.onLabelTap,
     required this.onChanged,
     required this.onMuteChanged,
   });
@@ -32,12 +36,17 @@ class MixerSlider extends StatelessWidget {
       child: Column(
         children: [
           // Label
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+          GestureDetector(
+            onTap: onLabelTap,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontStyle: onLabelTap != null ? FontStyle.italic : FontStyle.normal,
+                decoration: onLabelTap != null ? TextDecoration.underline : TextDecoration.none,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -54,18 +63,20 @@ class MixerSlider extends StatelessWidget {
                   fontSize: 20,
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: Icon(
-                  isMuted ? Icons.volume_off : Icons.volume_up,
-                  color: isMuted ? Colors.redAccent : Colors.white,
-                  size: 24,
+              if (showMute) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    isMuted ? Icons.volume_off : Icons.volume_up,
+                    color: isMuted ? Colors.redAccent : Colors.white,
+                    size: 24,
+                  ),
+                  onPressed: () => onMuteChanged(!isMuted),
                 ),
-                onPressed: () => onMuteChanged(!isMuted),
-              ),
+              ],
             ],
           ),
           

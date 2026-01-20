@@ -62,6 +62,7 @@ class DisplayItem {
   final String? paramName; // "app_mode", "enable" (mapped from JSON's "index")
   final List<String> indexList; // New: for controls with multiple parameters (e.g. mute + volume)
   final DisplayControl control;
+  final DisplayEvent? event;
 
   const DisplayItem({
     required this.label,
@@ -70,6 +71,7 @@ class DisplayItem {
     this.paramName,
     this.indexList = const [],
     required this.control,
+    this.event,
   });
 
   factory DisplayItem.fromJson(String label, Map<String, dynamic> json) {
@@ -88,6 +90,19 @@ class DisplayItem {
       paramName: json['index']?.toString(), 
       indexList: indexList,
       control: DisplayControl.fromJson(json['control'] ?? {}),
+      event: json['event'] != null ? DisplayEvent.fromJson(json['event']) : null,
+    );
+  }
+}
+
+class DisplayEvent {
+  final String? click;
+
+  const DisplayEvent({this.click});
+
+  factory DisplayEvent.fromJson(Map<String, dynamic> json) {
+    return DisplayEvent(
+      click: json['click']?.toString(),
     );
   }
 }

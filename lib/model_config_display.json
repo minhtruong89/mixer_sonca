@@ -2,8 +2,8 @@
   "defaulDisplay": {
     "sections": {
 		
-	  "Area MIC" :{
-		  "desc": "Area for MIC",
+	  "Area MIC MAIN" :{
+		  "desc": "Area for MIC click main screen",
 		  "items": {
 			  "MIC": {
 				  "category": "MIC",
@@ -17,8 +17,189 @@
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
+			  },
+			  
+			  "MIC 1": {
+				  "category": "MIC",
+				  "command": "mic_volume",
+				  "indexList": [
+					  "mic1_mute",
+					  "mic1_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }, 
+			  
+			  "MIC 2": {
+				  "category": "MIC",
+				  "command": "mic_volume",
+				  "indexList": [
+					  "mic2_mute",
+					  "mic2_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "BASS": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_bass_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "MID": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_middle_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "TREBLE": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_treb_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
 			  }
+			  
+			  
 		  }
+	  },
+	  
+	  "Area MIC ECHO" :{
+		  "desc": "Area for ECHO click main screen",
+		  "items": {
+			  "ECHO": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_echo_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "ECHO DELAY": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_echo_delay_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "FC": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "fc",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Attenuation": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "attenuation",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Delay": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "delay",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Reserved": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "reserved",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Max Delay": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "max_delay",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "High Quality Enable": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "high_quality_enable",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Dry": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "dry",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Wet": {
+				  "category": "MIC",
+				  "command": "mic_echo",
+				  "index": "wet",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }
+			  	  
+			  
+		  }
+		  
 	  },
 
 	  "Area 1" :{
@@ -31,6 +212,34 @@
 					  "mic_master_mute",
 					  "mic_master_volume"
 				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				  },
+				  "event": {
+					  "click": "Area MIC MAIN"
+				  }
+			  },
+			  
+			  "ECHO": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_echo_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				  },
+				  "event": {
+					  "click": "Area MIC ECHO"
+				  }
+			  },
+			  
+			  "REVERB": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_reverb_gain",
 				  "control": {
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
