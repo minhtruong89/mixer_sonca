@@ -62,7 +62,7 @@ class _BlePageState extends State<BlePage> {
           // Scrollable Area 2 (moved to background layer, using Column for relative positioning)
           Column(
             children: [
-              SizedBox(height: 80), // Reserve space for Fixed Header
+              SizedBox(height: 40), // Reserve space for Fixed Header
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
@@ -79,7 +79,7 @@ class _BlePageState extends State<BlePage> {
                           offset: const Offset(0, 5),
                         ),
                       ],
-                      border: Border.all(color: Colors.white24, width: 0.5),
+                      border: Border.all(color: Colors.transparent, width: 0.5),
                     ),
                     clipBehavior: Clip.hardEdge,
                     child: SingleChildScrollView(
@@ -117,8 +117,8 @@ class _BlePageState extends State<BlePage> {
 
           // Fixed Header: Bluetooth Button and Dropdown (Top Right) - MOVED TO END FOR Z-INDEX
           Positioned(
-            top: 10,
-            right: 10,
+            top: 7,
+            right: 7,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
@@ -306,7 +306,7 @@ class _BlePageState extends State<BlePage> {
       // We will just use a local state or visual indication for now.
       
       return Padding(
-        padding: const EdgeInsets.only(bottom: 12.0),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start, // Label "Ngõ vào" on left
           children: [
