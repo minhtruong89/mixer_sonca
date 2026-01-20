@@ -36,7 +36,36 @@
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
+			  },
+			  
+			  "MUSIC": {
+				  "category": "MUSIC",
+				  "command": "music_volume",
+				  "indexList": [
+					  "music_out_mute",
+					  "music_out_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "LIVE": {
+				  "category": "RECORD",
+				  "command": "record_volume",
+				  "indexList": [
+					  "record_mute",
+					  "record_out_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
 			  }
+			  
 		  }
 	  }, 
 	  
