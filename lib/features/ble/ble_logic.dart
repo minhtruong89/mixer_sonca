@@ -15,6 +15,7 @@ import 'protocol/protocol_helper.dart';
 import 'protocol/protocol_types.dart';
 import 'protocol/protocol_service.dart';
 import 'protocol/models/protocol_definition.dart';
+import 'package:mixer_sonca/core/services/mixer_service.dart';
 
 // --- Model ---
 class BleDevice extends Equatable {
@@ -571,29 +572,54 @@ class BleViewModel extends ChangeNotifier {
   Future<void> fetchInitialStates() async {
     if (_selectedDevice == null) return;
 
-    debugPrint('Protocol: Fetching initial states...');
+    debugPrint('Protocol: Fetching initial states for Area 1 and Area 2...');
     final builder = getIt<DynamicCommandBuilder>();
+    final mixerService = getIt<MixerService>();
+    final protocolService = getIt<ProtocolService>();
 
-    // List of controls to fetch (Category, CmdId, ParamName)
-    final toFetch = [
-      {'cat': 'MIC', 'id': 0x08, 'param': 'enable'},
-      {'cat': 'MUSIC', 'id': 0x04, 'param': 'enable'},
-      {'cat': 'MUSIC', 'id': 0x05, 'param': 'enable'}
-    ];
-
-    for (final item in toFetch) {
-      try {
-        final command = builder.buildCommand(
-          categoryName: item['cat'] as String,
-          cmdId: item['id'] as int,
-          operation: CommandOperation.get,
-          parameters: {item['param'] as String: 0},
-        );
-        await sendProtocolCommand(command);
-        // Small delay between commands to avoid overwhelming the device
-        await Future.delayed(const Duration(milliseconds: 100));
-      } catch (e) {
-        debugPrint('Protocol: Error fetching state for ${item['param']}: $e');
+    // Areas to sync
+    final areas = ['Area 1', 'Area 2'];
+    
+    for (final areaName in areas) {
+      final section = mixerService.getItemsForSection(areaName);
+      if (section == null) continue;
+      
+      for (final item in section.items.values) {
+         // 1. Get parameters to fetch
+         final paramsToFetch = <String>[];
+         if (item.indexList != null && item.indexList!.isNotEmpty) {
+           paramsToFetch.addAll(item.indexList!);
+         } else if (item.paramName != null && item.paramName!.isNotEmpty) {
+           paramsToFetch.add(item.paramName!);
+         }
+         
+         if (paramsToFetch.isEmpty) continue;
+         
+         // 2. Fetch each parameter
+         for (final paramName in paramsToFetch) {
+            // Find command definition to get the correct ID
+            CommandDefinition? cmdDef;
+            if (item.command.isNotEmpty) {
+              cmdDef = protocolService.getCommandByName(item.category, item.command);
+            }
+            cmdDef ??= protocolService.findCommand(item.category, paramName);
+                
+            if (cmdDef == null) continue;
+            
+            try {
+              final command = builder.buildCommand(
+                categoryName: item.category,
+                cmdId: cmdDef.id,
+                operation: CommandOperation.get,
+                parameters: {paramName: 0},
+              );
+              await sendProtocolCommand(command);
+              // Small delay between commands to avoid overwhelming the device
+              await Future.delayed(const Duration(milliseconds: 50));
+            } catch (e) {
+              debugPrint('Protocol: Error fetching state for ${item.label}.$paramName: $e');
+            }
+         }
       }
     }
   }
