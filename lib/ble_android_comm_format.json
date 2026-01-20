@@ -72,7 +72,8 @@
             "2": { "name": "mic1_mute", "type": "uint16_le" },
             "3": { "name": "mic2_volume", "type": "q8_8_le" },
             "4": { "name": "mic2_mute", "type": "uint16_le" },
-            "5": { "name": "mic_master_volume", "type": "q8_8_le" }
+            "5": { "name": "mic_master_volume", "type": "q8_8_le" },
+			"6": { "name": "mic_master_mute", "type": "uint16_le" }
           }
         },
         "0x02": {

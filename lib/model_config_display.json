@@ -1,0 +1,99 @@
+﻿{
+  "defaulDisplay": {
+    "sections": {
+		
+	  "Area MIC" :{
+		  "desc": "Area for MIC",
+		  "items": {
+			  "MIC": {
+				  "category": "MIC",
+				  "command": "mic_volume",
+				  "indexList": [
+					  "mic_master_mute",
+					  "mic_master_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }
+		  }
+	  },
+
+	  "Area 1" :{
+		  "desc": "Area left side",
+		  "items": {
+			  "MIC": {
+				  "category": "MIC",
+				  "command": "mic_volume",
+				  "indexList": [
+					  "mic_master_mute",
+					  "mic_master_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }
+		  }
+	  }, 
+	  
+      "Area 2" : {
+        "desc": "Area right side below bluetooth scan button",
+        "items": {
+          "Ngõ vào": {
+            "category": "SYSTEM",
+            "command": "system_app_mode",
+            "index": "app_mode",
+            "control": {
+              "typeDisplay": "group radio button",
+              "valueType": "uint16",
+              "options": [
+                { "label": "Bluetooth", "value": "Bluetooth" },
+                { "label": "Line In", "value": "LineIn" },
+                { "label": "Optical", "value": "Optical" },
+                { "label": "Sound Card", "value": "SoundCard" },
+                { "label": "HDMI", "value": "HDMI" },
+                { "label": "USB", "value": "USB" }
+              ]
+            }			
+          }, 
+		  
+		  "MIC FBX": {
+            "category": "MIC",
+            "command": "mic_feedback_cancel",
+            "index": "enable",
+            "control": {
+              "typeDisplay": "swicht button",
+              "valueType": "uint16"
+            }			
+          },
+		  
+		  "BASS BOOT": {
+            "category": "MUSIC",
+            "command": "music_boost_bass",
+            "index": "enable",
+            "control": {
+              "typeDisplay": "swicht button",
+              "valueType": "uint16"
+            }			
+          },
+		  
+		  "ENHANCER": {
+            "category": "MUSIC",
+            "command": "music_exciter",
+            "index": "enable",
+            "control": {
+              "typeDisplay": "swicht button",
+              "valueType": "uint16"
+            }			
+          }
+		  
+        }
+      }
+	  
+    }
+  }
+}

@@ -9,8 +9,8 @@ import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_constants.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
+import 'package:mixer_sonca/features/ble/widgets/mixer_slider.dart';
 import 'package:mixer_sonca/injection.dart';
-
 class BlePage extends StatefulWidget {
   const BlePage({super.key});
 
@@ -59,57 +59,85 @@ class _BlePageState extends State<BlePage> {
           // Main Content removed
           Container(color: Colors.black),
 
-          // Scrollable Area 2 (moved to background layer, using Column for relative positioning)
+          // Main Content Layers
           Column(
             children: [
-              SizedBox(height: 40), // Reserve space for Fixed Header
+              const SizedBox(height: 10),
               Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
-                    margin: const EdgeInsets.only(right: 5, bottom: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.black87,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                      border: Border.all(color: Colors.transparent, width: 0.5),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                           // Dynamic Content from JSON
-                           Consumer<BleViewModel>(builder: (context, viewModel, child) {
-                                final section = getIt<MixerService>().getItemsForSection("Area 2");
-                                
-                                if (section != null) {
-                                   return Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     mainAxisSize: MainAxisSize.min,
-                                     children: [
-                                        ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
-                                     ],
-                                   );
-                                } else {
-                                   return const Padding(
-                                     padding: EdgeInsets.all(8.0),
-                                     child: Text("Loading controls...", style: TextStyle(color: Colors.white54)),
-                                   );
-                                }
-                           }),
-                        ],
+                child: Row(
+                  children: [
+                    // Area 1 (Mixed Sliders) - Left Side
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 10, right: 5, bottom: 5),
+                        child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                          final section = getIt<MixerService>().getItemsForSection("Area 1");
+                          
+                          if (section != null) {
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: section.items.values.map((item) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: _buildDynamicControl(context, item, viewModel),
+                                  );
+                                }).toList(),
+                              ),
+                            );
+                          }
+                          return const Center(child: Text("Area 1 empty", style: TextStyle(color: Colors.white24)));
+                        }),
                       ),
                     ),
-                  ),
+
+                    // Area 2 (Selection Area) - Right Side
+                    Container(
+                      width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
+                      margin: const EdgeInsets.only(right: 5, bottom: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                        border: Border.all(color: Colors.transparent, width: 0.5),
+                      ),
+                      clipBehavior: Clip.hardEdge,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                             // Dynamic Content from JSON
+                             Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                                  final section = getIt<MixerService>().getItemsForSection("Area 2");
+                                  
+                                  if (section != null) {
+                                     return Column(
+                                       crossAxisAlignment: CrossAxisAlignment.start,
+                                       mainAxisSize: MainAxisSize.min,
+                                       children: [
+                                          ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
+                                       ],
+                                     );
+                                  } else {
+                                     return const Padding(
+                                       padding: EdgeInsets.all(8.0),
+                                       child: Text("Loading Area 2...", style: TextStyle(color: Colors.white54)),
+                                     );
+                                  }
+                             }),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -379,6 +407,35 @@ class _BlePageState extends State<BlePage> {
         ),
       );
     }
+    // 3. Vertical Slider (Mixer Style)
+    else if (item.control.isVerticalSlider) {
+      // For mixer sliders, we look for _mute and _volume in indexList
+      String? muteParam;
+      String? volumeParam;
+      
+      for (final p in item.indexList) {
+        if (p.endsWith('_mute')) muteParam = p;
+        if (p.endsWith('_volume')) volumeParam = p;
+      }
+      
+      return MixerSlider(
+        label: item.label,
+        value: 50, // TODO: Bind to state
+        isMuted: false, // TODO: Bind to state
+        min: item.control.minValue,
+        max: item.control.maxValue,
+        onChanged: (val) {
+          if (volumeParam != null) {
+            _handleDynamicControlChange(item, val.toInt(), viewModel, paramOverride: volumeParam);
+          }
+        },
+        onMuteChanged: (muted) {
+          if (muteParam != null) {
+            _handleDynamicControlChange(item, muted ? 1 : 0, viewModel, paramOverride: muteParam);
+          }
+        },
+      );
+    }
     
     // Default fallback
     return ListTile(
@@ -387,14 +444,17 @@ class _BlePageState extends State<BlePage> {
     );
   }
 
-  Future<void> _handleDynamicControlChange(DisplayItem item, dynamic value, BleViewModel viewModel) async {
+  Future<void> _handleDynamicControlChange(DisplayItem item, dynamic value, BleViewModel viewModel, {String? paramOverride}) async {
       final protocolService = getIt<ProtocolService>();
+      final paramName = paramOverride ?? item.paramName ?? '';
       
+      if (paramName.isEmpty) return;
+
       // 1. Find Command ID from Category + Parameter Name
-      final cmdDef = protocolService.findCommand(item.category, item.paramName);
+      final cmdDef = protocolService.findCommand(item.category, paramName);
       
       if (cmdDef == null) {
-        debugPrint('Error: Could not find command for category ${item.category} and param ${item.paramName}');
+        debugPrint('Error: Could not find command for category ${item.category} and param $paramName');
         return;
       }
       
@@ -412,9 +472,10 @@ class _BlePageState extends State<BlePage> {
          }
       }
       
-      debugPrint('\nUI Change: ${item.label} -> $finalValue (Cmd: ${item.category}.${item.paramName})');
+      debugPrint('\nUI Change: ${item.label} ($paramName) -> $finalValue (Cmd: ${item.category}.${cmdDef.name})');
 
       if (viewModel.selectedDevice == null) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.transparent,
@@ -454,7 +515,7 @@ class _BlePageState extends State<BlePage> {
           cmdId: cmdDef.id,
           operation: CommandOperation.set,
           parameters: {
-             item.paramName: finalValue
+            paramName: finalValue
           },
         );
         

@@ -59,24 +59,34 @@ class DisplayItem {
   final String label; // The key in "items" map (e.g., "Ngõ vào")
   final String category; // "SYSTEM", "MIC", etc.
   final String command; // "system_app_mode", "mic_feedback_cancel"
-  final String paramName; // "app_mode", "enable" (mapped from JSON's "index")
+  final String? paramName; // "app_mode", "enable" (mapped from JSON's "index")
+  final List<String> indexList; // New: for controls with multiple parameters (e.g. mute + volume)
   final DisplayControl control;
 
   const DisplayItem({
     required this.label,
     required this.category,
     required this.command,
-    required this.paramName,
+    this.paramName,
+    this.indexList = const [],
     required this.control,
   });
 
   factory DisplayItem.fromJson(String label, Map<String, dynamic> json) {
+    final indexList = <String>[];
+    if (json['indexList'] != null) {
+      for (var idx in json['indexList']) {
+        indexList.add(idx.toString());
+      }
+    }
+
     return DisplayItem(
       label: label,
       category: json['category'] ?? '',
       command: json['command'] ?? '',
       // Note: JSON uses "index" key for parameter name
-      paramName: json['index']?.toString() ?? '', 
+      paramName: json['index']?.toString(), 
+      indexList: indexList,
       control: DisplayControl.fromJson(json['control'] ?? {}),
     );
   }
@@ -84,14 +94,18 @@ class DisplayItem {
 
 /// Represents the UI control details
 class DisplayControl {
-  final String typeDisplay; // "group radio button", "swicht button"
+  final String typeDisplay; // "group radio button", "swicht button", "vertical slider"
   final String valueType; // "uint16"
   final List<DisplayOption> options;
+  final double minValue;
+  final double maxValue;
 
   const DisplayControl({
     required this.typeDisplay,
     required this.valueType,
     this.options = const [],
+    this.minValue = 0,
+    this.maxValue = 100,
   });
 
   factory DisplayControl.fromJson(Map<String, dynamic> json) {
@@ -105,11 +119,14 @@ class DisplayControl {
       typeDisplay: json['typeDisplay'] ?? '',
       valueType: json['valueType'] ?? '',
       options: optionsList,
+      minValue: double.tryParse(json['minValue']?.toString() ?? '0') ?? 0,
+      maxValue: double.tryParse(json['maxValue']?.toString() ?? '100') ?? 100,
     );
   }
   
   bool get isSwitch => typeDisplay.contains('swic') || typeDisplay.contains('switch'); // Handle typo in JSON "swicht"
   bool get isRadio => typeDisplay.contains('radio');
+  bool get isVerticalSlider => typeDisplay.contains('slider');
 }
 
 /// Represents an option in a radio group
