@@ -8,10 +8,7 @@ import 'protocol/protocol_handler.dart';
 import 'protocol/protocol_constants.dart';
 import 'protocol/protocol_frame.dart';
 import 'protocol/command_payload.dart';
-import 'protocol/commands/system_commands.dart';
-import 'protocol/commands/mic_commands.dart';
 import 'protocol/dynamic_command_builder.dart';
-import 'protocol/protocol_helper.dart';
 import 'protocol/protocol_types.dart';
 import 'protocol/protocol_service.dart';
 import 'protocol/models/protocol_definition.dart';
@@ -45,7 +42,6 @@ class BleDevice extends Equatable {
 
 
 const String SONCA_SERVICE = "5343";
-const String READ_WRITE_SERVICE = "5343";
 
 // --- Repository ---
 abstract class BleRepository {
@@ -302,7 +298,7 @@ class BleViewModel extends ChangeNotifier {
       final command1 = helper.setAppMode(AppModeValue.lineIn);
       await sendProtocolCommand(command1);*/
 
-      // Test get data and save value into display item
+      // TODO Test get data and save value into display item
       await fetchInitialStates();
       
     } catch (e) {
@@ -357,7 +353,7 @@ class BleViewModel extends ChangeNotifier {
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
-        (s) => s.uuid.toString().toLowerCase().contains(READ_WRITE_SERVICE.toLowerCase()),
+        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
         orElse: () => throw Exception('Sonca service not found'),
       );
       
@@ -395,7 +391,7 @@ class BleViewModel extends ChangeNotifier {
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
-        (s) => s.uuid.toString().toLowerCase().contains(READ_WRITE_SERVICE.toLowerCase()),
+        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
         orElse: () => throw Exception('Sonca service not found'),
       );
       
@@ -587,8 +583,8 @@ class BleViewModel extends ChangeNotifier {
       for (final item in section.items.values) {
          // 1. Get parameters to fetch
          final paramsToFetch = <String>[];
-         if (item.indexList != null && item.indexList!.isNotEmpty) {
-           paramsToFetch.addAll(item.indexList!);
+         if (item.indexList.isNotEmpty) {
+           paramsToFetch.addAll(item.indexList);
          } else if (item.paramName != null && item.paramName!.isNotEmpty) {
            paramsToFetch.add(item.paramName!);
          }
@@ -615,7 +611,7 @@ class BleViewModel extends ChangeNotifier {
               );
               await sendProtocolCommand(command);
               // Small delay between commands to avoid overwhelming the device
-              await Future.delayed(const Duration(milliseconds: 50));
+              await Future.delayed(const Duration(milliseconds: 100));
             } catch (e) {
               debugPrint('Protocol: Error fetching state for ${item.label}.$paramName: $e');
             }
@@ -640,7 +636,7 @@ class BleViewModel extends ChangeNotifier {
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
-        (s) => s.uuid.toString().toLowerCase().contains(READ_WRITE_SERVICE.toLowerCase()),
+        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
         orElse: () => throw Exception('Sonca service not found'),
       );
       
@@ -650,7 +646,7 @@ class BleViewModel extends ChangeNotifier {
         orElse: () => throw Exception('No notifiable characteristic found'),
       );
       
-      debugPrint('Protocol: Using characteristic UUID: 0x${notifiableChar.uuid.str.toUpperCase()}');
+      //debugPrint('Protocol: Using characteristic UUID: 0x${notifiableChar.uuid.str.toUpperCase()}');
       
       // Enable notifications
       await notifiableChar.setNotifyValue(true);

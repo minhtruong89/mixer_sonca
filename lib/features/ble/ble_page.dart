@@ -338,7 +338,8 @@ class _BlePageState extends State<BlePage> {
 
     // 1. Radio Group
     if (item.control.isRadio) {
-      final currentValue = viewModel.getControlValue(stateKey, defaultValue: item.control.options.firstOrNull?.value ?? '');
+      final rawValue = viewModel.getControlValue(stateKey, defaultValue: null);
+      final currentValue = _getMappedDisplayValue(item, rawValue);
 
       return Padding(
         padding: EdgeInsets.zero,
@@ -649,6 +650,45 @@ class _BlePageState extends State<BlePage> {
         debugPrint('Error sending dynamic command: $e');
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
+  }
+
+  /// Helper to map raw protocol values (integers) to UI display strings.
+  /// Also handles default values (e.g., Bluetooth if 0).
+  String? _getMappedDisplayValue(DisplayItem item, dynamic rawValue) {
+    if (item.control.isRadio) {
+      final protocolService = getIt<ProtocolService>();
+      final paramName = item.paramName ?? '';
+      
+      // 1. Find Command Definition to get the valueMap
+      CommandDefinition? cmdDef;
+      if (item.command.isNotEmpty) {
+        cmdDef = protocolService.getCommandByName(item.category, item.command);
+      }
+      cmdDef ??= protocolService.findCommand(item.category, paramName);
+
+      if (cmdDef != null && cmdDef.valueMap != null) {
+        // Find string value in map: { "1": "Bluetooth", "2": "LineIn" ... }
+        final mappedValue = cmdDef.valueMap![rawValue?.toString()];
+        if (mappedValue != null) return mappedValue;
+      }
+
+      // 2. Defaulting Logic
+      // If rawValue is 0, null, or not in map, try to default to 'Bluetooth' 
+      // if it exists in the radio options for this item.
+      if (rawValue == 0 || rawValue == null || (rawValue is String && rawValue.isEmpty)) {
+         for (var option in item.control.options) {
+            if (option.value.toLowerCase() == 'bluetooth') {
+               return option.value;
+            }
+         }
+      }
+
+      // 3. Fallback to first option if still not determined
+      return item.control.options.firstOrNull?.value;
+    }
+    
+    // For other controls, return as is (stringified)
+    return rawValue?.toString();
   }
 
 }
