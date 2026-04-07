@@ -35,6 +35,7 @@ class DisplaySection {
   final String description;
   final String? areaType;
   final String? areaFormat;
+  final String? backArea;
   final String? command;
   final int? totalEQBand;
   final DisplayControl? control;
@@ -45,6 +46,7 @@ class DisplaySection {
     required this.description,
     this.areaType,
     this.areaFormat,
+    this.backArea,
     this.command,
     this.totalEQBand,
     this.control,
@@ -71,6 +73,7 @@ class DisplaySection {
       description: json['desc'] ?? '',
       areaType: json['areaType']?.toString(),
       areaFormat: json['areaFormat']?.toString(),
+      backArea: json['backArea']?.toString(),
       command: json['command']?.toString(),
       totalEQBand: int.tryParse(json['totalEQBand']?.toString() ?? ''),
       control: json['control'] != null ? DisplayControl.fromJson(json['control']) : null,

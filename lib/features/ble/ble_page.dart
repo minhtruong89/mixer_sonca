@@ -506,6 +506,50 @@ class _BlePageState extends State<BlePage> {
   }
 
   Widget _buildOverlayArea(BuildContext context, BleViewModel viewModel) {
+      final section = getIt<MixerService>().getItemsForSection(_currentOverlayArea!);
+      
+      if (section == null) {
+          return const SizedBox.shrink();
+      }
+
+      if (section.areaFormat == "EQ Area") {
+          return Container(
+               color: Colors.black.withOpacity(0.95),
+               child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                   children: [
+                       // Top bar with Back Button and Name
+                       Padding(
+                           padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
+                           child: Row(
+                               children: [
+                                   IconButton(
+                                       icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                                       onPressed: () {
+                                           if (section.backArea != null) {
+                                               setState(() => _currentOverlayArea = section.backArea);
+                                           } else {
+                                               setState(() => _currentOverlayArea = null);
+                                           }
+                                       }
+                                   ),
+                                   const SizedBox(width: 8),
+                                   Text(
+                                       section.description, 
+                                       style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
+                                   ),
+                               ]
+                           )
+                       ),
+                       // Full width sliders
+                       Expanded(
+                           child: _buildEqSliders(context, section, viewModel),
+                       )
+                   ]
+               )
+           );
+      }
+
       return Container(
         color: Colors.black.withOpacity(0.95), // Deep dark overlay
         child: Stack(
@@ -516,32 +560,21 @@ class _BlePageState extends State<BlePage> {
               top: 10,
               bottom: 10,
               right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28) + 5, // Leave right part empty (Area 2 width + margin)
-              child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
-                  final section = getIt<MixerService>().getItemsForSection(_currentOverlayArea!);
-                  
-                  if (section != null) {
-                    if (section.areaFormat == "EQ Area") {
-                       return _buildEqSliders(context, section, viewModel);
-                    } else {
-                       return Container(
-                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                         child: SingleChildScrollView(
-                           scrollDirection: Axis.horizontal,
-                           child: Row(
-                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                             children: section.items.values.map((item) {
-                               return Padding(
-                                 padding: const EdgeInsets.only(right: 12),
-                                 child: _buildDynamicControl(context, item, viewModel),
-                               );
-                             }).toList(),
-                           ),
-                         ),
+              child: Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 10),
+                 child: SingleChildScrollView(
+                   scrollDirection: Axis.horizontal,
+                   child: Row(
+                     crossAxisAlignment: CrossAxisAlignment.stretch,
+                     children: section.items.values.map((item) {
+                       return Padding(
+                         padding: const EdgeInsets.only(right: 12),
+                         child: _buildDynamicControl(context, item, viewModel),
                        );
-                    }
-                  }
-                  return const Center(child: Text("Area not found", style: TextStyle(color: Colors.white24)));
-              }),
+                     }).toList(),
+                   ),
+                 ),
+               ),
             ),
 
             // Right Side Content (Buttons)
@@ -549,9 +582,8 @@ class _BlePageState extends State<BlePage> {
               top: 10,
               right: 10,
               width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28) - 10,
-              child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
-                 final section = getIt<MixerService>().getItemsForSection(_currentOverlayArea!);
-                 if (section != null && section.buttons.isNotEmpty) {
+              child: Builder(builder: (context) {
+                 if (section.buttons.isNotEmpty) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,

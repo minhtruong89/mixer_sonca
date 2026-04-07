@@ -3,9 +3,10 @@
     "sections": {
 				
       "Area MIC EQ" :{
-		  "desc": "Area for MIC EQ from MIC screen",
+		  "desc": "MIC Equalizer",
 		  "areaType": "Overlay Area",
 		  "areaFormat": "EQ Area",
+		  "backArea": "Area MIC MAIN",
 		  "command": "mic_eq_in",
 		  "totalEQBand": 10,
 		  "control": {
