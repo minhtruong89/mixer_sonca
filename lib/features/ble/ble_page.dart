@@ -11,6 +11,7 @@ import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/protocol_definition.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
 import 'package:mixer_sonca/features/ble/widgets/mixer_slider.dart';
+import 'package:mixer_sonca/features/ble/widgets/eq_band_slider.dart';
 import 'package:mixer_sonca/injection.dart';
 class BlePage extends StatefulWidget {
   const BlePage({super.key});
@@ -519,21 +520,25 @@ class _BlePageState extends State<BlePage> {
                   final section = getIt<MixerService>().getItemsForSection(_currentOverlayArea!);
                   
                   if (section != null) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: section.items.values.map((item) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: _buildDynamicControl(context, item, viewModel),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    );
+                    if (section.areaFormat == "EQ Area") {
+                       return _buildEqSliders(context, section, viewModel);
+                    } else {
+                       return Container(
+                         padding: const EdgeInsets.symmetric(horizontal: 10),
+                         child: SingleChildScrollView(
+                           scrollDirection: Axis.horizontal,
+                           child: Row(
+                             crossAxisAlignment: CrossAxisAlignment.stretch,
+                             children: section.items.values.map((item) {
+                               return Padding(
+                                 padding: const EdgeInsets.only(right: 12),
+                                 child: _buildDynamicControl(context, item, viewModel),
+                               );
+                             }).toList(),
+                           ),
+                         ),
+                       );
+                    }
                   }
                   return const Center(child: Text("Area not found", style: TextStyle(color: Colors.white24)));
               }),
@@ -755,6 +760,109 @@ class _BlePageState extends State<BlePage> {
     
     // For other controls, return as is (stringified)
     return rawValue?.toString();
+  }
+
+  Widget _buildEqSliders(BuildContext context, DisplaySection section, BleViewModel viewModel) {
+     final totalBands = section.totalEQBand ?? 10;
+     final commandName = section.command ?? '';
+     
+     // default parsing from control
+     final defaultTypeEnum = int.tryParse(section.control?.rawConfig['type']?.toString() ?? '0') ?? 0;
+     final defaultF0 = section.control?.rawConfig['f0']?.toString() ?? '0';
+     final defaultQ = int.tryParse(section.control?.rawConfig['Q']?.toString() ?? '0') ?? 0;
+     final minGain = double.tryParse(section.control?.rawConfig['minGain']?.toString() ?? '-6.0') ?? -6.0;
+     final maxGain = double.tryParse(section.control?.rawConfig['maxGain']?.toString() ?? '6.0') ?? 6.0;
+
+     // Calculate Q in double from Q6.10
+     final double qValue = defaultQ / 1024.0;
+     
+     final protocolService = getIt<ProtocolService>();
+     String categoryName = '';
+     for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+       if (cat.getCommandByName(commandName) != null) {
+          categoryName = cat.name;
+          break;
+       }
+     }
+     
+     return Container(
+       padding: const EdgeInsets.symmetric(horizontal: 10),
+       child: SingleChildScrollView(
+         scrollDirection: Axis.horizontal,
+         child: Row(
+           crossAxisAlignment: CrossAxisAlignment.stretch,
+           children: List.generate(totalBands, (index) {
+              
+              final stateKey = "${commandName}_band${index}_gain";
+              
+              // Raw gain from BLE is int16 (Q8.8). 0 = 0.0, 256 = 1.0, -256 = -1.0
+              final rawGain = viewModel.getControlValue(stateKey, defaultValue: 0);
+              double currentGain;
+              if (rawGain is int) {
+                 currentGain = rawGain / 256.0;
+              } else if (rawGain is double) {
+                 currentGain = rawGain;
+              } else {
+                 currentGain = 0.0;
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: EqBandSlider(
+                  bandIndex: index,
+                  f0Text: "${defaultF0}Hz",
+                  qText: qValue.toStringAsFixed(1),
+                  gainText: "${currentGain > 0 ? '+' : ''}${currentGain.toStringAsFixed(1)}dB",
+                  gain: currentGain,
+                  minGain: minGain,
+                  maxGain: maxGain,
+                  isPeaking: defaultTypeEnum == 0,
+                  onGainChanged: (val) {
+                     _handleEqBandChange(categoryName, commandName, index, 'gain', val, viewModel);
+                  },
+                ),
+              );
+           }).toList(),
+         ),
+       ),
+     );
+  }
+
+  Future<void> _handleEqBandChange(String categoryName, String commandName, int band, String fieldParam, double value, BleViewModel viewModel) async {
+     if (categoryName.isEmpty || commandName.isEmpty) return;
+     
+     final stateKey = "${commandName}_band${band}_$fieldParam";
+     
+     int rawValue = 0;
+     if (fieldParam == 'gain') {
+        rawValue = (value * 256.0).round();
+     }
+     
+     viewModel.updateControlValue(stateKey, rawValue);
+
+     if (viewModel.selectedDevice == null) {
+       return; 
+     }
+
+     try {
+        final builder = getIt<DynamicCommandBuilder>();
+        final protocolService = getIt<ProtocolService>();
+        final cmdDef = protocolService.getCommandByName(categoryName, commandName);
+        if (cmdDef == null) return;
+
+        final command = builder.buildEqCommand(
+          categoryName: categoryName,
+          cmdId: cmdDef.id,
+          band: band,
+          fields: {
+             fieldParam: rawValue,
+          },
+        );
+
+        await viewModel.sendProtocolCommand(command);
+     } catch (e) {
+        debugPrint('Error sending EQ band command: $e');
+     }
   }
 
 }

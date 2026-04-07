@@ -5,37 +5,17 @@
       "Area MIC EQ" :{
 		  "desc": "Area for MIC EQ from MIC screen",
 		  "areaType": "Overlay Area",
-		  "items": {
-			  "MIC": {
-				  "category": "MIC",
-				  "command": "mic_volume",
-				  "indexList": [
-					  "mic_master_mute",
-					  "mic_master_volume"
-				  ],
-				  "control": {
-					  "typeDisplay": "vertical slider",
-					  "minValue": "0",
-					  "maxValue": "100"
-				}
-			  },
-			  
-			  "MIC 1": {
-				  "category": "MIC",
-				  "command": "mic_volume",
-				  "indexList": [
-					  "mic1_mute",
-					  "mic1_volume"
-				  ],
-				  "control": {
-					  "typeDisplay": "vertical slider",
-					  "minValue": "0",
-					  "maxValue": "100"
-				}
-			  }
-			  
-			  
-		  }
+		  "areaFormat": "EQ Area",
+		  "command": "mic_eq_in",
+		  "totalEQBand": 10,
+		  "control": {
+					  "typeDisplay": "eq slider",
+					  "enable": "1",
+					  "type": "PEAKING",
+					  "f0": "125",
+					  "Q": "717",
+					  "gain": "0"
+		    }
 		  
 	  },		
 

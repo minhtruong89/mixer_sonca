@@ -1,0 +1,47 @@
+"Area MIC EQ" :{
+		  "desc": "Area for MIC EQ from MIC screen",
+		  "areaType": "Overlay Area",
+		  "areaFormat": "EQ Area",
+		  "command": "mic_eq_in",
+		  "totalEQBand": 10,
+		  "control": {
+					  "typeDisplay": "eq slider",
+					  "enable": "1",
+					  "type": "PEAKING",
+					  "f0": "125",
+					  "Q": "717",
+					  "gain": "0",
+					  "minGain": "-6.0",
+					  "maxGain": "6.0",
+		    }
+}
+
+This overlay area has "areaFormat" is "EQ Area". UI of "EQ Area" consist of many bands, the total of band is defined with "totalEQBand".
+Each band has UI like this picture. Default value of each band is defined with "control".
+"f0": "125" means 125Hz in the picture.
+"Q": "717" means 0.7 in the picture with Q (int16, Q6.10)
+"gain": "0" means 0.0dB in the picture with gain (int16, Q8.8)
+"type": "PEAKING" means the icon right of the Q value 0.7 in the picture. "PEAKING" means value 0, this is defined in "eqFilterTypes" in ble_android_comm_format.json file
+
+Value of each band is format with this rule
+MIC EQ IN (CmdId 0x06)
+- Up to 10 bands, each band is a FilterParams entry.
+- Each update targets a flattened index/value pair.
+
+FilterParams field index mapping:
+- 1: enable (uint16)
+- 2: type (int16)
+- 3: f0 (uint16)
+- 4: Q (int16, Q6.10)
+- 5: gain (int16, Q8.8)
+
+MIC EQ IN payload format (command payload):
+| Offset | Size | Field        | Description |
+|-------:|-----:|--------------|-------------|
+| 0      | 1    | Count        | Number of entries |
+| 1      | 3*Count | Entries   | Repeating {Index (1 byte), Value (1 byte LSB, 1 byte MSB)} |
+
+Index mapping rule:
+- 1..50 map to {band, field} with 10 bands and 5 fields per band.
+- band = (Index - 1) / 5, field = (Index - 1) % 5.
+- field order per band: 0=enable, 1=type, 2=f0, 3=Q, 4=gain.

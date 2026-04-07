@@ -33,11 +33,21 @@ class DefaultDisplay {
 /// Represents a section like "Area 2"
 class DisplaySection {
   final String description;
+  final String? areaType;
+  final String? areaFormat;
+  final String? command;
+  final int? totalEQBand;
+  final DisplayControl? control;
   final Map<String, DisplayItem> items;
   final Map<String, DisplayButton> buttons;
 
   const DisplaySection({
     required this.description,
+    this.areaType,
+    this.areaFormat,
+    this.command,
+    this.totalEQBand,
+    this.control,
     required this.items,
     this.buttons = const {},
   });
@@ -59,6 +69,11 @@ class DisplaySection {
 
     return DisplaySection(
       description: json['desc'] ?? '',
+      areaType: json['areaType']?.toString(),
+      areaFormat: json['areaFormat']?.toString(),
+      command: json['command']?.toString(),
+      totalEQBand: int.tryParse(json['totalEQBand']?.toString() ?? ''),
+      control: json['control'] != null ? DisplayControl.fromJson(json['control']) : null,
       items: itemsMap,
       buttons: buttonsMap,
     );
@@ -142,6 +157,7 @@ class DisplayControl {
   final List<DisplayOption> options;
   final double minValue;
   final double maxValue;
+  final Map<String, dynamic> rawConfig; // For storing custom fields like type, f0, Q, enable
 
   const DisplayControl({
     required this.typeDisplay,
@@ -149,6 +165,7 @@ class DisplayControl {
     this.options = const [],
     this.minValue = 0,
     this.maxValue = 100,
+    this.rawConfig = const {},
   });
 
   factory DisplayControl.fromJson(Map<String, dynamic> json) {
@@ -164,6 +181,7 @@ class DisplayControl {
       options: optionsList,
       minValue: double.tryParse(json['minValue']?.toString() ?? '0') ?? 0,
       maxValue: double.tryParse(json['maxValue']?.toString() ?? '100') ?? 100,
+      rawConfig: json, // store the whole object for flexible field access
     );
   }
   
