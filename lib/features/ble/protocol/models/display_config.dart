@@ -34,10 +34,12 @@ class DefaultDisplay {
 class DisplaySection {
   final String description;
   final Map<String, DisplayItem> items;
+  final Map<String, DisplayButton> buttons;
 
   const DisplaySection({
     required this.description,
     required this.items,
+    this.buttons = const {},
   });
 
   factory DisplaySection.fromJson(Map<String, dynamic> json) {
@@ -47,9 +49,18 @@ class DisplaySection {
         itemsMap[key] = DisplayItem.fromJson(key, value);
       });
     }
+
+    final buttonsMap = <String, DisplayButton>{};
+    if (json['buttons'] != null) {
+      (json['buttons'] as Map<String, dynamic>).forEach((key, value) {
+        buttonsMap[key] = DisplayButton.fromJson(key, value);
+      });
+    }
+
     return DisplaySection(
       description: json['desc'] ?? '',
       items: itemsMap,
+      buttons: buttonsMap,
     );
   }
 }
@@ -103,6 +114,23 @@ class DisplayEvent {
   factory DisplayEvent.fromJson(Map<String, dynamic> json) {
     return DisplayEvent(
       click: json['click']?.toString(),
+    );
+  }
+}
+
+class DisplayButton {
+  final String label;
+  final DisplayEvent? event;
+
+  const DisplayButton({
+    required this.label,
+    this.event,
+  });
+
+  factory DisplayButton.fromJson(String label, Map<String, dynamic> json) {
+    return DisplayButton(
+      label: label,
+      event: json['event'] != null ? DisplayEvent.fromJson(json['event']) : null,
     );
   }
 }

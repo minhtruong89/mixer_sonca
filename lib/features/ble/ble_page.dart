@@ -539,7 +539,56 @@ class _BlePageState extends State<BlePage> {
               }),
             ),
 
-            // Home Icon and Device Name (Bottom Right)
+            // Right Side Content (Buttons)
+            Positioned(
+              top: 10,
+              right: 10,
+              width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28) - 10,
+              child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                 final section = getIt<MixerService>().getItemsForSection(_currentOverlayArea!);
+                 if (section != null && section.buttons.isNotEmpty) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: section.buttons.values.map((btn) {
+                         return Padding(
+                           padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
+                           child: InkWell(
+                             onTap: () {
+                                if (btn.event?.click != null) {
+                                   setState(() => _currentOverlayArea = btn.event!.click);
+                                }
+                             },
+                             borderRadius: BorderRadius.circular(8),
+                             child: Container(
+                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                               child: Row(
+                                 mainAxisSize: MainAxisSize.min,
+                                 children: [
+                                   Text(
+                                     btn.label,
+                                     style: const TextStyle(
+                                       color: Colors.white,
+                                       fontSize: 18,
+                                     ),
+                                   ),
+                                   const SizedBox(width: 8),
+                                   const Icon(
+                                     Icons.tune,
+                                     color: Colors.white,
+                                     size: 28,
+                                   ),
+                                 ],
+                               ),
+                             ),
+                           ),
+                         );
+                      }).toList(),
+                    );
+                 }
+                 return const SizedBox.shrink();
+              }),
+            ),
             Positioned(
               bottom: 20,
               right: 20,

@@ -1,9 +1,47 @@
 ﻿{
   "defaulDisplay": {
     "sections": {
-		
+				
+      "Area MIC EQ" :{
+		  "desc": "Area for MIC EQ from MIC screen",
+		  "areaType": "Overlay Area",
+		  "items": {
+			  "MIC": {
+				  "category": "MIC",
+				  "command": "mic_volume",
+				  "indexList": [
+					  "mic_master_mute",
+					  "mic_master_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "MIC 1": {
+				  "category": "MIC",
+				  "command": "mic_volume",
+				  "indexList": [
+					  "mic1_mute",
+					  "mic1_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }
+			  
+			  
+		  }
+		  
+	  },		
+
 	  "Area MIC MAIN" :{
 		  "desc": "Area for MIC click main screen",
+		  "areaType": "Overlay Area",
 		  "items": {
 			  "MIC": {
 				  "category": "MIC",
@@ -81,11 +119,34 @@
 			  }
 			  
 			  
+		  },
+		  "buttons": {
+			  "MIC": {
+				  "event": {
+					  "click": "Area MIC EQ"
+				  }				  
+				},
+			  
+			  "MIC 1": {
+				  "event": {
+					  "click": "Area MIC 1 EQ"
+				  }				  
+				},
+			  
+			  "MIC 2": {
+				  "event": {
+					  "click": "Area MIC 2 EQ"
+				  }				  
+				}
+			  
+			  
 		  }
+		  
 	  },
 	  
 	  "Area MIC ECHO" :{
 		  "desc": "Area for ECHO click main screen",
+		  "areaType": "Overlay Area",
 		  "items": {
 			  "ECHO": {
 				  "category": "MIC",
@@ -181,6 +242,7 @@
 
 	  "Area 1" :{
 		  "desc": "Area left side",
+		  "areaType": "Main Area",
 		  "items": {
 			  "MIC": {
 				  "category": "MIC",
@@ -257,6 +319,7 @@
 	  
       "Area 2" : {
         "desc": "Area right side below bluetooth scan button",
+		"areaType": "Main Area",
         "items": {
           "Ngõ vào": {
             "category": "SYSTEM",
