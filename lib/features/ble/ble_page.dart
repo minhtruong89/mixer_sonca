@@ -539,18 +539,35 @@ class _BlePageState extends State<BlePage> {
               }),
             ),
 
-            // Home Icon (Bottom Right)
+            // Home Icon and Device Name (Bottom Right)
             Positioned(
               bottom: 20,
               right: 20,
-              child: FloatingActionButton(
-                onPressed: () => setState(() => _currentOverlayArea = null),
-                backgroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: Colors.white24, width: 1),
-                ),
-                child: const Icon(Icons.home, color: Colors.white),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  FloatingActionButton(
+                    onPressed: () => setState(() => _currentOverlayArea = null),
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(color: Colors.white24, width: 1),
+                    ),
+                    child: const Icon(Icons.home, color: Colors.white),
+                  ),
+                  if (viewModel.selectedDevice != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      viewModel.selectedDevice!.soncaName,
+                      style: const TextStyle(
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
