@@ -217,29 +217,19 @@ class _VerticalEqSlider extends StatelessWidget {
               Container(
                 width: 6,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              
-              // Active Bar
-              Container(
-                width: 6,
-                height: (value - min) / (max - min) * height,
-                decoration: BoxDecoration(
-                  color: Colors.white54,
+                  color: Colors.white10,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
               
               // Thumb
               Positioned(
-                bottom: (value - min) / (max - min) * height - 12, // 12 is half of thumb height
+                bottom: (value - min) / (max - min) * height - 15, // 15 is half of thumb height
                 child: Container(
-                  width: 32,
-                  height: 24,
+                  width: 30,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0F0F0),
+                    color: const Color(0xFFE0E0E0),
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
@@ -252,9 +242,16 @@ class _VerticalEqSlider extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFFFAFAFA),
-                        Color(0xFFD6D6D6),
+                        Color(0xFFF5F5F5),
+                        Color(0xFFBDBDBD),
                       ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 20,
+                      height: 2,
+                      color: Colors.black26,
                     ),
                   ),
                 ),
