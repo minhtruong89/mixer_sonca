@@ -38,6 +38,7 @@ class DisplaySection {
   final String? backArea;
   final String? command;
   final int? totalEQBand;
+  final List<String>? bandF0;
   final DisplayControl? control;
   final Map<String, DisplayItem> items;
   final Map<String, DisplayButton> buttons;
@@ -49,6 +50,7 @@ class DisplaySection {
     this.backArea,
     this.command,
     this.totalEQBand,
+    this.bandF0,
     this.control,
     required this.items,
     this.buttons = const {},
@@ -76,6 +78,7 @@ class DisplaySection {
       backArea: json['backArea']?.toString(),
       command: json['command']?.toString(),
       totalEQBand: int.tryParse(json['totalEQBand']?.toString() ?? ''),
+      bandF0: json['bandF0'] != null ? List<String>.from(json['bandF0'].map((x) => x.toString())) : null,
       control: json['control'] != null ? DisplayControl.fromJson(json['control']) : null,
       items: itemsMap,
       buttons: buttonsMap,

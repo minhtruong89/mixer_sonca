@@ -840,9 +840,22 @@ class _BlePageState extends State<BlePage> {
 
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: EqBandSlider(
-                  bandIndex: index,
-                  f0Text: "${defaultF0}Hz",
+                child: Builder(
+                  builder: (context) {
+                    String bandF0Value = defaultF0;
+                    if (section.bandF0 != null && index < section.bandF0!.length) {
+                      bandF0Value = section.bandF0![index];
+                    }
+
+                    String displayF0Text = "${bandF0Value}Hz";
+                    final f0Int = int.tryParse(bandF0Value);
+                    if (f0Int != null && f0Int >= 1000 && f0Int % 1000 == 0) {
+                       displayF0Text = "${f0Int ~/ 1000}KHz";
+                    }
+
+                    return EqBandSlider(
+                      bandIndex: index,
+                      f0Text: displayF0Text,
                   qText: qValue.toStringAsFixed(1),
                   gainText: "${currentGain > 0 ? '+' : ''}${currentGain.toStringAsFixed(1)}dB",
                   gain: currentGain,
@@ -851,6 +864,8 @@ class _BlePageState extends State<BlePage> {
                   isPeaking: defaultTypeEnum == 0,
                   onGainChanged: (val) {
                      _handleEqBandChange(categoryName, commandName, index, 'gain', val, viewModel);
+                  },
+                );
                   },
                 ),
               );
