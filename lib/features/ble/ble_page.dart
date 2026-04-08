@@ -351,7 +351,7 @@ class _BlePageState extends State<BlePage> {
           children: [
             GestureDetector(
               onTap: item.event?.click != null 
-                ? () => setState(() => _currentOverlayArea = item.event!.click)
+                ? () => _navigateToArea(item.event!.click)
                 : null,
               child: Text(
                 item.label, 
@@ -424,7 +424,7 @@ class _BlePageState extends State<BlePage> {
           children: [
             GestureDetector(
               onTap: item.event?.click != null 
-                ? () => setState(() => _currentOverlayArea = item.event!.click)
+                ? () => _navigateToArea(item.event!.click)
                 : null,
               child: Text(
                 item.label, 
@@ -485,7 +485,7 @@ class _BlePageState extends State<BlePage> {
         min: item.control.minValue,
         max: item.control.maxValue,
         onLabelTap: item.event?.click != null 
-          ? () => setState(() => _currentOverlayArea = item.event!.click)
+          ? () => _navigateToArea(item.event!.click)
           : null,
         onChanged: (val) {
           if (volumeParam != null) {
@@ -529,9 +529,9 @@ class _BlePageState extends State<BlePage> {
                                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
                                        onPressed: () {
                                            if (section.backArea != null) {
-                                               setState(() => _currentOverlayArea = section.backArea);
+                                               _navigateToArea(section.backArea);
                                            } else {
-                                               setState(() => _currentOverlayArea = null);
+                                               _navigateToArea(null);
                                            }
                                        }
                                    ),
@@ -595,7 +595,7 @@ class _BlePageState extends State<BlePage> {
                            child: InkWell(
                              onTap: () {
                                 if (btn.event?.click != null) {
-                                   setState(() => _currentOverlayArea = btn.event!.click);
+                                   _navigateToArea(btn.event!.click);
                                 }
                              },
                              borderRadius: BorderRadius.circular(8),
@@ -636,7 +636,7 @@ class _BlePageState extends State<BlePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   FloatingActionButton(
-                    onPressed: () => setState(() => _currentOverlayArea = null),
+                    onPressed: () => _navigateToArea(null),
                     backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -705,36 +705,7 @@ class _BlePageState extends State<BlePage> {
       debugPrint('\nUI Change: ${item.label} ($paramName) -> $finalValue (Cmd: ${item.category}.${cmdDef.name})');
 
       if (viewModel.selectedDevice == null) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            // Center vertically using bottom margin
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2 - 50,
-            ),
-            content: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  child: const Text(
-                    "Vui lòng kết nối thiết bị",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        _showCenterSnackBar("Vui lòng kết nối thiết bị");
         return;
       }
 
@@ -1011,35 +982,7 @@ class _BlePageState extends State<BlePage> {
      }
 
      if (viewModel.selectedDevice == null) {
-       ScaffoldMessenger.of(context).clearSnackBars();
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
-           backgroundColor: Colors.transparent,
-           elevation: 0,
-           duration: const Duration(seconds: 2),
-           behavior: SnackBarBehavior.floating,
-           margin: EdgeInsets.only(
-             bottom: MediaQuery.of(context).size.height / 2 - 50,
-           ),
-           content: Row(
-             mainAxisAlignment: MainAxisAlignment.center,
-             children: [
-               Container(
-                 decoration: BoxDecoration(
-                   color: Colors.grey[800],
-                   borderRadius: BorderRadius.circular(24),
-                 ),
-                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                 child: const Text(
-                   "Vui lòng kết nối thiết bị",
-                   textAlign: TextAlign.center,
-                   style: TextStyle(color: Colors.white),
-                 ),
-               ),
-             ],
-           ),
-         ),
-       );
+       _showCenterSnackBar("Vui lòng kết nối thiết bị");
        return; 
      }
 
@@ -1060,5 +1003,54 @@ class _BlePageState extends State<BlePage> {
      } catch (e) {
         debugPrint('Error sending batched EQ band command: $e');
      }
+  }
+
+  void _navigateToArea(String? areaName) {
+    if (areaName == null) {
+      setState(() => _currentOverlayArea = null);
+      return;
+    }
+    
+    final section = getIt<MixerService>().getItemsForSection(areaName);
+    if (section == null) {
+      _showCenterSnackBar("Chưa định nghĩa");
+      return;
+    }
+    
+    setState(() => _currentOverlayArea = areaName);
+  }
+
+  void _showCenterSnackBar(String message) {
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height / 2 - 50,
+        ),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(24),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
