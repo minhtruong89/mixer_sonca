@@ -45,3 +45,39 @@ Index mapping rule:
 - 1..50 map to {band, field} with 10 bands and 5 fields per band.
 - band = (Index - 1) / 5, field = (Index - 1) % 5.
 - field order per band: 0=enable, 1=type, 2=f0, 3=Q, 4=gain.
+
+
+
+=======================================
+When change on eq slider, prepare value to send to connected bluetooth device, it still keep the same rule like before, check if connecting proceed send data. If not connecting, show "Vui lòng kết nối thiết bị"
+For "areaFormat": "EQ Area", "command": "mic_eq_in" will check in ble_android_comm_format.json to find command value such as  "0x06": {"name": "mic_eq_in".
+Still keep the same format final command = builder.buildCommand(
+          categoryName: item.category,
+          cmdId: cmdDef.id,
+          operation: CommandOperation.set,
+          parameters: {
+            paramName: finalValue
+          },
+        );
+MIC EQ IN (CmdId 0x06)
+- Up to 10 bands, each band is a FilterParams entry.
+- Each update targets a flattened index/value pair.
+
+FilterParams field index mapping:
+- 1: enable (uint16)
+- 2: type (int16)
+- 3: f0 (uint16)
+- 4: Q (int16, Q6.10)
+- 5: gain (int16, Q8.8)
+
+MIC EQ IN payload format (command payload):
+| Offset | Size | Field        | Description |
+|-------:|-----:|--------------|-------------|
+| 0      | 1    | Count        | Number of entries |
+| 1      | 3*Count | Entries   | Repeating {Index (1 byte), Value (1 byte LSB, 1 byte MSB)} |
+
+Index mapping rule:
+- 1..50 map to {band, field} with 10 bands and 5 fields per band.
+- band = (Index - 1) / 5, field = (Index - 1) % 5.
+- field order per band: 0=enable, 1=type, 2=f0, 3=Q, 4=gain.
+

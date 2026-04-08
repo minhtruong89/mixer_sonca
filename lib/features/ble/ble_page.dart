@@ -887,7 +887,38 @@ class _BlePageState extends State<BlePage> {
      
      viewModel.updateControlValue(stateKey, rawValue);
 
+     debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
+
      if (viewModel.selectedDevice == null) {
+       ScaffoldMessenger.of(context).clearSnackBars();
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(
+           backgroundColor: Colors.transparent,
+           elevation: 0,
+           duration: const Duration(seconds: 2),
+           behavior: SnackBarBehavior.floating,
+           margin: EdgeInsets.only(
+             bottom: MediaQuery.of(context).size.height / 2 - 50,
+           ),
+           content: Row(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+               Container(
+                 decoration: BoxDecoration(
+                   color: Colors.grey[800],
+                   borderRadius: BorderRadius.circular(24),
+                 ),
+                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                 child: const Text(
+                   "Vui lòng kết nối thiết bị",
+                   textAlign: TextAlign.center,
+                   style: TextStyle(color: Colors.white),
+                 ),
+               ),
+             ],
+           ),
+         ),
+       );
        return; 
      }
 
