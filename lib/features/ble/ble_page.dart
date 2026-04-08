@@ -53,6 +53,7 @@ class _BlePageState extends State<BlePage> {
 
     return AppScaffold(
       title: '',
+      resizeToAvoidBottomInset: false,
       // We use a Stack to float our custom UI over the main content
       body: Stack(
         fit: StackFit.expand,

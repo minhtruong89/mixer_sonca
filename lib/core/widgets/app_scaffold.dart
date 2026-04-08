@@ -4,12 +4,14 @@ class AppScaffold extends StatelessWidget {
   final Widget body;
   final String title;
   final Widget? floatingActionButton;
+  final bool? resizeToAvoidBottomInset;
 
   const AppScaffold({
     super.key,
     required this.body,
     required this.title,
     this.floatingActionButton,
+    this.resizeToAvoidBottomInset,
   });
 
   @override
@@ -20,6 +22,7 @@ class AppScaffold extends StatelessWidget {
       ),
       body: body,
       floatingActionButton: floatingActionButton,
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
     );
   }
 }

@@ -49,74 +49,79 @@ class _EqBandDialogState extends State<EqBandDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: const Color(0xFF2C2C2C),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-      child: Container(
-        width: 300,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Title Bar
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              color: const Color(0xFFC0C0C0), // light gray
-              child: Text(
-                'Nhập giá trị EQ ${widget.bandIndex}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 300,
+          maxHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom - 16,
+        ),
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(), // Removes the white overscroll glow
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title Bar - Compact
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  color: const Color(0xFFC0C0C0),
+                  child: Text(
+                    'Nhập giá trị EQ ${widget.bandIndex}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            
-            Flexible(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildInputField('Gain (dB)', _gainController),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 4),
                       _buildInputField('Freq (Hz)', _freqController),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 4),
                       _buildInputField('Q', _qController),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
                       _buildDropdownField('Filter'),
                     ],
                   ),
                 ),
-              ),
-            ),
-            
-            // Buttons
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0, top: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildButton('Thay đổi', () {
-                    // Extract values and check validity
-                    final gain = double.tryParse(_gainController.text) ?? widget.initialGain;
-                    final freq = int.tryParse(_freqController.text) ?? widget.initialFreq;
-                    final q = double.tryParse(_qController.text) ?? widget.initialQ;
+                
+                // Buttons Row
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0, top: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildButton('Thay đổi', () {
+                        final gain = double.tryParse(_gainController.text) ?? widget.initialGain;
+                        final freq = int.tryParse(_freqController.text) ?? widget.initialFreq;
+                        final q = double.tryParse(_qController.text) ?? widget.initialQ;
 
-                    Navigator.of(context).pop({
-                      'gain': gain,
-                      'f0': freq,
-                      'Q': q,
-                      'type': _selectedType,
-                    });
-                  }),
-                  _buildButton('Hủy', () {
-                    Navigator.of(context).pop(null);
-                  }),
-                ],
-              ),
-            )
-          ],
+                        Navigator.of(context).pop({
+                          'gain': gain,
+                          'f0': freq,
+                          'Q': q,
+                          'type': _selectedType,
+                        });
+                      }),
+                      _buildButton('Hủy', () {
+                        Navigator.of(context).pop(null);
+                      }),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
