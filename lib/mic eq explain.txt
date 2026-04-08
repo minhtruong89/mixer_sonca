@@ -81,3 +81,31 @@ Index mapping rule:
 - band = (Index - 1) / 5, field = (Index - 1) % 5.
 - field order per band: 0=enable, 1=type, 2=f0, 3=Q, 4=gain.
 
+============================================
+In ble_android_comm_format.json file.
+"0x06": {
+          "name": "mic_eq_in",
+          "paramType": "EQParam",
+          "indexRule": {
+            "indexRange": "1-50",
+            "bandCount": 10,
+            "fieldsPerBand": 5,
+            "band": "(index-1)/5",
+            "field": "(index-1)%5",
+            "fieldOrder": {
+              "0": "enable",
+              "1": "type",
+              "2": "f0",
+              "3": "Q",
+              "4": "gain"
+            },
+            "fieldTypes": {
+              "enable": "uint16_le",
+              "type": "int16_le",
+              "f0": "uint16_le",
+              "Q": "q8_8_le",
+              "gain": "q8_8_le"
+            }
+          }
+        }
+"band": "(index-1)/5", the 5 is defined by "fieldsPerBand": 5, it should be dynamic value. The same to "field": "(index-1)%5". Remember this in Index mapping rule, use the value of "fieldsPerBand" instead of fixing 5

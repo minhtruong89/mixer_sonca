@@ -9,6 +9,7 @@ class EqBandSlider extends StatelessWidget {
   final double minGain;
   final double maxGain;
   final bool isPeaking; // true if PEAKING
+  final VoidCallback onHeaderTapped;
   final ValueChanged<double> onGainChanged;
 
   const EqBandSlider({
@@ -21,6 +22,7 @@ class EqBandSlider extends StatelessWidget {
     this.minGain = -6.0,
     this.maxGain = 6.0,
     required this.isPeaking,
+    required this.onHeaderTapped,
     required this.onGainChanged,
   });
 
@@ -35,47 +37,54 @@ class EqBandSlider extends StatelessWidget {
       child: Column(
         children: [
           // Header Texts
-          Text(
-            f0Text,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                qText,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-              if (isPeaking) ...[
-                const SizedBox(width: 4),
-                // Simple representation of the PEAKING icon (red diamond with lines)
-                SizedBox(
-                  width: 24,
-                  height: 12,
-                  child: CustomPaint(
-                    painter: _PeakingIconPainter(),
+          InkWell(
+            onTap: onHeaderTapped,
+            child: Column(
+              children: [
+                Text(
+                  f0Text,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
                   ),
                 ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      qText,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (isPeaking) ...[
+                      const SizedBox(width: 4),
+                      // Simple representation of the PEAKING icon (red diamond with lines)
+                      SizedBox(
+                        width: 24,
+                        height: 12,
+                        child: CustomPaint(
+                          painter: _PeakingIconPainter(),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  gainText,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
               ],
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            gainText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
           
           // Slider Area
           Expanded(

@@ -12,6 +12,7 @@ import 'package:mixer_sonca/features/ble/protocol/models/protocol_definition.dar
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
 import 'package:mixer_sonca/features/ble/widgets/mixer_slider.dart';
 import 'package:mixer_sonca/features/ble/widgets/eq_band_slider.dart';
+import 'package:mixer_sonca/features/ble/widgets/eq_band_dialog.dart';
 import 'package:mixer_sonca/injection.dart';
 class BlePage extends StatefulWidget {
   const BlePage({super.key});
@@ -847,21 +848,55 @@ class _BlePageState extends State<BlePage> {
                       bandF0Value = section.bandF0![index];
                     }
 
-                    String displayF0Text = "${bandF0Value}Hz";
-                    final f0Int = int.tryParse(bandF0Value);
-                    if (f0Int != null && f0Int >= 1000 && f0Int % 1000 == 0) {
-                       displayF0Text = "${f0Int ~/ 1000}KHz";
+                    int baseF0 = int.tryParse(bandF0Value) ?? 0;
+                    final rawF0 = viewModel.getControlValue("${commandName}_band${index}_f0", defaultValue: baseF0);
+                    int currentF0 = (rawF0 is int) ? rawF0 : baseF0;
+
+                    final rawQ = viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
+                    double currentQ = (rawQ is int) ? (rawQ / 1024.0) : qValue;
+
+                    final rawType = viewModel.getControlValue("${commandName}_band${index}_type", defaultValue: defaultTypeEnum);
+                    int currentType = (rawType is int) ? rawType : defaultTypeEnum;
+
+                    String displayF0Text = "${currentF0}Hz";
+                    if (currentF0 >= 1000 && currentF0 % 1000 == 0) {
+                       displayF0Text = "${currentF0 ~/ 1000}KHz";
+                    }
+
+                    // Prepare filter types array for the dialog
+                    Map<String, int> filterTypes = {};
+                    if (protocolService.isLoaded && protocolService.definition != null) {
+                       for (var entry in protocolService.definition!.eqFilterTypes.entries) {
+                          filterTypes[entry.key] = entry.value.value;
+                       }
                     }
 
                     return EqBandSlider(
                       bandIndex: index,
                       f0Text: displayF0Text,
-                  qText: qValue.toStringAsFixed(1),
+                  qText: currentQ.toStringAsFixed(1),
                   gainText: "${currentGain > 0 ? '+' : ''}${currentGain.toStringAsFixed(1)}dB",
                   gain: currentGain,
                   minGain: minGain,
                   maxGain: maxGain,
-                  isPeaking: defaultTypeEnum == 0,
+                  isPeaking: currentType == 0,
+                  onHeaderTapped: () async {
+                    final result = await showDialog<Map<String, dynamic>>(
+                      context: context,
+                      builder: (ctx) => EqBandDialog(
+                        bandIndex: index,
+                        initialGain: currentGain,
+                        initialFreq: currentF0,
+                        initialQ: currentQ,
+                        initialType: currentType,
+                        filterTypes: filterTypes,
+                      ),
+                    );
+
+                    if (result != null) {
+                      _handleEqBandMultipleChange(categoryName, commandName, index, result, viewModel);
+                    }
+                  },
                   onGainChanged: (val) {
                      _handleEqBandChange(categoryName, commandName, index, 'gain', val, viewModel);
                   },
@@ -876,18 +911,103 @@ class _BlePageState extends State<BlePage> {
   }
 
   Future<void> _handleEqBandChange(String categoryName, String commandName, int band, String fieldParam, double value, BleViewModel viewModel) async {
-     if (categoryName.isEmpty || commandName.isEmpty) return;
-     
-     final stateKey = "${commandName}_band${band}_$fieldParam";
-     
-     int rawValue = 0;
-     if (fieldParam == 'gain') {
-        rawValue = (value * 256.0).round();
-     }
-     
-     viewModel.updateControlValue(stateKey, rawValue);
+    if (categoryName.isEmpty || commandName.isEmpty) return;
 
-     debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
+    debugPrint('\n_handleEqBandChange');
+    
+    final stateKey = "${commandName}_band${band}_$fieldParam";
+    
+    int rawValue = 0;
+    if (fieldParam == 'gain') {
+       rawValue = (value * 256.0).round();
+    }
+    
+    viewModel.updateControlValue(stateKey, rawValue);
+
+    debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
+
+    if (viewModel.selectedDevice == null) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height / 2 - 50,
+          ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                child: const Text(
+                  "Vui lòng kết nối thiết bị",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      return; 
+    }
+
+    try {
+       final builder = getIt<DynamicCommandBuilder>();
+       final protocolService = getIt<ProtocolService>();
+       final cmdDef = protocolService.getCommandByName(categoryName, commandName);
+       if (cmdDef == null) return;
+
+       final command = builder.buildEqCommand(
+         categoryName: categoryName,
+         cmdId: cmdDef.id,
+         band: band,
+         fields: {
+            fieldParam: rawValue,
+         },
+       );
+
+       await viewModel.sendProtocolCommand(command);
+    } catch (e) {
+       debugPrint('Error sending EQ band command: $e');
+    }
+  }
+
+  Future<void> _handleEqBandMultipleChange(String categoryName, String commandName, int band, Map<String, dynamic> changes, BleViewModel viewModel) async {
+     if (categoryName.isEmpty || commandName.isEmpty) return;
+
+     debugPrint('\n_handleEqBandMultipleChange '  + changes.entries.length.toString());
+     
+     // 1. Process and format all values for state and payload
+     Map<String, dynamic> rawFields = {};
+     
+     for (var entry in changes.entries) {
+        final fieldParam = entry.key;
+        final value = entry.value;
+        
+        final stateKey = "${commandName}_band${band}_$fieldParam";
+        
+        int rawValue = 0;
+        if (fieldParam == 'gain') {
+           rawValue = (value * 256.0).round();
+        } else if (fieldParam == 'Q') {
+           rawValue = (value * 1024.0).round();
+        } else if (fieldParam == 'f0' || fieldParam == 'type') {
+           rawValue = (value is double) ? value.toInt() : (value as int);
+        }
+        
+        viewModel.updateControlValue(stateKey, rawValue);
+        rawFields[fieldParam] = rawValue;
+        
+        debugPrint('\nEQ Multiple Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
+     }
 
      if (viewModel.selectedDevice == null) {
        ScaffoldMessenger.of(context).clearSnackBars();
@@ -932,15 +1052,12 @@ class _BlePageState extends State<BlePage> {
           categoryName: categoryName,
           cmdId: cmdDef.id,
           band: band,
-          fields: {
-             fieldParam: rawValue,
-          },
+          fields: rawFields,
         );
 
         await viewModel.sendProtocolCommand(command);
      } catch (e) {
-        debugPrint('Error sending EQ band command: $e');
+        debugPrint('Error sending batched EQ band command: $e');
      }
   }
-
 }
