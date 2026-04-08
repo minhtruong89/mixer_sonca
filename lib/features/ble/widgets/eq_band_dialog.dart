@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mixer_sonca/features/ble/widgets/filter_icon.dart';
 
 class EqBandDialog extends StatefulWidget {
   final int bandIndex;
@@ -188,12 +189,40 @@ class _EqBandDialogState extends State<EqBandDialog> {
                 isDense: true,
                 isExpanded: true, // Force to fill width
                 style: const TextStyle(color: Colors.orange, fontSize: 16),
-                items: widget.filterTypes.entries.map((entry) {
+                items: widget.filterTypes.entries
+                    .where((entry) => entry.key.toUpperCase() != 'UNKNOWN')
+                    .map((entry) {
+                  String displayName = entry.key;
+                  // Map display names according to requirements
+                  final upper = entry.key.toUpperCase();
+                  if (upper == 'PEAKING') displayName = 'PEAK';
+                  else if (upper == 'LOW_SHELF') displayName = 'LSF';
+                  else if (upper == 'HIGH_SHELF') displayName = 'HSF';
+                  else if (upper == 'LOW_PASS') displayName = 'LPF';
+                  else if (upper == 'HIGH_PASS') displayName = 'HPF';
+                  else if (upper == 'BAND_PASS') displayName = 'BPF';
+                  else if (upper == 'LOW_PASS_ORDER1') displayName = 'LPO';
+                  else if (upper == 'HIGH_PASS_ORDER1') displayName = 'HPO';
+                  else if (upper == 'NOTCH') displayName = 'NOTCH';
+
                   return DropdownMenuItem<int>(
                     value: entry.value,
-                    child: Text(
-                      entry.key,
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            displayName,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilterIcon(
+                          typeIndex: entry.value,
+                          width: 45,
+                          height: 22,
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),

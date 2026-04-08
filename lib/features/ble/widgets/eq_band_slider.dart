@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mixer_sonca/features/ble/widgets/filter_icon.dart';
 
 class EqBandSlider extends StatelessWidget {
   final int bandIndex;
@@ -8,7 +9,7 @@ class EqBandSlider extends StatelessWidget {
   final double gain;
   final double minGain;
   final double maxGain;
-  final bool isPeaking; // true if PEAKING
+  final int filterType;
   final VoidCallback onHeaderTapped;
   final ValueChanged<double> onGainChanged;
 
@@ -21,7 +22,7 @@ class EqBandSlider extends StatelessWidget {
     required this.gain,
     this.minGain = -6.0,
     this.maxGain = 6.0,
-    required this.isPeaking,
+    required this.filterType,
     required this.onHeaderTapped,
     required this.onGainChanged,
   });
@@ -59,17 +60,12 @@ class EqBandSlider extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    if (isPeaking) ...[
-                      const SizedBox(width: 4),
-                      // Simple representation of the PEAKING icon (red diamond with lines)
-                      SizedBox(
-                        width: 24,
-                        height: 12,
-                        child: CustomPaint(
-                          painter: _PeakingIconPainter(),
-                        ),
-                      ),
-                    ],
+                    const SizedBox(width: 4),
+                    FilterIcon(
+                      typeIndex: filterType,
+                      width: 24,
+                      height: 12,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -155,38 +151,6 @@ class EqBandSlider extends StatelessWidget {
       ],
     );
   }
-}
-
-class _PeakingIconPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.red
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-      
-    final path = Path();
-    // Left horizontal line
-    path.moveTo(0, size.height / 2);
-    path.lineTo(size.width * 0.3, size.height / 2);
-    // Diamond
-    path.lineTo(size.width * 0.5, size.height * 0.2);
-    path.lineTo(size.width * 0.7, size.height / 2);
-    path.lineTo(size.width * 0.5, size.height * 0.8);
-    path.lineTo(size.width * 0.3, size.height / 2);
-    // Right horizontal line
-    path.moveTo(size.width * 0.7, size.height / 2);
-    path.lineTo(size.width, size.height / 2);
-
-    // Inner horizontal line
-    path.moveTo(size.width * 0.3, size.height / 2);
-    path.lineTo(size.width * 0.7, size.height / 2);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _VerticalEqSlider extends StatelessWidget {

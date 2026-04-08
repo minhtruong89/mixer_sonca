@@ -880,7 +880,7 @@ class _BlePageState extends State<BlePage> {
                   gain: currentGain,
                   minGain: minGain,
                   maxGain: maxGain,
-                  isPeaking: currentType == 0,
+                  filterType: currentType,
                   onHeaderTapped: () async {
                     final result = await showDialog<Map<String, dynamic>>(
                       context: context,
