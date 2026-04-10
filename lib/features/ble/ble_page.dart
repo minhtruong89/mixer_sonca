@@ -1016,6 +1016,17 @@ class _BlePageState extends State<BlePage> {
       _showCenterSnackBar("Chưa định nghĩa");
       return;
     }
+
+    // Trigger data fetch if it's an Overlay Area and we are connected
+    if (section.areaType == "Overlay Area") 
+    {
+      debugPrint('Protocol: Overlay Area "$areaName" called.');
+      final viewModel = context.read<BleViewModel>();
+      if (viewModel.selectedDevice != null) {
+        debugPrint('Overlay Area "$areaName" Fetching data...');
+        viewModel.fetchSectionStates(areaName);
+      }
+    }
     
     setState(() => _currentOverlayArea = areaName);
   }

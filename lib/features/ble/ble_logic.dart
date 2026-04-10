@@ -298,7 +298,7 @@ class BleViewModel extends ChangeNotifier {
       final command1 = helper.setAppMode(AppModeValue.lineIn);
       await sendProtocolCommand(command1);*/
 
-      // TODO Test get data and save value into display item
+      // Get data and save value into display item
       await fetchInitialStates();
       
     } catch (e) {
@@ -564,59 +564,78 @@ class BleViewModel extends ChangeNotifier {
 
   }
 
-  /// Fetch initial states for important controls
+  /// Fetch initial states for important controls (Main Areas)
   Future<void> fetchInitialStates() async {
+    debugPrint('Protocol: Fetching initial states for Main Areas...');
+
     if (_selectedDevice == null) return;
 
-    debugPrint('Protocol: Fetching initial states for Area 1 and Area 2...');
-    final builder = getIt<DynamicCommandBuilder>();
+    debugPrint('Main Areas Fetching data...');    
+    final mixerService = getIt<MixerService>();
+    
+    // 1. Get all sections marked as "Main Area"
+    final mainSections = mixerService.getSectionNamesByType("Main Area");
+    
+    if (mainSections.isEmpty) {
+        // Fallback to legacy Area 1/2 if no "Main Area" type is defined yet in JSON
+        await fetchSectionStates('Area 1');
+        await fetchSectionStates('Area 2');
+    } else {
+        for (final sectionName in mainSections) {
+            await fetchSectionStates(sectionName);
+        }
+    }
+  }
+
+  /// Fetch state for all parameters in a specific section
+  Future<void> fetchSectionStates(String sectionName) async {
+    if (_selectedDevice == null) return;
+
     final mixerService = getIt<MixerService>();
     final protocolService = getIt<ProtocolService>();
-
-    // Areas to sync
-    final areas = ['Area 1', 'Area 2'];
+    final builder = getIt<DynamicCommandBuilder>();
     
-    for (final areaName in areas) {
-      final section = mixerService.getItemsForSection(areaName);
-      if (section == null) continue;
-      
-      for (final item in section.items.values) {
-         // 1. Get parameters to fetch
-         final paramsToFetch = <String>[];
-         if (item.indexList.isNotEmpty) {
-           paramsToFetch.addAll(item.indexList);
-         } else if (item.paramName != null && item.paramName!.isNotEmpty) {
-           paramsToFetch.add(item.paramName!);
-         }
-         
-         if (paramsToFetch.isEmpty) continue;
-         
-         // 2. Fetch each parameter
-         for (final paramName in paramsToFetch) {
-            // Find command definition to get the correct ID
-            CommandDefinition? cmdDef;
-            if (item.command.isNotEmpty) {
-              cmdDef = protocolService.getCommandByName(item.category, item.command);
-            }
-            cmdDef ??= protocolService.findCommand(item.category, paramName);
-                
-            if (cmdDef == null) continue;
-            
-            try {
-              final command = builder.buildCommand(
-                categoryName: item.category,
-                cmdId: cmdDef.id,
-                operation: CommandOperation.get,
-                parameters: {paramName: 0},
-              );
-              await sendProtocolCommand(command);
-              // Small delay between commands to avoid overwhelming the device
-              await Future.delayed(const Duration(milliseconds: 100));
-            } catch (e) {
-              debugPrint('Protocol: Error fetching state for ${item.label}.$paramName: $e');
-            }
-         }
-      }
+    final section = mixerService.getItemsForSection(sectionName);
+    if (section == null) return;
+
+    debugPrint('Protocol: Syncing parameters for section "$sectionName"...');
+    
+    for (final item in section.items.values) {
+       // 1. Get parameters to fetch
+       final paramsToFetch = <String>[];
+       if (item.indexList.isNotEmpty) {
+         paramsToFetch.addAll(item.indexList);
+       } else if (item.paramName != null && item.paramName!.isNotEmpty) {
+         paramsToFetch.add(item.paramName!);
+       }
+       
+       if (paramsToFetch.isEmpty) continue;
+       
+       // 2. Fetch each parameter
+       for (final paramName in paramsToFetch) {
+          // Find command definition to get the correct ID
+          CommandDefinition? cmdDef;
+          if (item.command.isNotEmpty) {
+            cmdDef = protocolService.getCommandByName(item.category, item.command);
+          }
+          cmdDef ??= protocolService.findCommand(item.category, paramName);
+              
+          if (cmdDef == null) continue;
+          
+          try {
+            final command = builder.buildCommand(
+              categoryName: item.category,
+              cmdId: cmdDef.id,
+              operation: CommandOperation.get,
+              parameters: {paramName: 0},
+            );
+            await sendProtocolCommand(command);
+            // Small delay between commands to avoid overwhelming the device
+            await Future.delayed(const Duration(milliseconds: 50));
+          } catch (e) {
+            debugPrint('Protocol: Error fetching state for ${item.label}.$paramName: $e');
+          }
+       }
     }
   }
 

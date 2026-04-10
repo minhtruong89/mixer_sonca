@@ -42,4 +42,13 @@ class MixerService {
     if (_displayConfig == null) return null;
     return _displayConfig!.defaultDisplay.sections[sectionName];
   }
+
+  /// Get names of sections filtered by areaType
+  List<String> getSectionNamesByType(String type) {
+    if (_displayConfig == null) return [];
+    return _displayConfig!.defaultDisplay.sections.entries
+        .where((e) => e.value.areaType == type)
+        .map((e) => e.key)
+        .toList();
+  }
 }
