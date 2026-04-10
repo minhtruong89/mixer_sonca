@@ -1005,6 +1005,10 @@ class _BlePageState extends State<BlePage> {
   void _navigateToArea(String? areaName) {
     if (areaName == null) {
       setState(() => _currentOverlayArea = null);
+      final viewModel = context.read<BleViewModel>();
+      if (viewModel.selectedDevice != null) {
+        viewModel.fetchInitialStates();
+      }
       return;
     }
     
