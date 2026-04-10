@@ -203,6 +203,7 @@ class DynamicCommandBuilder {
     required String categoryName,
     required int cmdId,
     required Map<int, Map<String, dynamic>> bands,
+    CommandOperation operation = CommandOperation.set,
   }) {
     final category = _protocolService.getCategoryByName(categoryName);
     if (category == null) {
@@ -266,7 +267,7 @@ class DynamicCommandBuilder {
     return CommandPayload.fromTypedPairs(
       category: CommandCategory.values.firstWhere((c) => c.value == category.id),
       cmdId: cmdId,
-      operation: CommandOperation.set,
+      operation: operation,
       pairs: pairs,
     );
   }

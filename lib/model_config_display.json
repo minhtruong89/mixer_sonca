@@ -20,7 +20,7 @@
 		  "bandF0": ["125","250","500","1000","1500","2000","3000","4000","8000","16000"]
 	  },
 
-	"Area MIC 1 EQ" :{
+	  "Area MIC 1 EQ" :{
 		  "desc": "MIC 1 Equalizer",
 		  "areaType": "Overlay Area",
 		  "areaFormat": "EQ Area",

@@ -618,26 +618,31 @@ class BleViewModel extends ChangeNotifier {
       }
 
       if (cmdDef != null && cmdDef.indexRule != null) {
-        debugPrint('Protocol: EQ Area detected. Fetching $totalBands bands for $commandName...');
+        debugPrint('Protocol: EQ Area detected. Fetching $totalBands bands for $commandName (Batched)...');
+        
+        // Construct a single batched map for all parameters across all bands
+        Map<int, Map<String, dynamic>> allBands = {};
         for (int b = 0; b < totalBands; b++) {
-          // Fetch all fields defined in the index rule for this band
           final fields = cmdDef.indexRule!.fieldOrder.values.toList();
+          Map<String, dynamic> fieldMap = {};
           for (final fieldName in fields) {
-            try {
-              final command = builder.buildEqCommand(
-                categoryName: categoryName,
-                cmdId: cmdDef.id,
-                band: b,
-                fields: {fieldName: 0}, // Value is ignored for GET
-                operation: CommandOperation.get,
-              );
-              await sendProtocolCommand(command);
-              // Aggressive sync: use smaller delay for many small packets
-              await Future.delayed(const Duration(milliseconds: 30));
-            } catch (e) {
-              debugPrint('Protocol: Error fetching EQ Band $b Field $fieldName: $e');
-            }
+            fieldMap[fieldName] = 0; // Value is ignored for GET
           }
+          allBands[b] = fieldMap;
+        }
+
+        try {
+          final command = builder.buildMultiBandEqCommand(
+            categoryName: categoryName,
+            cmdId: cmdDef.id,
+            bands: allBands,
+            operation: CommandOperation.get,
+          );
+          await sendProtocolCommand(command);
+          // Small delay for processing the batched request
+          await Future.delayed(const Duration(milliseconds: 50));
+        } catch (e) {
+          debugPrint('Protocol: Error fetching batched EQ data for $commandName: $e');
         }
       }
     }
