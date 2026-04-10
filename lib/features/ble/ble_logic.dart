@@ -648,6 +648,9 @@ class BleViewModel extends ChangeNotifier {
     }
     
     // 2. Handle individual items in the section
+    // Group parameters by Category and CommandID to bundle GET requests
+    final Map<String, Map<int, Map<String, dynamic>>> batchedRequests = {};
+
     for (final item in section.items.values) {
        // 1. Get parameters to fetch
        final paramsToFetch = <String>[];
@@ -659,7 +662,7 @@ class BleViewModel extends ChangeNotifier {
        
        if (paramsToFetch.isEmpty) continue;
        
-       // 2. Fetch each parameter
+       // 2. Collate into batches
        for (final paramName in paramsToFetch) {
           // Find command definition to get the correct ID
           CommandDefinition? cmdDef;
@@ -669,21 +672,39 @@ class BleViewModel extends ChangeNotifier {
           cmdDef ??= protocolService.findCommand(item.category, paramName);
               
           if (cmdDef == null) continue;
-          
-          try {
-            final command = builder.buildCommand(
-              categoryName: item.category,
-              cmdId: cmdDef.id,
-              operation: CommandOperation.get,
-              parameters: {paramName: 0},
-            );
-            await sendProtocolCommand(command);
-            // Small delay between commands to avoid overwhelming the device
-            await Future.delayed(const Duration(milliseconds: 50));
-          } catch (e) {
-            debugPrint('Protocol: Error fetching state for ${item.label}.$paramName: $e');
-          }
+
+          // Organize by category and command ID
+          batchedRequests[item.category] ??= {};
+          batchedRequests[item.category]![cmdDef.id] ??= {};
+          batchedRequests[item.category]![cmdDef.id]![paramName] = 0; // Value ignored for GET
        }
+    }
+
+    // 3. Dispatch the batched requests
+    for (final categoryEntry in batchedRequests.entries) {
+      final categoryName = categoryEntry.key;
+      for (final commandEntry in categoryEntry.value.entries) {
+        final cmdId = commandEntry.key;
+        final parameters = commandEntry.value;
+
+        try {
+          final command = builder.buildCommand(
+            categoryName: categoryName,
+            cmdId: cmdId,
+            operation: CommandOperation.get,
+            parameters: parameters,
+          );
+          
+          final paramNames = parameters.keys.join(', ');
+          debugPrint('Protocol: Sending batched GET for $categoryName Command 0x${cmdId.toRadixString(16)} (Params: $paramNames)');
+          
+          await sendProtocolCommand(command);
+          // Standard delay between command headers
+          await Future.delayed(const Duration(milliseconds: 50));
+        } catch (e) {
+          debugPrint('Protocol: Error fetching batched state for $categoryName:0x${cmdId.toRadixString(16)}: $e');
+        }
+      }
     }
   }
 
