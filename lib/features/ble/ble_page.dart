@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/widgets/app_scaffold.dart';
@@ -24,6 +25,9 @@ class BlePage extends StatefulWidget {
 class _BlePageState extends State<BlePage> {
   bool _isDropdownOpen = false;
   String? _currentOverlayArea;
+  
+  // Debouncers for slider updates to reduce BLE traffic
+  final Map<String, Timer?> _debouncers = {};
 
   @override
   void initState() {
@@ -32,6 +36,15 @@ class _BlePageState extends State<BlePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BleViewModel>().init();
     });
+  }
+
+  @override
+  void dispose() {
+    for (var timer in _debouncers.values) {
+      timer?.cancel();
+    }
+    _debouncers.clear();
+    super.dispose();
   }
 
   void _toggleScan() {
@@ -709,23 +722,27 @@ class _BlePageState extends State<BlePage> {
         return;
       }
 
-      try {
-        final builder = getIt<DynamicCommandBuilder>();
-        final command = builder.buildCommand(
-          categoryName: item.category,
-          cmdId: cmdDef.id,
-          operation: CommandOperation.set,
-          parameters: {
-            paramName: finalValue
-          },
-        );
-        
-        await viewModel.sendProtocolCommand(command);
-        
-      } catch (e) {
-        debugPrint('Error sending dynamic command: $e');
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-      }
+      // Debounce the BLE command sending
+      _debouncers[stateKey]?.cancel();
+      final cmdId = cmdDef.id; // Capture for closure safety
+      _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
+        try {
+          final builder = getIt<DynamicCommandBuilder>();
+          final command = builder.buildCommand(
+            categoryName: item.category,
+            cmdId: cmdId,
+            operation: CommandOperation.set,
+            parameters: {
+              paramName: finalValue
+            },
+          );
+          
+          await viewModel.sendProtocolCommand(command);
+          
+        } catch (e) {
+          debugPrint('Error sending dynamic command: $e');
+        }
+      });
   }
 
   /// Helper to map raw protocol values (integers) to UI display strings.
@@ -899,57 +916,37 @@ class _BlePageState extends State<BlePage> {
     debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
 
     if (viewModel.selectedDevice == null) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height / 2 - 50,
-          ),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                child: const Text(
-                  "Vui lòng kết nối thiết bị",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      _showCenterSnackBar("Vui lòng kết nối thiết bị");
       return; 
     }
 
-    try {
-       final builder = getIt<DynamicCommandBuilder>();
-       final protocolService = getIt<ProtocolService>();
-       final cmdDef = protocolService.getCommandByName(categoryName, commandName);
-       if (cmdDef == null) return;
+    // Debounce the BLE command sending
+    _debouncers[stateKey]?.cancel();
+    
+    final protocolService = getIt<ProtocolService>();
+    final cmdDef = protocolService.getCommandByName(categoryName, commandName);
+    if (cmdDef == null) return;
+    
+    final cmdId = cmdDef.id; // Capture for closure safety
+    _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
+      try {
+         final builder = getIt<DynamicCommandBuilder>();
+         final protocolService = getIt<ProtocolService>();
+         // Re-verify definition inside timer or use captured ID
+         final command = builder.buildEqCommand(
+           categoryName: categoryName,
+           cmdId: cmdId,
+           band: band,
+           fields: {
+              fieldParam: rawValue,
+           },
+         );
 
-       final command = builder.buildEqCommand(
-         categoryName: categoryName,
-         cmdId: cmdDef.id,
-         band: band,
-         fields: {
-            fieldParam: rawValue,
-         },
-       );
-
-       await viewModel.sendProtocolCommand(command);
-    } catch (e) {
-       debugPrint('Error sending EQ band command: $e');
-    }
+         await viewModel.sendProtocolCommand(command);
+      } catch (e) {
+         debugPrint('Error sending EQ band command: $e');
+      }
+    });
   }
 
   Future<void> _handleEqBandMultipleChange(String categoryName, String commandName, int band, Map<String, dynamic> changes, BleViewModel viewModel) async {
