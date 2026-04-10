@@ -599,7 +599,50 @@ class BleViewModel extends ChangeNotifier {
     if (section == null) return;
 
     debugPrint('Protocol: Syncing parameters for section "$sectionName"...');
+
+    // 1. Special handling for EQ Area
+    if (section.areaFormat == "EQ Area" && section.command != null) {
+      final totalBands = section.totalEQBand ?? 10;
+      final commandName = section.command!;
+      
+      // Find command definition and category
+      CommandDefinition? cmdDef;
+      String categoryName = "";
+      for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+        final d = cat.getCommandByName(commandName);
+        if (d != null) {
+          cmdDef = d;
+          categoryName = cat.name;
+          break;
+        }
+      }
+
+      if (cmdDef != null && cmdDef.indexRule != null) {
+        debugPrint('Protocol: EQ Area detected. Fetching $totalBands bands for $commandName...');
+        for (int b = 0; b < totalBands; b++) {
+          // Fetch all fields defined in the index rule for this band
+          final fields = cmdDef.indexRule!.fieldOrder.values.toList();
+          for (final fieldName in fields) {
+            try {
+              final command = builder.buildEqCommand(
+                categoryName: categoryName,
+                cmdId: cmdDef.id,
+                band: b,
+                fields: {fieldName: 0}, // Value is ignored for GET
+                operation: CommandOperation.get,
+              );
+              await sendProtocolCommand(command);
+              // Aggressive sync: use smaller delay for many small packets
+              await Future.delayed(const Duration(milliseconds: 30));
+            } catch (e) {
+              debugPrint('Protocol: Error fetching EQ Band $b Field $fieldName: $e');
+            }
+          }
+        }
+      }
+    }
     
+    // 2. Handle individual items in the section
     for (final item in section.items.values) {
        // 1. Get parameters to fetch
        final paramsToFetch = <String>[];
