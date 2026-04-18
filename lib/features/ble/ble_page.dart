@@ -642,9 +642,12 @@ class _BlePageState extends State<BlePage> {
                                        }
                                    ),
                                    const SizedBox(width: 8),
-                                   Text(
-                                       section.description, 
-                                       style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
+                                   Expanded(
+                                       child: Text(
+                                           section.description, 
+                                           overflow: TextOverflow.ellipsis,
+                                           style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
+                                       ),
                                    ),
                                ]
                            )

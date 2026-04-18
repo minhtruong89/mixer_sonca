@@ -51,33 +51,38 @@ class MixerSlider extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           
-          // Value and Mute Icon
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                value.toInt().toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              if (showMute) ...[
-                const SizedBox(width: 8),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    isMuted ? Icons.volume_off : Icons.volume_up,
-                    color: isMuted ? Colors.redAccent : Colors.white,
-                    size: 24,
+          // Value and Mute Icon Header
+          SizedBox(
+            height: 32, // Consistent height for all sliders
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Value Text (Centered when no icon, shifted left if icon exists to prevent overlap)
+                Text(
+                  value.toInt().toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
                   ),
-                  onPressed: () => onMuteChanged(!isMuted),
                 ),
+                // Mute Icon
+                if (showMute) ...[
+                   const SizedBox(width: 8),
+                   IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      isMuted ? Icons.volume_off : Icons.volume_up,
+                      color: isMuted ? Colors.redAccent : Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: () => onMuteChanged(!isMuted),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
           
           const SizedBox(height: 8),
@@ -86,44 +91,51 @@ class MixerSlider extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                // Scale Ticks
-                _buildScale(),
-                
-                // Vertical Slider
-                Expanded(
-                  child: _VerticalSlider(
-                    value: value,
-                    min: min,
-                    max: max,
-                    onChanged: onChanged,
+                  // Scale Ticks
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20), // Align with thumb center
+                      child: _buildScale(),
+                    ),
                   ),
-                ),
-              ],
+                  
+                  // Vertical Slider
+                  Expanded(
+                    child: _VerticalSlider(
+                      value: value,
+                      min: min,
+                      max: max,
+                      onChanged: onChanged,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
   Widget _buildScale() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _scaleTick('100'),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick('75'),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick('50', isCenter: true),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick('25'),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick('0'),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final h = constraints.maxHeight;
+        final ticks = ['100', '', '', '75', '', '', '50', '', '', '25', '', '', '0'];
+        
+        return Stack(
+          children: List.generate(ticks.length, (index) {
+            final label = ticks[index];
+            final topPos = (index / (ticks.length - 1)) * h;
+            
+            return Positioned(
+              top: topPos - 7, // 7 is approx half height of 12pt text
+              left: 0,
+              right: 0,
+              child: _scaleTick(label, isCenter: label == '50'),
+            );
+          }),
+        );
+      },
     );
   }
 
@@ -173,7 +185,12 @@ class _VerticalSlider extends StatelessWidget {
         
         return GestureDetector(
           onVerticalDragUpdate: (details) {
-            final dy = details.localPosition.dy;
+            final localPos = details.localPosition;
+            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth || 
+                localPos.dy < 0 || localPos.dy > constraints.maxHeight) {
+              return;
+            }
+            final dy = localPos.dy;
             final newValue = (1 - (dy / height)) * (max - min) + min;
             onChanged(newValue.clamp(min, max));
           },
@@ -200,7 +217,7 @@ class _VerticalSlider extends StatelessWidget {
               
               // Thumb
               Positioned(
-                bottom: (value - min) / (max - min) * height - 15, // 15 is half of thumb height
+                bottom: (value - min) / (max - min) * (height - 40), 
                 child: Container(
                   width: 30,
                   height: 40,

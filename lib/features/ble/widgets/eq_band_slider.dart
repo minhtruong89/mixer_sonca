@@ -87,7 +87,12 @@ class EqBandSlider extends StatelessWidget {
             child: Row(
               children: [
                 // Scale Ticks
-                _buildScale(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20), // Align with thumb center
+                    child: _buildScale(),
+                  ),
+                ),
                 
                 // Vertical Slider
                 Expanded(
@@ -107,23 +112,30 @@ class EqBandSlider extends StatelessWidget {
   }
 
   Widget _buildScale() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _scaleTick('+${maxGain.toStringAsFixed(1)}'),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick('0.0', isCenter: true),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick(''),
-        _scaleTick('${minGain.toStringAsFixed(1)}'),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final h = constraints.maxHeight;
+        final ticks = [
+          '+${maxGain.toStringAsFixed(1)}', '', '', '', '', '', 
+          '0.0', 
+          '', '', '', '', '', 
+          minGain.toStringAsFixed(1)
+        ];
+        
+        return Stack(
+          children: List.generate(ticks.length, (index) {
+            final label = ticks[index];
+            final topPos = (index / (ticks.length - 1)) * h;
+            
+            return Positioned(
+              top: topPos - 6, // 6 is approx half height of 10pt text
+              left: 0,
+              right: 0,
+              child: _scaleTick(label, isCenter: label == '0.0'),
+            );
+          }),
+        );
+      },
     );
   }
 
@@ -132,7 +144,7 @@ class EqBandSlider extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         SizedBox(
-          width: 30,
+          width: 24,
           child: Text(
             value,
             textAlign: TextAlign.right,
@@ -174,7 +186,12 @@ class _VerticalEqSlider extends StatelessWidget {
         
         return GestureDetector(
           onVerticalDragUpdate: (details) {
-            final dy = details.localPosition.dy;
+            final localPos = details.localPosition;
+            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth || 
+                localPos.dy < 0 || localPos.dy > constraints.maxHeight) {
+              return;
+            }
+            final dy = localPos.dy;
             final newValue = (1 - (dy / height)) * (max - min) + min;
             onChanged(newValue.clamp(min, max));
           },
@@ -197,7 +214,7 @@ class _VerticalEqSlider extends StatelessWidget {
               
               // Thumb
               Positioned(
-                bottom: (value - min) / (max - min) * height - 15, // 15 is half of thumb height
+                bottom: (value - min) / (max - min) * (height - 40), 
                 child: Container(
                   width: 30,
                   height: 40,
