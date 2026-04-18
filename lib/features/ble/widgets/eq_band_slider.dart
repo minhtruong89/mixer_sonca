@@ -188,7 +188,7 @@ class _VerticalEqSlider extends StatelessWidget {
         return GestureDetector(
           onVerticalDragUpdate: (details) {
             final localPos = details.localPosition;
-            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth) {
+            if (localPos.dx < -constraints.maxWidth / 2 || localPos.dx > constraints.maxWidth * 1.5) {
               return;
             }
             final dy = localPos.dy;
