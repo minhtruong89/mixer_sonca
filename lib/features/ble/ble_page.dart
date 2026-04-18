@@ -125,7 +125,7 @@ class _BlePageState extends State<BlePage> {
                       ),
                       clipBehavior: Clip.hardEdge,
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.only(top: 40, left: 12, right: 12, bottom: 12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -628,7 +628,7 @@ class _BlePageState extends State<BlePage> {
                    children: [
                        // Top bar with Back Button and Name
                        Padding(
-                           padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
+                           padding: const EdgeInsets.only(top: 8, left: 16, right: 16, bottom: 2),
                            child: Row(
                                children: [
                                    IconButton(

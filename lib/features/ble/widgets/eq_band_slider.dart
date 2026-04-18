@@ -31,7 +31,7 @@ class EqBandSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 80,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: const BoxDecoration(
         color: Colors.transparent,
       ),
@@ -49,7 +49,7 @@ class EqBandSlider extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -68,7 +68,7 @@ class EqBandSlider extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   gainText,
                   style: const TextStyle(
@@ -77,7 +77,7 @@ class EqBandSlider extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
               ],
             ),
           ),

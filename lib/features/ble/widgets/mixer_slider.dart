@@ -28,7 +28,7 @@ class MixerSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 100,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF121212),
         borderRadius: BorderRadius.circular(24),
@@ -49,7 +49,7 @@ class MixerSlider extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           
           // Value and Mute Icon
           Row(
@@ -80,7 +80,7 @@ class MixerSlider extends StatelessWidget {
             ],
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           
           // Slider Area (Scale + Slider)
           Expanded(
