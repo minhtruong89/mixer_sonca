@@ -409,6 +409,24 @@
 		  
 	  },
 
+	  "Area RECORD EQ" :{
+		  "desc": "LIVE Equalizer",
+		  "areaType": "Overlay Area",
+		  "areaFormat": "EQ Area",
+		  "backArea": "Area MAIN",
+		  "command": "record_eq",
+		  "totalEQBand": 10,
+		  "control": {
+					  "typeDisplay": "eq slider",
+					  "enable": "1",
+					  "type": "PEAKING",
+					  "f0": "125",
+					  "Q": "717",
+					  "gain": "0"
+		    },
+		  "bandF0": ["125","250","500","1000","1500","2000","3000","4000","8000","16000"]
+	  },
+
 	  "Area 1" :{
 		  "desc": "Area left side",
 		  "areaType": "Main Area",
@@ -486,7 +504,10 @@
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
 					  "maxValue": "100"
-				}
+				  },
+				  "event": {
+					  "click": "Area RECORD EQ"
+				  }
 			  }
 			  
 		  }

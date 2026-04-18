@@ -634,7 +634,7 @@ class _BlePageState extends State<BlePage> {
                                    IconButton(
                                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
                                        onPressed: () {
-                                           if (section.backArea != null) {
+                                           if (section.backArea != null && section.backArea != "Area MAIN") {
                                                _navigateToArea(section.backArea);
                                            } else {
                                                _navigateToArea(null);
@@ -667,7 +667,7 @@ class _BlePageState extends State<BlePage> {
               left: 0,
               top: 10,
               bottom: 10,
-              right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.22 : 0.15) + 5,
+              right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.24 : 0.17) + 5,
               child: Container(
                  padding: const EdgeInsets.symmetric(horizontal: 10),
                  child: SingleChildScrollView(
@@ -691,7 +691,7 @@ class _BlePageState extends State<BlePage> {
             Positioned(
               top: 10,
               right: 10,
-              width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.22 : 0.15) - 10,
+              width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.24 : 0.17) - 10,
               child: Builder(builder: (context) {
                     final switches = section.items.values.where((item) => item.control.isSwitch).toList();
 
