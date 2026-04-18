@@ -123,6 +123,7 @@ class EqBandSlider extends StatelessWidget {
         ];
         
         return Stack(
+          clipBehavior: Clip.none,
           children: List.generate(ticks.length, (index) {
             final label = ticks[index];
             final topPos = (index / (ticks.length - 1)) * h;
@@ -187,8 +188,7 @@ class _VerticalEqSlider extends StatelessWidget {
         return GestureDetector(
           onVerticalDragUpdate: (details) {
             final localPos = details.localPosition;
-            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth || 
-                localPos.dy < 0 || localPos.dy > constraints.maxHeight) {
+            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth) {
               return;
             }
             final dy = localPos.dy;

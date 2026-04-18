@@ -84,7 +84,7 @@ class _BlePageState extends State<BlePage> {
                     // Area 1 (Mixed Sliders) - Left Side
                     Expanded(
                       child: Container(
-                        margin: const EdgeInsets.only(left: 10, right: 5, bottom: 5),
+                        margin: const EdgeInsets.only(left: 10, right: 5, bottom: 20),
                         child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
                           final section = getIt<MixerService>().getItemsForSection("Area 1");
                           
@@ -110,7 +110,7 @@ class _BlePageState extends State<BlePage> {
                     // Area 2 (Selection Area) - Right Side
                     Container(
                       width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
-                      margin: const EdgeInsets.only(right: 5, bottom: 5),
+                      margin: const EdgeInsets.only(right: 5, bottom: 20),
                       decoration: BoxDecoration(
                         color: Colors.black87,
                         borderRadius: BorderRadius.circular(12),
@@ -669,7 +669,7 @@ class _BlePageState extends State<BlePage> {
             Positioned(
               left: 0,
               top: 10,
-              bottom: 10,
+              bottom: 20,
               right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.24 : 0.17) + 5,
               child: Container(
                  padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -737,7 +737,7 @@ class _BlePageState extends State<BlePage> {
                                         softWrap: true,
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 14,
+                                          fontSize: 16,
                                         ),
                                       ),
                                     ),

@@ -68,7 +68,7 @@ class MixerSlider extends StatelessWidget {
                 ),
                 // Mute Icon
                 if (showMute) ...[
-                   const SizedBox(width: 8),
+                   const SizedBox(width: 4),
                    IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -123,6 +123,7 @@ class MixerSlider extends StatelessWidget {
         final ticks = ['100', '', '', '75', '', '', '50', '', '', '25', '', '', '0'];
         
         return Stack(
+          clipBehavior: Clip.none,
           children: List.generate(ticks.length, (index) {
             final label = ticks[index];
             final topPos = (index / (ticks.length - 1)) * h;
@@ -186,8 +187,7 @@ class _VerticalSlider extends StatelessWidget {
         return GestureDetector(
           onVerticalDragUpdate: (details) {
             final localPos = details.localPosition;
-            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth || 
-                localPos.dy < 0 || localPos.dy > constraints.maxHeight) {
+            if (localPos.dx < 0 || localPos.dx > constraints.maxWidth) {
               return;
             }
             final dy = localPos.dy;
