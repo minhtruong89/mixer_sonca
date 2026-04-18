@@ -325,6 +325,90 @@
 		  
 	  },
 
+
+	  "Area MUSIC EQ" :{
+		  "desc": "MUSIC Equalizer",
+		  "areaType": "Overlay Area",
+		  "areaFormat": "EQ Area",
+		  "backArea": "Area MUSIC MAIN",
+		  "command": "music_eq_in",
+		  "totalEQBand": 10,
+		  "control": {
+					  "typeDisplay": "eq slider",
+					  "enable": "1",
+					  "type": "PEAKING",
+					  "f0": "125",
+					  "Q": "717",
+					  "gain": "0"
+		    },
+		  "bandF0": ["125","250","500","1000","1500","2000","3000","4000","8000","16000"]
+	  },
+
+	  "Area MUSIC MAIN" :{
+		  "desc": "Area for MUSIC click main screen",
+		  "areaType": "Overlay Area",
+		  "items": {
+			  "MUSIC": {
+				  "category": "MUSIC",
+				  "command": "music_volume",
+				  "indexList": [
+					  "music_out_mute",
+					  "music_out_volume"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "BASS": {
+				  "category": "MUSIC",
+				  "command": "music_volume",
+				  "index": "music_bass_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+
+			  "MIDDLE": {
+				  "category": "MUSIC",
+				  "command": "music_volume",
+				  "index": "music_middle_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+
+			  "TREBLE": {
+				  "category": "MUSIC",
+				  "command": "music_volume",
+				  "index": "music_treb_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  } 			  
+			  
+			  
+		  },
+		  "buttons": {
+			  "MUSIC": {
+				  "event": {
+					  "click": "Area MUSIC EQ"
+				  }				  
+				}
+			  
+			  
+		  }
+		  
+	  },
+
 	  "Area 1" :{
 		  "desc": "Area left side",
 		  "areaType": "Main Area",
@@ -385,7 +469,10 @@
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
 					  "maxValue": "100"
-				}
+				  },
+				  "event": {
+					  "click": "Area MUSIC MAIN"
+				  }
 			  },
 			  
 			  "LIVE": {
