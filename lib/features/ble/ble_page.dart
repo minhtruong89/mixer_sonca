@@ -727,18 +727,22 @@ class _BlePageState extends State<BlePage> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      btn.label,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
+                                    Expanded(
+                                      child: Text(
+                                        btn.label,
+                                        textAlign: TextAlign.right,
+                                        softWrap: true,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     const Icon(
                                       Icons.tune,
                                       color: Colors.white,
-                                      size: 28,
+                                      size: 24,
                                     ),
                                   ],
                                 ),
