@@ -194,6 +194,8 @@ class DisplayControl {
   bool get isSwitch => typeDisplay.contains('swic') || typeDisplay.contains('switch'); // Handle typo in JSON "swicht"
   bool get isRadio => typeDisplay.contains('radio');
   bool get isVerticalSlider => typeDisplay.contains('slider');
+  bool get isDropdown => typeDisplay.contains('drop down');
+  bool get isNormalButton => typeDisplay.contains('normal button');
 }
 
 /// Represents an option in a radio group

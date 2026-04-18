@@ -349,7 +349,6 @@ class _BlePageState extends State<BlePage> {
   }
 
   Widget _buildDynamicControl(BuildContext context, DisplayItem item, BleViewModel viewModel) {
-    // 1. Radio Group
     final stateKey = "${item.command}_${item.paramName ?? ''}";
 
     // 1. Radio Group
@@ -426,7 +425,98 @@ class _BlePageState extends State<BlePage> {
         ),
       );
     } 
-    // 2. Switch Button
+    // 2. Dropdown List
+    else if (item.control.isDropdown) {
+      final rawValue = viewModel.getControlValue(stateKey, defaultValue: null);
+      final currentValue = _getMappedDisplayValue(item, rawValue);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: item.event?.click != null 
+                ? () => _navigateToArea(item.event!.click)
+                : null,
+              child: Text(
+                item.label, 
+                style: TextStyle(
+                  color: Colors.white, 
+                  fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
+                  decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 16
+                )
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: currentValue,
+                  isExpanded: true,
+                  dropdownColor: Colors.grey[900],
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                  items: item.control.options.map((option) {
+                    return DropdownMenuItem<String>(
+                      value: option.value,
+                      child: Text(
+                        option.label,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      _handleDynamicControlChange(item, val, viewModel);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    // 3. Normal Button
+    else if (item.control.isNormalButton) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: () {
+               _handleDynamicControlChange(item, 1, viewModel);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white.withOpacity(0.05),
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white24, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              item.label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    // 4. Switch Button
     else if (item.control.isSwitch) {
       final isSwitchedOn = viewModel.getControlValue(stateKey, defaultValue: 0) == 1;
 
@@ -703,8 +793,8 @@ class _BlePageState extends State<BlePage> {
       
       // 2. Build parameter map & Resolve Value
       dynamic finalValue = value;
-      // Special handling for Radio options that might need value mapping (String -> ID)
-      if (item.control.isRadio && value is String) {
+      // Special handling for Radio/Dropdown options that might need value mapping (String -> ID)
+      if ((item.control.isRadio || item.control.isDropdown) && value is String) {
          if (cmdDef.valueMap != null) {
             for (var entry in cmdDef.valueMap!.entries) {
                if (entry.value.toString().toLowerCase() == value.toString().toLowerCase()) {
@@ -748,7 +838,7 @@ class _BlePageState extends State<BlePage> {
   /// Helper to map raw protocol values (integers) to UI display strings.
   /// Also handles default values (e.g., Bluetooth if 0).
   String? _getMappedDisplayValue(DisplayItem item, dynamic rawValue) {
-    if (item.control.isRadio) {
+    if (item.control.isRadio || item.control.isDropdown) {
       final protocolService = getIt<ProtocolService>();
       final paramName = item.paramName ?? '';
       

@@ -334,6 +334,13 @@
             "1": { "name": "dac_gain", "type": "q8_8_le" },
             "2": { "name": "dac_mute", "type": "uint16_le" }
           }
+        },
+		"0x80": {
+          "name": "system_config",
+          "indices": {
+            "1": { "name": "save_config", "type": "uint16_le" },
+            "2": { "name": "reset_config", "type": "uint16_le" }
+          }
         }
       }
     },

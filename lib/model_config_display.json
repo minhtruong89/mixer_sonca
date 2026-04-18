@@ -325,7 +325,7 @@
             "command": "system_app_mode",
             "index": "app_mode",
             "control": {
-              "typeDisplay": "group radio button",
+              "typeDisplay": "drop down list",
               "valueType": "uint16",
               "options": [
                 { "label": "Bluetooth", "value": "Bluetooth" },
@@ -364,6 +364,26 @@
             "index": "enable",
             "control": {
               "typeDisplay": "swicht button",
+              "valueType": "uint16"
+            }			
+          }, 
+		  
+		  "SAVE CONFIG": {
+            "category": "SYSTEM",
+            "command": "system_config",
+            "index": "save_config",
+            "control": {
+              "typeDisplay": "normal button",
+              "valueType": "uint16"
+            }			
+          }, 
+		  
+		  "RESET CONFIG": {
+            "category": "SYSTEM",
+            "command": "system_config",
+            "index": "reset_config",
+            "control": {
+              "typeDisplay": "normal button",
               "valueType": "uint16"
             }			
           }
