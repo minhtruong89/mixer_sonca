@@ -15,6 +15,7 @@ import 'package:mixer_sonca/features/ble/widgets/mixer_slider.dart';
 import 'package:mixer_sonca/features/ble/widgets/eq_band_slider.dart';
 import 'package:mixer_sonca/features/ble/widgets/eq_band_dialog.dart';
 import 'package:mixer_sonca/injection.dart';
+
 class BlePage extends StatefulWidget {
   const BlePage({super.key});
 
@@ -102,7 +103,7 @@ class _BlePageState extends State<BlePage> {
                             );
                           }
                           return const Center(child: Text("Area 1 empty", style: TextStyle(color: Colors.white24)));
-                        }),
+                         }),
                       ),
                     ),
 
@@ -259,7 +260,6 @@ class _BlePageState extends State<BlePage> {
                               separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white10),
                               itemBuilder: (context, index) {
                                 final device = viewModel.devices[index];
-                                final mfgData = device.manufacturerData.entries.map((e) => "ID: <0x${e.key.toRadixString(16).padLeft(4, '0')}> 0x${e.value.map((v) => v.toRadixString(16).padLeft(2, '0')).join('').toUpperCase()}").join('\n');
                                 
                                 return InkWell(
                                   onTap: () {
@@ -380,7 +380,7 @@ class _BlePageState extends State<BlePage> {
             // Align options to the right
             Align(
               alignment: Alignment.centerRight,
-              child: IntrinsicWidth(
+              child: IntWidthWrapper(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: item.control.options.map((option) {
@@ -525,18 +525,21 @@ class _BlePageState extends State<BlePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            GestureDetector(
-              onTap: item.event?.click != null 
-                ? () => _navigateToArea(item.event!.click)
-                : null,
-              child: Text(
-                item.label, 
-                style: TextStyle(
-                  color: Colors.white, 
-                  fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
-                  decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
-                  fontWeight: FontWeight.bold
-                )
+            Expanded(
+              child: GestureDetector(
+                onTap: item.event?.click != null 
+                  ? () => _navigateToArea(item.event!.click)
+                  : null,
+                child: Text(
+                  item.label, 
+                  softWrap: true,
+                  style: TextStyle(
+                    color: Colors.white, 
+                    fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
+                    decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
+                    fontWeight: FontWeight.bold
+                  )
+                ),
               ),
             ),
             Switch(
@@ -554,7 +557,7 @@ class _BlePageState extends State<BlePage> {
         ),
       );
     }
-    // 3. Vertical Slider (Mixer Style)
+    // 5. Vertical Slider (Mixer Style)
     else if (item.control.isVerticalSlider) {
       // For mixer sliders, we look for _mute and _volume in indexList
       // If indexList is empty, we fallback to item.paramName (no mute)
@@ -659,19 +662,21 @@ class _BlePageState extends State<BlePage> {
         color: Colors.black.withOpacity(0.95), // Deep dark overlay
         child: Stack(
           children: [
-            // Left Content (Same width as Area 1)
+            // Left Content (Scrollable Sliders)
             Positioned(
               left: 0,
               top: 10,
               bottom: 10,
-              right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28) + 5, // Leave right part empty (Area 2 width + margin)
+              right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.22 : 0.15) + 5,
               child: Container(
                  padding: const EdgeInsets.symmetric(horizontal: 10),
                  child: SingleChildScrollView(
                    scrollDirection: Axis.horizontal,
                    child: Row(
                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                     children: section.items.values.map((item) {
+                     children: section.items.values
+                        .where((item) => !item.control.isSwitch)
+                        .map((item) {
                        return Padding(
                          padding: const EdgeInsets.only(right: 12),
                          child: _buildDynamicControl(context, item, viewModel),
@@ -682,53 +687,67 @@ class _BlePageState extends State<BlePage> {
                ),
             ),
 
-            // Right Side Content (Buttons)
+            // Right Side Content (Switches & Navigation Buttons)
             Positioned(
               top: 10,
               right: 10,
-              width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28) - 10,
+              width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.22 : 0.15) - 10,
               child: Builder(builder: (context) {
-                 if (section.buttons.isNotEmpty) {
+                    final switches = section.items.values.where((item) => item.control.isSwitch).toList();
+
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      children: section.buttons.values.map((btn) {
-                         return Padding(
-                           padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
-                           child: InkWell(
-                             onTap: () {
-                                if (btn.event?.click != null) {
-                                   _navigateToArea(btn.event!.click);
-                                }
-                             },
-                             borderRadius: BorderRadius.circular(8),
-                             child: Container(
-                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                               child: Row(
-                                 mainAxisSize: MainAxisSize.min,
-                                 children: [
-                                   Text(
-                                     btn.label,
-                                     style: const TextStyle(
-                                       color: Colors.white,
-                                       fontSize: 18,
-                                     ),
-                                   ),
-                                   const SizedBox(width: 8),
-                                   const Icon(
-                                     Icons.tune,
-                                     color: Colors.white,
-                                     size: 28,
-                                   ),
-                                 ],
-                               ),
-                             ),
-                           ),
-                         );
-                      }).toList(),
+                      children: [
+                        // Switches moved from the left list
+                        ...switches.map((item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
+                              child: _buildDynamicControl(context, item, viewModel),
+                            )),
+
+                        if (switches.isNotEmpty && section.buttons.isNotEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 12.0, right: 10.0),
+                            child: Divider(color: Colors.white24, height: 1),
+                          ),
+
+                        // Navigation Buttons
+                        ...section.buttons.values.map((btn) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
+                            child: InkWell(
+                              onTap: () {
+                                 if (btn.event?.click != null) {
+                                    _navigateToArea(btn.event!.click);
+                                 }
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      btn.label,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(
+                                      Icons.tune,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ],
                     );
-                 }
-                 return const SizedBox.shrink();
               }),
             ),
             Positioned(
@@ -1154,5 +1173,15 @@ class _BlePageState extends State<BlePage> {
         ),
       ),
     );
+  }
+}
+
+class IntWidthWrapper extends StatelessWidget {
+  final Widget child;
+  const IntWidthWrapper({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicWidth(child: child);
   }
 }
