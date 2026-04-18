@@ -238,6 +238,92 @@
 		  }
 		  
 	  },
+	  
+	  "Area MIC REVERB" :{
+		  "desc": "Area for REVERB click main screen",
+		  "areaType": "Overlay Area",
+		  "items": {
+			  "REVERB": {
+				  "category": "MIC",
+				  "command": "mic_effects_volume",
+				  "index": "mic_reverb_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Dry": {
+				  "category": "MIC",
+				  "command": "mic_reverb",
+				  "index": "dry_scale",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Wet": {
+				  "category": "MIC",
+				  "command": "mic_reverb",
+				  "index": "wet_scale",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Width": {
+				  "category": "MIC",
+				  "command": "mic_reverb",
+				  "index": "width_scale",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Roomsize": {
+				  "category": "MIC",
+				  "command": "mic_reverb",
+				  "index": "roomsize_scale",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  			  
+			  "Damping": {
+				  "category": "MIC",
+				  "command": "mic_reverb",
+				  "index": "damping_scale",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "Mono": {
+				  "category": "MIC",
+				  "command": "mic_reverb",
+				  "index": "mono",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }
+			  	  
+			  
+		  }
+		  
+	  },
 
 	  "Area 1" :{
 		  "desc": "Area left side",
@@ -282,7 +368,10 @@
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
 					  "maxValue": "100"
-				}
+				  },
+				  "event": {
+					  "click": "Area MIC REVERB"
+				  }
 			  },
 			  
 			  "MUSIC": {
