@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
 
     <application
-        android:label="MixGo Sonca – Mic Booster &amp; Sound FX"
+        android:label="MixGo Sonca – Sound FX"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
