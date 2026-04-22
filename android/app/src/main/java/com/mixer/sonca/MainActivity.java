@@ -1,4 +1,4 @@
-package com.sonca.mixer_sonca;
+package com.mixer.sonca;
 
 import io.flutter.embedding.android.FlutterActivity;
 
