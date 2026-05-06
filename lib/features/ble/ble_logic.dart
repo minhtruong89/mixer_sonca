@@ -124,7 +124,7 @@ class BleRepositoryImpl implements BleRepository {
 
   @override
   Future<bool> get isBluetoothOn async {
-    final state = await FlutterBluePlus.adapterState.first;
+    final state = await FlutterBluePlus.adapterState.where((s) => s != BluetoothAdapterState.unknown).first;
     return state == BluetoothAdapterState.on;
   }
 
@@ -197,12 +197,37 @@ class BleViewModel extends ChangeNotifier {
     if (notify) notifyListeners();
   }
 
-  void init() {
+  bool _isBleListenersSetup = false;
+
+  void _ensureBleInitialized() {
+    if (_isBleListenersSetup) return;
+    _isBleListenersSetup = true;
+
     _repository.scanResults.listen((devices) {
       _devices = devices;
       notifyListeners();
     });
 
+    // Listen to BLE connection changes
+    FlutterBluePlus.events.onConnectionStateChanged.listen((event) {
+      if (event.connectionState == BluetoothConnectionState.disconnected) {
+        if (_selectedDevice != null && event.device.remoteId.str == _selectedDevice!.id) {
+          debugPrint('BLE: Device disconnected.');
+          _handleDeviceDisconnected();
+        }
+      }
+    });
+
+    // Listen to device Bluetooth adapter state
+    FlutterBluePlus.adapterState.listen((state) {
+      if (state == BluetoothAdapterState.off) {
+        debugPrint('BLE: Adapter turned off.');
+        _handleDeviceDisconnected();
+      }
+    });
+  }
+
+  void init() {
     // Listen for incoming protocol frames
     _protocolHandler.incomingFrames.listen((frame) {
       debugPrint('Protocol: Received frame - ${frame.header}');
@@ -211,7 +236,16 @@ class BleViewModel extends ChangeNotifier {
     });
   }
 
+  void _handleDeviceDisconnected() {
+    _selectedDevice = null;
+    _controlStates.clear();
+    _connectingDeviceId = null;
+    _isConnecting = false;
+    notifyListeners();
+  }
+
   Future<void> scanDevices() async {
+    _ensureBleInitialized();
     _isScanning = true;
     notifyListeners();
 
