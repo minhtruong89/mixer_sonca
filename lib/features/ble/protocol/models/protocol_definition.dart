@@ -247,6 +247,7 @@ class IndexRuleDefinition {
   final String indexRange;
   final int bandCount;
   final int fieldsPerBand;
+  final int bandBaseIndex; // Added for flexible starting index
   final Map<int, String> fieldOrder;
   final Map<String, String> fieldTypes;
 
@@ -254,6 +255,7 @@ class IndexRuleDefinition {
     required this.indexRange,
     required this.bandCount,
     required this.fieldsPerBand,
+    this.bandBaseIndex = 1, // Default to 1 if not specified
     required this.fieldOrder,
     required this.fieldTypes,
   });
@@ -279,6 +281,7 @@ class IndexRuleDefinition {
       indexRange: json['indexRange'] ?? '',
       bandCount: json['bandCount'] ?? 0,
       fieldsPerBand: json['fieldsPerBand'] ?? 0,
+      bandBaseIndex: json['bandBaseIndex'] ?? 1,
       fieldOrder: fieldOrderMap,
       fieldTypes: fieldTypesMap,
     );
@@ -287,8 +290,8 @@ class IndexRuleDefinition {
   /// Calculate band and field from index
   /// Returns (band, field) tuple
   (int, int) calculateBandAndField(int index) {
-    final band = (index - 1) ~/ fieldsPerBand;
-    final field = (index - 1) % fieldsPerBand;
+    final band = (index - bandBaseIndex) ~/ fieldsPerBand;
+    final field = (index - bandBaseIndex) % fieldsPerBand;
     return (band, field);
   }
 
@@ -315,6 +318,6 @@ class IndexRuleDefinition {
     
     if (fieldNum == null) return null;
     
-    return band * fieldsPerBand + fieldNum + 1;
+    return band * fieldsPerBand + fieldNum + bandBaseIndex;
   }
 }

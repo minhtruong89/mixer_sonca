@@ -1,0 +1,478 @@
+{
+  "name": "BLE Android Communication Application Protocol",
+  "schemaVersion": 1,
+  "valueEncoding": {
+    "type": "int16",
+    "endianness": "little"
+  },
+  "operations": {
+    "get": {
+      "id": 0,
+      "enum": "BLE_COMM_PROTOCOL_OP_GET",
+      "requestPayload": "index_list",
+      "responsePayload": "index_value_list"
+    },
+    "set": {
+      "id": 1,
+      "enum": "BLE_COMM_PROTOCOL_OP_SET",
+      "requestPayload": "index_value_list",
+      "responsePayload": "empty"
+    }
+  },
+  "payloadFormats": {
+    "index_list": {
+      "fields": [
+        { "name": "count", "offset": 0, "size": 1, "type": "uint8" },
+        { "name": "indices", "offset": 1, "size": "count", "type": "uint8[]" }
+      ]
+    },
+    "index_value_list": {
+      "fields": [
+        { "name": "count", "offset": 0, "size": 1, "type": "uint8" },
+        { "name": "pairs", "offset": 1, "size": "count * 3", "type": "index:uint8,value:int16le[]" }
+      ]
+    }
+  },
+  "limits": {
+    "maxPairCount": 50
+  },
+  "sharedIndexLayouts": {
+    "eq10": {
+      "indexCount": 41,
+      "bandCount": 10,
+      "bandBaseIndex": 1,
+      "fieldsPerBand": 4,
+      "fields": [
+        { "offset": 0, "name": "gain", "enum": "BLE_ANDROID_APP_EQ_FIELD_GAIN" },
+        { "offset": 1, "name": "frequency", "enum": "BLE_ANDROID_APP_EQ_FIELD_FREQ" },
+        { "offset": 2, "name": "q", "enum": "BLE_ANDROID_APP_EQ_FIELD_Q" },
+        { "offset": 3, "name": "type", "enum": "BLE_ANDROID_APP_EQ_FIELD_TYPE" }
+      ],
+      "indices": [
+        { "index": 0, "name": "bypass", "enum": "BLE_ANDROID_APP_EQ_IDX_BYPASS" },
+        { "index": 1, "name": "eq_1_gain" },
+        { "index": 2, "name": "eq_1_frequency" },
+        { "index": 3, "name": "eq_1_q" },
+        { "index": 4, "name": "eq_1_type" },
+        { "index": 5, "name": "eq_2_gain" },
+        { "index": 6, "name": "eq_2_frequency" },
+        { "index": 7, "name": "eq_2_q" },
+        { "index": 8, "name": "eq_2_type" },
+        { "index": 9, "name": "eq_3_gain" },
+        { "index": 10, "name": "eq_3_frequency" },
+        { "index": 11, "name": "eq_3_q" },
+        { "index": 12, "name": "eq_3_type" },
+        { "index": 13, "name": "eq_4_gain" },
+        { "index": 14, "name": "eq_4_frequency" },
+        { "index": 15, "name": "eq_4_q" },
+        { "index": 16, "name": "eq_4_type" },
+        { "index": 17, "name": "eq_5_gain" },
+        { "index": 18, "name": "eq_5_frequency" },
+        { "index": 19, "name": "eq_5_q" },
+        { "index": 20, "name": "eq_5_type" },
+        { "index": 21, "name": "eq_6_gain" },
+        { "index": 22, "name": "eq_6_frequency" },
+        { "index": 23, "name": "eq_6_q" },
+        { "index": 24, "name": "eq_6_type" },
+        { "index": 25, "name": "eq_7_gain" },
+        { "index": 26, "name": "eq_7_frequency" },
+        { "index": 27, "name": "eq_7_q" },
+        { "index": 28, "name": "eq_7_type" },
+        { "index": 29, "name": "eq_8_gain" },
+        { "index": 30, "name": "eq_8_frequency" },
+        { "index": 31, "name": "eq_8_q" },
+        { "index": 32, "name": "eq_8_type" },
+        { "index": 33, "name": "eq_9_gain" },
+        { "index": 34, "name": "eq_9_frequency" },
+        { "index": 35, "name": "eq_9_q" },
+        { "index": 36, "name": "eq_9_type" },
+        { "index": 37, "name": "eq_10_gain" },
+        { "index": 38, "name": "eq_10_frequency" },
+        { "index": 39, "name": "eq_10_q" },
+        { "index": 40, "name": "eq_10_type" }
+      ]
+    },
+    "recordingEq7": {
+      "indexCount": 29,
+      "bandCount": 7,
+      "bandBaseIndex": 1,
+      "fieldsPerBand": 4,
+      "fields": [
+        { "offset": 0, "name": "gain", "enum": "BLE_ANDROID_APP_EQ_FIELD_GAIN" },
+        { "offset": 1, "name": "frequency", "enum": "BLE_ANDROID_APP_EQ_FIELD_FREQ" },
+        { "offset": 2, "name": "q", "enum": "BLE_ANDROID_APP_EQ_FIELD_Q" },
+        { "offset": 3, "name": "type", "enum": "BLE_ANDROID_APP_EQ_FIELD_TYPE" }
+      ],
+      "indices": [
+        { "index": 0, "name": "bypass", "enum": "BLE_ANDROID_APP_RECORDING_EQ_IDX_BYPASS" },
+        { "index": 1, "name": "eq_1_gain" },
+        { "index": 2, "name": "eq_1_frequency" },
+        { "index": 3, "name": "eq_1_q" },
+        { "index": 4, "name": "eq_1_type" },
+        { "index": 5, "name": "eq_2_gain" },
+        { "index": 6, "name": "eq_2_frequency" },
+        { "index": 7, "name": "eq_2_q" },
+        { "index": 8, "name": "eq_2_type" },
+        { "index": 9, "name": "eq_3_gain" },
+        { "index": 10, "name": "eq_3_frequency" },
+        { "index": 11, "name": "eq_3_q" },
+        { "index": 12, "name": "eq_3_type" },
+        { "index": 13, "name": "eq_4_gain" },
+        { "index": 14, "name": "eq_4_frequency" },
+        { "index": 15, "name": "eq_4_q" },
+        { "index": 16, "name": "eq_4_type" },
+        { "index": 17, "name": "eq_5_gain" },
+        { "index": 18, "name": "eq_5_frequency" },
+        { "index": 19, "name": "eq_5_q" },
+        { "index": 20, "name": "eq_5_type" },
+        { "index": 21, "name": "eq_6_gain" },
+        { "index": 22, "name": "eq_6_frequency" },
+        { "index": 23, "name": "eq_6_q" },
+        { "index": 24, "name": "eq_6_type" },
+        { "index": 25, "name": "eq_7_gain" },
+        { "index": 26, "name": "eq_7_frequency" },
+        { "index": 27, "name": "eq_7_q" },
+        { "index": 28, "name": "eq_7_type" }
+      ]
+    }
+  },
+  "categories": [
+    {
+      "id": 1,
+      "hexId": "0x01",
+      "name": "MIC",
+      "enum": "BLE_ANDROID_APP_CAT_MIC",
+      "status": "implemented",
+      "commands": [
+        {
+          "id": 1,
+          "hexId": "0x01",
+          "name": "COMMON",
+          "enum": "BLE_ANDROID_APP_MIC_CMD_COMMON",
+          "indexCount": 12,
+          "indices": [
+            { "index": 0, "name": "master_gain", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_MASTER_GAIN" },
+            { "index": 1, "name": "master_mute", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_MASTER_MUTE" },
+            { "index": 2, "name": "volume_mic_1", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_VOLUME_MIC1" },
+            { "index": 3, "name": "mute_mic_1", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_MUTE_MIC1" },
+            { "index": 4, "name": "volume_mic_2", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_VOLUME_MIC2" },
+            { "index": 5, "name": "mute_mic_2", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_MUTE_MIC2" },
+            { "index": 6, "name": "volume_mic_3", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_VOLUME_MIC3" },
+            { "index": 7, "name": "mute_mic_3", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_MUTE_MIC3" },
+            { "index": 8, "name": "bass_gain", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_BASS_GAIN" },
+            { "index": 9, "name": "middle_gain", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_MIDDLE_GAIN" },
+            { "index": 10, "name": "treb_gain", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_TREB_GAIN" },
+            { "index": 11, "name": "effects_gain", "enum": "BLE_ANDROID_APP_MIC_COMMON_IDX_EFFECTS_GAIN" }
+          ]
+        },
+        {
+          "id": 2,
+          "hexId": "0x02",
+          "name": "EQ_EFFECT",
+          "enum": "BLE_ANDROID_APP_MIC_CMD_EQ_EFFECT",
+          "layoutRef": "eq10"
+        },
+        {
+          "id": 3,
+          "hexId": "0x03",
+          "name": "ECHO_EFFECT",
+          "enum": "BLE_ANDROID_APP_MIC_CMD_ECHO_EFFECT",
+          "indexCount": 15,
+          "indices": [
+            { "index": 0, "name": "feedback", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_FEEDBACK" },
+            { "index": 1, "name": "drylevel", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_DRY_LEVEL" },
+            { "index": 2, "name": "delaytime", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_DELAY_TIME" },
+            { "index": 3, "name": "delaylevel", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_DELAY_LEVEL" },
+            { "index": 4, "name": "delayPan", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_DELAY_PAN" },
+            { "index": 5, "name": "tap1_time", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP1_TIME" },
+            { "index": 6, "name": "tap1_level", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP1_LEVEL" },
+            { "index": 7, "name": "tap1_pan", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP1_PAN" },
+            { "index": 8, "name": "tap2_time", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP2_TIME" },
+            { "index": 9, "name": "tap2_level", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP2_LEVEL" },
+            { "index": 10, "name": "tap2_pan", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP2_PAN" },
+            { "index": 11, "name": "tap3_time", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP3_TIME" },
+            { "index": 12, "name": "tap3_level", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP3_LEVEL" },
+            { "index": 13, "name": "tap3_pan", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_TAP3_PAN" },
+            { "index": 14, "name": "enable", "enum": "BLE_ANDROID_APP_MIC_ECHO_IDX_ENABLE" }
+          ]
+        },
+        {
+          "id": 4,
+          "hexId": "0x04",
+          "name": "REVERB_EFFECT",
+          "enum": "BLE_ANDROID_APP_MIC_CMD_REVERB_EFFECT",
+          "indexCount": 18,
+          "indices": [
+            { "index": 0, "name": "inGain", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_IN_GAIN" },
+            { "index": 1, "name": "BandWidth", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_BANDWIDTH" },
+            { "index": 2, "name": "earlyRef", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_EARLY_REF" },
+            { "index": 3, "name": "RevbEff", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_REVB_EFF" },
+            { "index": 4, "name": "DryPercent", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_DRY_PERCENT" },
+            { "index": 5, "name": "Damping", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_DAMPING" },
+            { "index": 6, "name": "Diffusion", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_DIFFUSION" },
+            { "index": 7, "name": "DecayTime", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_DECAY_TIME" },
+            { "index": 8, "name": "PreDelay", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_PRE_DELAY" },
+            { "index": 9, "name": "outGain", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_OUT_GAIN" },
+            { "index": 10, "name": "EnvelopeTap1", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENVELOPE_TAP1" },
+            { "index": 11, "name": "EnvelopeTap2", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENVELOPE_TAP2" },
+            { "index": 12, "name": "EnvelopeTap3", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENVELOPE_TAP3" },
+            { "index": 13, "name": "EnvelopeTap4", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENVELOPE_TAP4" },
+            { "index": 14, "name": "EnvelopeTap5", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENVELOPE_TAP5" },
+            { "index": 15, "name": "EnvelopeTap6", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENVELOPE_TAP6" },
+            { "index": 16, "name": "scale", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_SCALE" },
+            { "index": 17, "name": "Enable", "enum": "BLE_ANDROID_APP_MIC_REVERB_IDX_ENABLE" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "hexId": "0x02",
+      "name": "MUSIC",
+      "enum": "BLE_ANDROID_APP_CAT_MUSIC",
+      "status": "implemented",
+      "commands": [
+        {
+          "id": 1,
+          "hexId": "0x01",
+          "name": "COMMON",
+          "enum": "BLE_ANDROID_APP_MUSIC_CMD_COMMON",
+          "indexCount": 5,
+          "indices": [
+            { "index": 0, "name": "volume_gain", "enum": "BLE_ANDROID_APP_MUSIC_COMMON_IDX_VOLUME_GAIN" },
+            { "index": 1, "name": "mute", "enum": "BLE_ANDROID_APP_MUSIC_COMMON_IDX_MUTE" },
+            { "index": 2, "name": "bass_gain", "enum": "BLE_ANDROID_APP_MUSIC_COMMON_IDX_BASS_GAIN" },
+            { "index": 3, "name": "middle_gain", "enum": "BLE_ANDROID_APP_MUSIC_COMMON_IDX_MIDDLE_GAIN" },
+            { "index": 4, "name": "treb_gain", "enum": "BLE_ANDROID_APP_MUSIC_COMMON_IDX_TREB_GAIN" }
+          ]
+        },
+        {
+          "id": 2,
+          "hexId": "0x02",
+          "name": "EQ_EFFECT",
+          "enum": "BLE_ANDROID_APP_MUSIC_CMD_EQ_EFFECT",
+          "layoutRef": "eq10"
+        },
+        {
+          "id": 3,
+          "hexId": "0x03",
+          "name": "BASSBOOST_EFFECT",
+          "enum": "BLE_ANDROID_APP_MUSIC_CMD_BASSBOOST_EFFECT",
+          "indexCount": 2,
+          "indices": [
+            { "index": 0, "name": "enable", "enum": "BLE_ANDROID_APP_MUSIC_BASSBOOST_IDX_ENABLE" },
+            { "index": 1, "name": "intensity", "enum": "BLE_ANDROID_APP_MUSIC_BASSBOOST_IDX_INTENSITY" }
+          ]
+        },
+        {
+          "id": 4,
+          "hexId": "0x04",
+          "name": "ENHANCER_EFFECT",
+          "enum": "BLE_ANDROID_APP_MUSIC_CMD_ENHANCER_EFFECT",
+          "indexCount": 2,
+          "indices": [
+            { "index": 0, "name": "enable", "enum": "BLE_ANDROID_APP_MUSIC_ENHANCER_IDX_ENABLE" },
+            { "index": 1, "name": "level", "enum": "BLE_ANDROID_APP_MUSIC_ENHANCER_IDX_LEVEL" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "hexId": "0x03",
+      "name": "GUITAR",
+      "enum": "BLE_ANDROID_APP_CAT_GUITAR",
+      "status": "implemented",
+      "commands": [
+        {
+          "id": 1,
+          "hexId": "0x01",
+          "name": "COMMON",
+          "enum": "BLE_ANDROID_APP_GUITAR_CMD_COMMON",
+          "indexCount": 5,
+          "indices": [
+            { "index": 0, "name": "volume_gain", "enum": "BLE_ANDROID_APP_GUITAR_COMMON_IDX_VOLUME_GAIN" },
+            { "index": 1, "name": "flanger_enable", "enum": "BLE_ANDROID_APP_GUITAR_COMMON_IDX_FLANGER_ENABLE" },
+            { "index": 2, "name": "autowah_enable", "enum": "BLE_ANDROID_APP_GUITAR_COMMON_IDX_AUTOWAH_ENABLE" },
+            { "index": 3, "name": "vibrato_enable", "enum": "BLE_ANDROID_APP_GUITAR_COMMON_IDX_VIBRATO_ENABLE" },
+            { "index": 4, "name": "distortor_enable", "enum": "BLE_ANDROID_APP_GUITAR_COMMON_IDX_DISTORTOR_ENABLE" }
+          ]
+        },
+        {
+          "id": 2,
+          "hexId": "0x02",
+          "name": "FLANGER_EFFECT",
+          "enum": "BLE_ANDROID_APP_GUITAR_CMD_FLANGER_EFFECT",
+          "indexCount": 4,
+          "indices": [
+            { "index": 0, "name": "efflevel", "enum": "BLE_ANDROID_APP_GUITAR_FLANGER_IDX_EFF_LEVEL" },
+            { "index": 1, "name": "feedback", "enum": "BLE_ANDROID_APP_GUITAR_FLANGER_IDX_FEEDBACK" },
+            { "index": 2, "name": "osc_depth", "enum": "BLE_ANDROID_APP_GUITAR_FLANGER_IDX_OSC_DEPTH" },
+            { "index": 3, "name": "osc_freq", "enum": "BLE_ANDROID_APP_GUITAR_FLANGER_IDX_OSC_FREQ" }
+          ]
+        },
+        {
+          "id": 3,
+          "hexId": "0x03",
+          "name": "AUTOWAH_EFFECT",
+          "enum": "BLE_ANDROID_APP_GUITAR_CMD_AUTOWAH_EFFECT",
+          "indexCount": 5,
+          "indices": [
+            { "index": 0, "name": "frequency_center", "enum": "BLE_ANDROID_APP_GUITAR_AUTOWAH_IDX_FREQUENCY_CENTER" },
+            { "index": 1, "name": "band_width", "enum": "BLE_ANDROID_APP_GUITAR_AUTOWAH_IDX_BAND_WIDTH" },
+            { "index": 2, "name": "attack", "enum": "BLE_ANDROID_APP_GUITAR_AUTOWAH_IDX_ATTACK" },
+            { "index": 3, "name": "release", "enum": "BLE_ANDROID_APP_GUITAR_AUTOWAH_IDX_RELEASE" },
+            { "index": 4, "name": "range", "enum": "BLE_ANDROID_APP_GUITAR_AUTOWAH_IDX_RANGE" }
+          ]
+        },
+        {
+          "id": 4,
+          "hexId": "0x04",
+          "name": "VIBRATO_EFFECT",
+          "enum": "BLE_ANDROID_APP_GUITAR_CMD_VIBRATO_EFFECT",
+          "indexCount": 3,
+          "indices": [
+            { "index": 0, "name": "freq", "enum": "BLE_ANDROID_APP_GUITAR_VIBRATO_IDX_FREQ" },
+            { "index": 1, "name": "phase", "enum": "BLE_ANDROID_APP_GUITAR_VIBRATO_IDX_PHASE" },
+            { "index": 2, "name": "depth", "enum": "BLE_ANDROID_APP_GUITAR_VIBRATO_IDX_DEPTH" }
+          ]
+        },
+        {
+          "id": 5,
+          "hexId": "0x05",
+          "name": "DISTORTOR_EFFECT",
+          "enum": "BLE_ANDROID_APP_GUITAR_CMD_DISTORTOR_EFFECT",
+          "indexCount": 2,
+          "indices": [
+            { "index": 0, "name": "threshold", "enum": "BLE_ANDROID_APP_GUITAR_DISTORTOR_IDX_THRESHOLD" },
+            { "index": 1, "name": "distorted", "enum": "BLE_ANDROID_APP_GUITAR_DISTORTOR_IDX_DISTORTED" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "hexId": "0x04",
+      "name": "RECORDING",
+      "enum": "BLE_ANDROID_APP_CAT_RECORDING",
+      "status": "implemented",
+      "commands": [
+        {
+          "id": 1,
+          "hexId": "0x01",
+          "name": "COMMON",
+          "enum": "BLE_ANDROID_APP_RECORDING_CMD_COMMON",
+          "indexCount": 3,
+          "indices": [
+            { "index": 0, "name": "volume_gain", "enum": "BLE_ANDROID_APP_RECORDING_COMMON_IDX_VOLUME_GAIN" },
+            { "index": 1, "name": "mute", "enum": "BLE_ANDROID_APP_RECORDING_COMMON_IDX_MUTE" },
+            {
+              "index": 2,
+              "name": "select_mixer",
+              "enum": "BLE_ANDROID_APP_RECORDING_COMMON_IDX_SELECT_MIXER",
+              "valueMap": [
+                { "value": 0, "name": "mic" },
+                { "value": 1, "name": "music" },
+                { "value": 2, "name": "guitar" },
+                { "value": 3, "name": "mic+music" },
+                { "value": 4, "name": "mic+guitar" },
+                { "value": 5, "name": "music+guitar" },
+                { "value": 6, "name": "all" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "hexId": "0x02",
+          "name": "EQ_EFFECT",
+          "enum": "BLE_ANDROID_APP_RECORDING_CMD_EQ_EFFECT",
+          "layoutRef": "recordingEq7"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "hexId": "0x05",
+      "name": "INPUT",
+      "enum": "BLE_ANDROID_APP_CAT_INPUT",
+      "status": "implemented",
+      "commands": [
+        {
+          "id": 1,
+          "hexId": "0x01",
+          "name": "MIC_GUITAR_1",
+          "enum": "BLE_ANDROID_APP_INPUT_CMD_MIC_GUITAR_1",
+          "indexCount": 1,
+          "indices": [
+            {
+              "index": 0,
+              "name": "select",
+              "enum": "BLE_ANDROID_APP_INPUT_MIC_GUITAR_IDX_SELECT",
+              "valueMap": [
+                { "value": 0, "name": "mic" },
+                { "value": 1, "name": "guitar" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "hexId": "0x02",
+          "name": "MIC_GUITAR_2",
+          "enum": "BLE_ANDROID_APP_INPUT_CMD_MIC_GUITAR_2",
+          "indexCount": 1,
+          "indices": [
+            {
+              "index": 0,
+              "name": "select",
+              "enum": "BLE_ANDROID_APP_INPUT_MIC_GUITAR_IDX_SELECT",
+              "valueMap": [
+                { "value": 0, "name": "mic" },
+                { "value": 1, "name": "guitar" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "hexId": "0x03",
+          "name": "MUSIC_MODE",
+          "enum": "BLE_ANDROID_APP_INPUT_CMD_MUSIC_MODE",
+          "indexCount": 1,
+          "indices": [
+            {
+              "index": 0,
+              "name": "mode",
+              "enum": "BLE_ANDROID_APP_INPUT_MUSIC_MODE_IDX_MODE",
+              "valueMap": [
+                { "value": 0, "name": "bluetooth" },
+                { "value": 1, "name": "usb" },
+                { "value": 2, "name": "hdmi" },
+                { "value": 3, "name": "linein" },
+                { "value": 4, "name": "spdifin" }
+              ],
+              "reservedValues": "5..255"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "hexId": "0x06",
+      "name": "OUTPUT",
+      "enum": "BLE_ANDROID_APP_CAT_OUTPUT",
+      "status": "reserved",
+      "commands": []
+    },
+    {
+      "id": 7,
+      "hexId": "0x07",
+      "name": "SYSTEM",
+      "enum": "BLE_ANDROID_APP_CAT_SYSTEM",
+      "status": "reserved",
+      "commands": []
+    }
+  ]
+}

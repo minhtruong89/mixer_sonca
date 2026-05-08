@@ -924,8 +924,8 @@ class _BlePageState extends State<BlePage> {
      final minGain = double.tryParse(section.control?.rawConfig['minGain']?.toString() ?? '-6.0') ?? -6.0;
      final maxGain = double.tryParse(section.control?.rawConfig['maxGain']?.toString() ?? '6.0') ?? 6.0;
 
-     // Calculate Q in double from Q6.10
-     final double qValue = defaultQ / 1024.0;
+     // Calculate Q in double from Q8.8 (previously Q6.10/1024.0)
+     final double qValue = defaultQ / 256.0;
      
      final protocolService = getIt<ProtocolService>();
      String categoryName = '';
@@ -971,7 +971,7 @@ class _BlePageState extends State<BlePage> {
                     int currentF0 = (rawF0 is int) ? rawF0 : baseF0;
 
                     final rawQ = viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
-                    double currentQ = (rawQ is int) ? (rawQ / 1024.0) : qValue;
+                    double currentQ = (rawQ is int) ? (rawQ / 256.0) : qValue;
 
                     final rawType = viewModel.getControlValue("${commandName}_band${index}_type", defaultValue: defaultTypeEnum);
                     int currentType = (rawType is int) ? rawType : defaultTypeEnum;
@@ -1096,7 +1096,7 @@ class _BlePageState extends State<BlePage> {
         if (fieldParam == 'gain') {
            rawValue = (value * 256.0).round();
         } else if (fieldParam == 'Q') {
-           rawValue = (value * 1024.0).round();
+           rawValue = (value * 256.0).round();
         } else if (fieldParam == 'f0' || fieldParam == 'type') {
            rawValue = (value is double) ? value.toInt() : (value as int);
         }

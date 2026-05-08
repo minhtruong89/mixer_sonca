@@ -414,11 +414,10 @@
 		  "areaType": "Overlay Area",
 		  "areaFormat": "EQ Area",
 		  "backArea": "Area MAIN",
-		  "command": "record_eq",
-		  "totalEQBand": 10,
+		  "command": "RECORDING_EQ_EFFECT",
+		  "totalEQBand": 7,
 		  "control": {
 					  "typeDisplay": "eq slider",
-					  "enable": "1",
 					  "type": "PEAKING",
 					  "f0": "125",
 					  "Q": "717",
@@ -433,10 +432,10 @@
 		  "items": {
 			  "MIC": {
 				  "category": "MIC",
-				  "command": "mic_volume",
+				  "command": "MIC_COMMON",
 				  "indexList": [
-					  "mic_master_mute",
-					  "mic_master_volume"
+					  "master_mute",
+					  "master_gain"
 				  ],
 				  "control": {
 					  "typeDisplay": "vertical slider",
@@ -450,8 +449,8 @@
 			  
 			  "ECHO": {
 				  "category": "MIC",
-				  "command": "mic_effects_volume",
-				  "index": "mic_echo_gain",
+				  "command": "MIC_ECHO_EFFECT",
+				  "index": "drylevel",
 				  "control": {
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
@@ -464,8 +463,8 @@
 			  
 			  "REVERB": {
 				  "category": "MIC",
-				  "command": "mic_effects_volume",
-				  "index": "mic_reverb_gain",
+				  "command": "MIC_REVERB_EFFECT",
+				  "index": "inGain",
 				  "control": {
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
@@ -478,10 +477,10 @@
 			  
 			  "MUSIC": {
 				  "category": "MUSIC",
-				  "command": "music_volume",
+				  "command": "MUSIC_COMMON",
 				  "indexList": [
-					  "music_out_mute",
-					  "music_out_volume"
+					  "mute",
+					  "volume_gain"
 				  ],
 				  "control": {
 					  "typeDisplay": "vertical slider",
@@ -493,12 +492,28 @@
 				  }
 			  },
 			  
-			  "LIVE": {
-				  "category": "RECORD",
-				  "command": "record_volume",
+			  "GUITAR": {
+				  "category": "GUITAR",
+				  "command": "GUITAR_COMMON",
 				  "indexList": [
-					  "record_mute",
-					  "record_out_volume"
+					  "volume_gain"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				  },
+				  "event": {
+					  "click": "Area GUITAR"
+				  }
+			  },
+			  
+			  "LIVE": {
+				  "category": "RECORDING",
+				  "command": "RECORDING_COMMON",
+				  "indexList": [
+					  "mute",
+					  "volume_gain"
 				  ],
 				  "control": {
 					  "typeDisplay": "vertical slider",
@@ -518,17 +533,16 @@
 		"areaType": "Main Area",
         "items": {
           "Ngõ vào": {
-            "category": "SYSTEM",
-            "command": "system_app_mode",
-            "index": "app_mode",
+            "category": "INPUT",
+            "command": "INPUT_MUSIC_MODE",
+            "index": "mode",
             "control": {
               "typeDisplay": "drop down list",
               "valueType": "uint16",
               "options": [
                 { "label": "Bluetooth", "value": "Bluetooth" },
                 { "label": "Line In", "value": "LineIn" },
-                { "label": "Optical", "value": "Optical" },
-                { "label": "Sound Card", "value": "SoundCard" },
+                { "label": "SPDIF In", "value": "SpdifIn" },
                 { "label": "HDMI", "value": "HDMI" },
                 { "label": "USB", "value": "USB" }
               ]
@@ -537,8 +551,8 @@
 		  
 		  "MIC FBX": {
             "category": "MIC",
-            "command": "mic_feedback_cancel",
-            "index": "enable",
+            "command": "MIC_ECHO_EFFECT",
+            "index": "feedback",
             "control": {
               "typeDisplay": "swicht button",
               "valueType": "uint16"
@@ -547,7 +561,7 @@
 		  
 		  "BASS BOOT": {
             "category": "MUSIC",
-            "command": "music_boost_bass",
+            "command": "MUSIC_BASSBOOST_EFFECT",
             "index": "enable",
             "control": {
               "typeDisplay": "swicht button",
@@ -557,7 +571,7 @@
 		  
 		  "ENHANCER": {
             "category": "MUSIC",
-            "command": "music_exciter",
+            "command": "MUSIC_ENHANCER_EFFECT",
             "index": "enable",
             "control": {
               "typeDisplay": "swicht button",
@@ -567,7 +581,7 @@
 		  
 		  "SAVE CONFIG": {
             "category": "SYSTEM",
-            "command": "system_config",
+            "command": "SYSTEM_CONFIG",
             "index": "save_config",
             "control": {
               "typeDisplay": "normal button",
@@ -577,7 +591,7 @@
 		  
 		  "RESET CONFIG": {
             "category": "SYSTEM",
-            "command": "system_config",
+            "command": "SYSTEM_CONFIG",
             "index": "reset_config",
             "control": {
               "typeDisplay": "normal button",
