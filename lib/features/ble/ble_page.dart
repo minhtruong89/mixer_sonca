@@ -65,6 +65,7 @@ class _BlePageState extends State<BlePage> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<BleViewModel>();
 
+    /*
     // If device disconnected while overlay is open, clear it
     if (viewModel.selectedDevice == null && _currentOverlayArea != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -75,6 +76,7 @@ class _BlePageState extends State<BlePage> {
         }
       });
     }
+    */
 
     return AppScaffold(
       title: '',
