@@ -699,7 +699,7 @@ class _BlePageState extends State<BlePage> {
                    child: Row(
                      crossAxisAlignment: CrossAxisAlignment.stretch,
                      children: section.items.values
-                        .where((item) => !item.control.isSwitch)
+                        .where((item) => !item.control.isSwitch && !item.control.isDropdown)
                         .map((item) {
                        return Padding(
                          padding: const EdgeInsets.only(right: 12),
@@ -715,21 +715,25 @@ class _BlePageState extends State<BlePage> {
             Positioned(
               top: 10,
               right: 10,
+              bottom: 10,
               width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.24 : 0.17) - 10,
-              child: Builder(builder: (context) {
-                    final switches = section.items.values.where((item) => item.control.isSwitch).toList();
+              child: SingleChildScrollView(
+                child: Builder(builder: (context) {
+                    final rightSideItems = section.items.values
+                        .where((item) => item.control.isSwitch || item.control.isDropdown)
+                        .toList();
 
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        // Switches moved from the left list
-                        ...switches.map((item) => Padding(
+                        // Switches and Dropdowns moved from the left list
+                        ...rightSideItems.map((item) => Padding(
                               padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
                               child: _buildDynamicControl(context, item, viewModel),
                             )),
 
-                        if (switches.isNotEmpty && section.buttons.isNotEmpty)
+                        if (rightSideItems.isNotEmpty && section.buttons.isNotEmpty)
                           const Padding(
                             padding: EdgeInsets.only(bottom: 12.0, right: 10.0),
                             child: Divider(color: Colors.white24, height: 1),
@@ -776,7 +780,8 @@ class _BlePageState extends State<BlePage> {
                         }).toList(),
                       ],
                     );
-              }),
+                }),
+              ),
             ),
             Positioned(
               bottom: 20,
