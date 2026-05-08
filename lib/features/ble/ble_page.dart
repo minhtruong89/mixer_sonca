@@ -682,16 +682,18 @@ class _BlePageState extends State<BlePage> {
            );
       }
 
-      return Container(
-        color: Colors.black.withOpacity(0.95), // Deep dark overlay
-        child: Stack(
-          children: [
-            // Left Content (Scrollable Sliders)
-            Positioned(
-              left: 0,
-              top: 10,
-              bottom: 20,
-              right: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.24 : 0.17) + 5,
+       final double rightSideRatio = Platform.isIOS ? 0.30 : 0.22;
+       
+       return Container(
+         color: Colors.black.withOpacity(0.95), // Deep dark overlay
+         child: Stack(
+           children: [
+             // Left Content (Scrollable Sliders)
+             Positioned(
+               left: 0,
+               top: 10,
+               bottom: 20,
+               right: MediaQuery.of(context).size.width * rightSideRatio + 5,
               child: Container(
                  padding: const EdgeInsets.symmetric(horizontal: 10),
                  child: SingleChildScrollView(
@@ -712,11 +714,11 @@ class _BlePageState extends State<BlePage> {
             ),
 
             // Right Side Content (Switches & Navigation Buttons)
-            Positioned(
-              top: 10,
-              right: 10,
-              bottom: 10,
-              width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.24 : 0.17) - 10,
+             Positioned(
+               top: 10,
+               right: 10,
+               bottom: 10,
+               width: MediaQuery.of(context).size.width * rightSideRatio - 10,
               child: SingleChildScrollView(
                 child: Builder(builder: (context) {
                     final rightSideItems = section.items.values
@@ -729,20 +731,20 @@ class _BlePageState extends State<BlePage> {
                       children: [
                         // Switches and Dropdowns moved from the left list
                         ...rightSideItems.map((item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
+                              padding: const EdgeInsets.only(bottom: 6.0, right: 10.0),
                               child: _buildDynamicControl(context, item, viewModel),
                             )),
 
                         if (rightSideItems.isNotEmpty && section.buttons.isNotEmpty)
                           const Padding(
-                            padding: EdgeInsets.only(bottom: 12.0, right: 10.0),
+                            padding: EdgeInsets.only(bottom: 6.0, right: 10.0),
                             child: Divider(color: Colors.white24, height: 1),
                           ),
 
                         // Navigation Buttons
                         ...section.buttons.values.map((btn) {
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0, right: 10.0),
+                            padding: const EdgeInsets.only(bottom: 6.0, right: 10.0),
                             child: InkWell(
                               onTap: () {
                                  if (btn.event?.click != null) {

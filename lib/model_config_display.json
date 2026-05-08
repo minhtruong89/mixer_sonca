@@ -616,7 +616,7 @@
 				}
 			  },
 			  
-			  "FLANGER ENABLE": {
+			  "FLANGER": {
 				  "category": "GUITAR",
 				  "command": "GUITAR_COMMON",
 				  "index": "flanger_enable",
@@ -626,7 +626,7 @@
 					}
 			  },
 			  
-			  "AUTOWAH ENABLE": {
+			  "AUTOWAH": {
 				  "category": "GUITAR",
 				  "command": "GUITAR_COMMON",
 				  "index": "autowah_enable",
@@ -636,7 +636,7 @@
 					}
 			  },
 			  
-			  "VIBRATO ENABLE": {
+			  "VIBRATO": {
 				  "category": "GUITAR",
 				  "command": "GUITAR_COMMON",
 				  "index": "vibrato_enable",
@@ -646,7 +646,7 @@
 					}
 			  },
 			  
-			  "DISTORTOR ENABLE": {
+			  "DISTORTOR": {
 				  "category": "GUITAR",
 				  "command": "GUITAR_COMMON",
 				  "index": "distortor_enable",
