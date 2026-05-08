@@ -578,10 +578,18 @@ class _BlePageState extends State<BlePage> {
       String? volumeParam;
       
       if (item.indexList.isNotEmpty) {
+        // Find mute if it exists
         for (final p in item.indexList) {
-          if (p.endsWith('_mute')) muteParam = p;
-          if (p.endsWith('_volume')) volumeParam = p;
+          if (p.endsWith('_mute')) {
+            muteParam = p;
+            break;
+          }
         }
+        // Volume (or gain/etc) is the other one (or the only one)
+        volumeParam = item.indexList.firstWhere(
+          (p) => p != muteParam, 
+          orElse: () => item.indexList[0]
+        );
       } else {
         volumeParam = item.paramName;
       }

@@ -163,7 +163,7 @@
 			"name": "MUSIC_COMMON",
 			"indices": {
 			  "0": { "name": "volume_gain", "type": "q8_8_le" },
-			  "1": { "name": "mute", "type": "uint16_le" },
+			  "1": { "name": "volume_mute", "type": "uint16_le" },
 			  "2": { "name": "bass_gain", "type": "q8_8_le" },
 			  "3": { "name": "middle_gain", "type": "q8_8_le" },
 			  "4": { "name": "treb_gain", "type": "q8_8_le" }

@@ -44,10 +44,10 @@
 		  "items": {
 			  "MIC": {
 				  "category": "MIC",
-				  "command": "mic_volume",
+				  "command": "MIC_COMMON",
 				  "indexList": [
-					  "mic_master_mute",
-					  "mic_master_volume"
+					  "master_mute",
+					  "master_gain"
 				  ],
 				  "control": {
 					  "typeDisplay": "vertical slider",
@@ -479,7 +479,7 @@
 				  "category": "MUSIC",
 				  "command": "MUSIC_COMMON",
 				  "indexList": [
-					  "mute",
+					  "volume_mute",
 					  "volume_gain"
 				  ],
 				  "control": {
