@@ -25,7 +25,7 @@ class DynamicCommandBuilder {
   ///   },
   /// );
   /// ```
-  CommandPayload buildCommand({
+  List<CommandPayload> buildCommand({
     required String categoryName,
     required int cmdId,
     required CommandOperation operation,
@@ -73,8 +73,8 @@ class DynamicCommandBuilder {
       throw Exception('No valid parameters provided for command ${command.name}');
     }
 
-    return CommandPayload.fromTypedPairs(
-      category: CommandCategory.values.firstWhere((c) => c.value == category.id),
+    return _splitPairsIntoPayloads(
+      categoryId: category.id,
       cmdId: cmdId,
       operation: operation,
       pairs: pairs,
@@ -82,7 +82,7 @@ class DynamicCommandBuilder {
   }
 
   /// Build a command using category ID instead of name
-  CommandPayload buildCommandById({
+  List<CommandPayload> buildCommandById({
     required int categoryId,
     required int cmdId,
     required CommandOperation operation,
@@ -118,7 +118,7 @@ class DynamicCommandBuilder {
   ///   },
   /// );
   /// ```
-  CommandPayload buildEqCommand({
+  List<CommandPayload> buildEqCommand({
     required String categoryName,
     required int cmdId,
     required int band,
@@ -178,12 +178,37 @@ class DynamicCommandBuilder {
       throw Exception('No valid fields provided for EQ command');
     }
 
-    return CommandPayload.fromTypedPairs(
-      category: CommandCategory.values.firstWhere((c) => c.value == category.id),
+    return _splitPairsIntoPayloads(
+      categoryId: category.id,
       cmdId: cmdId,
       operation: operation,
       pairs: pairs,
     );
+  }
+
+  /// Helper to split pairs into multiple payloads based on protocol limits
+  List<CommandPayload> _splitPairsIntoPayloads({
+    required int categoryId,
+    required int cmdId,
+    required CommandOperation operation,
+    required List<TypedIndexValuePair> pairs,
+  }) {
+    final maxPairs = _protocolService.definition?.limits.maxPairCount ?? 50;
+    final payloads = <CommandPayload>[];
+    
+    for (var i = 0; i < pairs.length; i += maxPairs) {
+      final end = (i + maxPairs < pairs.length) ? i + maxPairs : pairs.length;
+      final chunk = pairs.sublist(i, end);
+      
+      payloads.add(CommandPayload.fromTypedPairs(
+        category: CommandCategory.values.firstWhere((c) => c.value == categoryId),
+        cmdId: cmdId,
+        operation: operation,
+        pairs: chunk,
+      ));
+    }
+    
+    return payloads;
   }
 
   /// Build an EQ command for multiple bands
@@ -199,7 +224,7 @@ class DynamicCommandBuilder {
   ///   },
   /// );
   /// ```
-  CommandPayload buildMultiBandEqCommand({
+  List<CommandPayload> buildMultiBandEqCommand({
     required String categoryName,
     required int cmdId,
     required Map<int, Map<String, dynamic>> bands,
@@ -264,8 +289,8 @@ class DynamicCommandBuilder {
       throw Exception('No valid band/field pairs provided');
     }
 
-    return CommandPayload.fromTypedPairs(
-      category: CommandCategory.values.firstWhere((c) => c.value == category.id),
+    return _splitPairsIntoPayloads(
+      categoryId: category.id,
       cmdId: cmdId,
       operation: operation,
       pairs: pairs,

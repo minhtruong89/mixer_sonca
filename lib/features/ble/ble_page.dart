@@ -872,7 +872,7 @@ class _BlePageState extends State<BlePage> {
       _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
         try {
           final builder = getIt<DynamicCommandBuilder>();
-          final command = builder.buildCommand(
+          final commands = builder.buildCommand(
             categoryName: item.category,
             cmdId: cmdId,
             operation: CommandOperation.set,
@@ -881,7 +881,9 @@ class _BlePageState extends State<BlePage> {
             },
           );
           
-          await viewModel.sendProtocolCommand(command);
+          for (final command in commands) {
+            await viewModel.sendProtocolCommand(command);
+          }
           
         } catch (e) {
           debugPrint('Error sending dynamic command: $e');
@@ -1077,7 +1079,7 @@ class _BlePageState extends State<BlePage> {
          final builder = getIt<DynamicCommandBuilder>();
          final protocolService = getIt<ProtocolService>();
          // Re-verify definition inside timer or use captured ID
-         final command = builder.buildEqCommand(
+         final commands = builder.buildEqCommand(
            categoryName: categoryName,
            cmdId: cmdId,
            band: band,
@@ -1086,7 +1088,9 @@ class _BlePageState extends State<BlePage> {
            },
          );
 
-         await viewModel.sendProtocolCommand(command);
+         for (final command in commands) {
+             await viewModel.sendProtocolCommand(command);
+          }
       } catch (e) {
          debugPrint('Error sending EQ band command: $e');
       }
@@ -1133,14 +1137,16 @@ class _BlePageState extends State<BlePage> {
         final cmdDef = protocolService.getCommandByName(categoryName, commandName);
         if (cmdDef == null) return;
 
-        final command = builder.buildEqCommand(
+        final commands = builder.buildEqCommand(
           categoryName: categoryName,
           cmdId: cmdDef.id,
           band: band,
           fields: rawFields,
         );
 
-        await viewModel.sendProtocolCommand(command);
+        for (final command in commands) {
+            await viewModel.sendProtocolCommand(command);
+          }
      } catch (e) {
         debugPrint('Error sending batched EQ band command: $e');
      }

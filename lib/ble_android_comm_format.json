@@ -1,5 +1,7 @@
 {
   "protocol": "ble_android_comm",
+  "name": "BLE Android Communication Application Protocol",
+  "schemaVersion": 1,
   "framing": {
     "header": {
       "magic": "0xAA",
@@ -61,7 +63,9 @@
       { "name": "HIGH_PASS_ORDER1", "value": 8 }
     ]
   },
-  
+  "limits": {
+    "maxPairCount": 50
+  },
   "categories": {
 	  "MIC": {
 		"id": "0x01",

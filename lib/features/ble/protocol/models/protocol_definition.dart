@@ -7,12 +7,14 @@ class ProtocolDefinition {
   final FramingDefinition framing;
   final Map<String, EqFilterType> eqFilterTypes;
   final Map<String, CategoryDefinition> categories;
+  final ProtocolLimits limits;
 
   const ProtocolDefinition({
     required this.protocol,
     required this.framing,
     required this.eqFilterTypes,
     required this.categories,
+    required this.limits,
   });
 
   factory ProtocolDefinition.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class ProtocolDefinition {
       framing: FramingDefinition.fromJson(json['framing'] ?? {}),
       eqFilterTypes: eqFilterTypesMap,
       categories: categoriesMap,
+      limits: ProtocolLimits.fromJson(json['limits'] ?? {}),
     );
   }
 
@@ -75,6 +78,21 @@ class FramingDefinition {
       crc16: json['crc16'] ?? {},
       commandPayload: json['commandPayload'] ?? {},
       dataPayload: json['dataPayload'] ?? {},
+    );
+  }
+}
+
+/// Protocol limits
+class ProtocolLimits {
+  final int maxPairCount;
+
+  const ProtocolLimits({
+    this.maxPairCount = 50,
+  });
+
+  factory ProtocolLimits.fromJson(Map<String, dynamic> json) {
+    return ProtocolLimits(
+      maxPairCount: json['maxPairCount'] ?? 50,
     );
   }
 }

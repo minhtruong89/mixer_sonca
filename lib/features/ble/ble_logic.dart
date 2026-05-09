@@ -666,15 +666,17 @@ class BleViewModel extends ChangeNotifier {
         }
 
         try {
-          final command = builder.buildMultiBandEqCommand(
+          final commands = builder.buildMultiBandEqCommand(
             categoryName: categoryName,
             cmdId: cmdDef.id,
             bands: allBands,
             operation: CommandOperation.get,
           );
-          await sendProtocolCommand(command);
-          // Small delay for processing the batched request
-          await Future.delayed(const Duration(milliseconds: 50));
+          for (final command in commands) {
+            await sendProtocolCommand(command);
+            // Small delay for processing the batched request
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
         } catch (e) {
           debugPrint('Protocol: Error fetching batched EQ data for $commandName: $e');
         }
@@ -722,7 +724,7 @@ class BleViewModel extends ChangeNotifier {
         final parameters = commandEntry.value;
 
         try {
-          final command = builder.buildCommand(
+          final commands = builder.buildCommand(
             categoryName: categoryName,
             cmdId: cmdId,
             operation: CommandOperation.get,
@@ -732,9 +734,11 @@ class BleViewModel extends ChangeNotifier {
           final paramNames = parameters.keys.join(', ');
           debugPrint('Protocol: Sending batched GET for $categoryName Command 0x${cmdId.toRadixString(16)} (Params: $paramNames)');
           
-          await sendProtocolCommand(command);
-          // Standard delay between command headers
-          await Future.delayed(const Duration(milliseconds: 50));
+          for (final command in commands) {
+            await sendProtocolCommand(command);
+            // Standard delay between command headers
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
         } catch (e) {
           debugPrint('Protocol: Error fetching batched state for $categoryName:0x${cmdId.toRadixString(16)}: $e');
         }

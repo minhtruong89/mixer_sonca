@@ -21,7 +21,7 @@ class ProtocolHelper {
   /// ```dart
   /// await helper.setAppMode(AppModeValue.lineIn);
   /// ```
-  CommandPayload setAppMode(AppModeValue mode) {
+  List<CommandPayload> setAppMode(AppModeValue mode) {
     return _builder.buildCommand(
       categoryName: 'SYSTEM',
       cmdId: SystemCmd.appMode,
@@ -38,7 +38,7 @@ class ProtocolHelper {
   /// ```dart
   /// await helper.setMasterVolume(gain: 0.8, mute: false);
   /// ```
-  CommandPayload setMasterVolume({double? gain, bool? mute}) {
+  List<CommandPayload> setMasterVolume({double? gain, bool? mute}) {
     final params = <String, dynamic>{};
     if (gain != null) params['dac_gain'] = gain;
     if (mute != null) params['dac_mute'] = mute ? 1 : 0;
@@ -63,7 +63,7 @@ class ProtocolHelper {
   ///   mic2Volume: 0.75,
   /// );
   /// ```
-  CommandPayload setMicVolume({
+  List<CommandPayload> setMicVolume({
     double? mic1Volume,
     bool? mic1Mute,
     double? mic2Volume,
@@ -86,7 +86,7 @@ class ProtocolHelper {
   }
 
   /// Set MIC effects volume
-  CommandPayload setMicEffectsVolume({
+  List<CommandPayload> setMicEffectsVolume({
     double? bassGain,
     double? middleGain,
     double? trebGain,
@@ -109,7 +109,7 @@ class ProtocolHelper {
   }
 
   /// Set MIC feedback cancel
-  CommandPayload setMicFeedbackCancel(bool enable) {
+  List<CommandPayload> setMicFeedbackCancel(bool enable) {
     return _builder.buildCommand(
       categoryName: 'MIC',
       cmdId: MicCmd.feedbackCancel,
@@ -133,7 +133,7 @@ class ProtocolHelper {
   ///   gain: 3.5,
   /// );
   /// ```
-  CommandPayload setMicEqBand({
+  List<CommandPayload> setMicEqBand({
     required int band,
     bool? enable,
     EqFilterTypeValue? type,
@@ -159,7 +159,7 @@ class ProtocolHelper {
   // ==================== MUSIC Commands ====================
 
   /// Set music volume
-  CommandPayload setMusicVolume({
+  List<CommandPayload> setMusicVolume({
     double? inVolume,
     bool? inMute,
     double? outVolume,
@@ -186,7 +186,7 @@ class ProtocolHelper {
   }
 
   /// Set music boost bass
-  CommandPayload setMusicBoostBass({
+  List<CommandPayload> setMusicBoostBass({
     int? cutoffFreq,
     int? intensity,
     int? enhanced,
@@ -209,7 +209,7 @@ class ProtocolHelper {
   // ==================== GUITAR Commands ====================
 
   /// Set guitar volume
-  CommandPayload setGuitarVolume({double? volume, bool? mute}) {
+  List<CommandPayload> setGuitarVolume({double? volume, bool? mute}) {
     final params = <String, dynamic>{};
     if (volume != null) params['volume_gain'] = volume;
     if (mute != null) params['mute'] = mute ? 1 : 0;
