@@ -378,15 +378,26 @@ class _BlePageState extends State<BlePage> {
               onTap: item.event?.click != null 
                 ? () => _navigateToArea(item.event!.click)
                 : null,
-              child: Text(
-                item.label, 
-                style: TextStyle(
-                  color: Colors.white, 
-                  fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
-                  decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 16
-                )
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.label, 
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 16
+                    )
+                  ),
+                  if (item.event?.click != null) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.open_in_new,
+                      color: Colors.greenAccent,
+                      size: 14,
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 4),
@@ -452,15 +463,26 @@ class _BlePageState extends State<BlePage> {
               onTap: item.event?.click != null 
                 ? () => _navigateToArea(item.event!.click)
                 : null,
-              child: Text(
-                item.label, 
-                style: TextStyle(
-                  color: Colors.white, 
-                  fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
-                  decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 16
-                )
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.label, 
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 16
+                    )
+                  ),
+                  if (item.event?.click != null) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.open_in_new,
+                      color: Colors.greenAccent,
+                      size: 14,
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 8),
@@ -543,15 +565,28 @@ class _BlePageState extends State<BlePage> {
                 onTap: item.event?.click != null 
                   ? () => _navigateToArea(item.event!.click)
                   : null,
-                child: Text(
-                  item.label, 
-                  softWrap: true,
-                  style: TextStyle(
-                    color: Colors.white, 
-                    fontStyle: item.event?.click != null ? FontStyle.italic : FontStyle.normal,
-                    decoration: item.event?.click != null ? TextDecoration.underline : TextDecoration.none,
-                    fontWeight: FontWeight.bold
-                  )
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.label, 
+                        softWrap: true,
+                        style: const TextStyle(
+                          color: Colors.white, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ),
+                    ),
+                    if (item.event?.click != null) ...[
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.open_in_new,
+                        color: Colors.greenAccent,
+                        size: 14,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),

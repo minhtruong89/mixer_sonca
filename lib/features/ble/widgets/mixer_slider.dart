@@ -38,15 +38,30 @@ class MixerSlider extends StatelessWidget {
           // Label
           GestureDetector(
             onTap: onLabelTap,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                fontStyle: onLabelTap != null ? FontStyle.italic : FontStyle.normal,
-                decoration: onLabelTap != null ? TextDecoration.underline : TextDecoration.none,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                if (onLabelTap != null) ...[
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.open_in_new,
+                    color: Colors.greenAccent,
+                    size: 14,
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 4),
