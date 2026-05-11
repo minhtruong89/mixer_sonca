@@ -1,5 +1,5 @@
 {
-  "defaulDisplay": {
+  "defaultDisplay": {
     "sections": {
 				
       "Area MIC EQ" :{
@@ -299,7 +299,7 @@
 				  "command": "MIC_ECHO_EFFECT",
 				  "index": "enable",
 				  "control": {
-					  "typeDisplay": "swicht button",
+					  "typeDisplay": "switch button",
 					  "valueType": "uint16"
 					}
 			  }
@@ -506,7 +506,7 @@
 				  "command": "MIC_REVERB_EFFECT",
 				  "index": "enable",
 				  "control": {
-					  "typeDisplay": "swicht button",
+					  "typeDisplay": "switch button",
 					  "valueType": "uint16"
 					}
 			  }
@@ -621,7 +621,7 @@
 				  "command": "GUITAR_COMMON",
 				  "index": "flanger_enable",
 				  "control": {
-					  "typeDisplay": "swicht button",
+					  "typeDisplay": "switch button",
 					  "valueType": "uint16"
 					}
 			  },
@@ -631,7 +631,7 @@
 				  "command": "GUITAR_COMMON",
 				  "index": "autowah_enable",
 				  "control": {
-					  "typeDisplay": "swicht button",
+					  "typeDisplay": "switch button",
 					  "valueType": "uint16"
 					}
 			  },
@@ -641,7 +641,7 @@
 				  "command": "GUITAR_COMMON",
 				  "index": "vibrato_enable",
 				  "control": {
-					  "typeDisplay": "swicht button",
+					  "typeDisplay": "switch button",
 					  "valueType": "uint16"
 					}
 			  },
@@ -651,7 +651,7 @@
 				  "command": "GUITAR_COMMON",
 				  "index": "distortor_enable",
 				  "control": {
-					  "typeDisplay": "swicht button",
+					  "typeDisplay": "switch button",
 					  "valueType": "uint16"
 					}
 			  },
@@ -989,7 +989,7 @@
             "command": "MIC_ECHO_EFFECT",
             "index": "feedback",
             "control": {
-              "typeDisplay": "swicht button",
+              "typeDisplay": "switch button",
               "valueType": "uint16"
             }			
           },
@@ -999,7 +999,7 @@
             "command": "MUSIC_BASSBOOST_EFFECT",
             "index": "enable",
             "control": {
-              "typeDisplay": "swicht button",
+              "typeDisplay": "switch button",
               "valueType": "uint16"
             }			
           },
@@ -1009,7 +1009,7 @@
             "command": "MUSIC_ENHANCER_EFFECT",
             "index": "enable",
             "control": {
-              "typeDisplay": "swicht button",
+              "typeDisplay": "switch button",
               "valueType": "uint16"
             }			
           }, 

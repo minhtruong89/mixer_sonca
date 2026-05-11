@@ -9,7 +9,7 @@ class DisplayConfig {
 
   factory DisplayConfig.fromJson(Map<String, dynamic> json) {
     return DisplayConfig(
-      defaultDisplay: DefaultDisplay.fromJson(json['defaulDisplay'] ?? {}),
+      defaultDisplay: DefaultDisplay.fromJson(json['defaultDisplay'] ?? {}),
     );
   }
 }
