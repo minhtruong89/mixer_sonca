@@ -651,7 +651,7 @@ class _BlePageState extends State<BlePage> {
           : null,
         onChanged: (val) {
           if (volumeParam != null) {
-            _handleDynamicControlChange(item, val.toInt(), viewModel, paramOverride: volumeParam);
+            _handleDynamicControlChange(item, val, viewModel, paramOverride: volumeParam);
           }
         },
         onMuteChanged: (muted) {
@@ -882,6 +882,13 @@ class _BlePageState extends State<BlePage> {
       
       // 2. Build parameter map & Resolve Value
       dynamic finalValue = value;
+
+      // Check for Q8.8 type from protocol and ensure double for correct encoding
+      final paramType = protocolService.getParameterType(item.category, cmdId, paramName);
+      if (paramType?.toLowerCase() == 'q8_8_le' && finalValue is! double) {
+        finalValue = double.tryParse(finalValue.toString()) ?? 0.0;
+      }
+      
       // Special handling for Radio/Dropdown options that might need value mapping (String -> ID)
       if ((item.control.isRadio || item.control.isDropdown) && value is String) {
          if (cmdDef.valueMap != null) {
