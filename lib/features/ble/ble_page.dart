@@ -880,6 +880,8 @@ class _BlePageState extends State<BlePage> {
       final stateKey = "${item.command}_$paramName";
       viewModel.updateControlValue(stateKey, value);
       
+      final cmdId = cmdDef.id; // Resolve ID early
+
       // 2. Build parameter map & Resolve Value
       dynamic finalValue = value;
 
@@ -910,7 +912,6 @@ class _BlePageState extends State<BlePage> {
 
       // Debounce the BLE command sending
       _debouncers[stateKey]?.cancel();
-      final cmdId = cmdDef.id; // Capture for closure safety
       _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
         try {
           final builder = getIt<DynamicCommandBuilder>();
