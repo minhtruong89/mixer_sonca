@@ -705,6 +705,10 @@ class _BlePageState extends State<BlePage> {
                                            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
                                        ),
                                    ),
+                                   TextButton(
+                                       onPressed: () => _resetEqToDefault(section, viewModel),
+                                       child: const Text('Default', style: TextStyle(color: Colors.greenAccent, fontSize: 16)),
+                                   ),
                                ]
                            )
                        ),
@@ -1227,6 +1231,67 @@ class _BlePageState extends State<BlePage> {
      } catch (e) {
         debugPrint('Error sending batched EQ band command: $e');
      }
+  }
+
+  Future<void> _resetEqToDefault(DisplaySection section, BleViewModel viewModel) async {
+     final totalBands = section.totalEQBand ?? 10;
+     final commandName = section.command ?? '';
+     
+     // Get category name
+     final protocolService = getIt<ProtocolService>();
+     String categoryName = '';
+     for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+       if (cat.getCommandByName(commandName) != null) {
+          categoryName = cat.name;
+          break;
+       }
+     }
+
+     if (categoryName.isEmpty) return;
+
+     // 1. Resolve default values from config
+     int defaultTypeEnum = 2; // Default to PEAKING (2)
+     final typeValue = section.control?.rawConfig['type']?.toString();
+     if (typeValue != null) {
+         final parsedInt = int.tryParse(typeValue);
+         if (parsedInt != null) {
+             defaultTypeEnum = parsedInt;
+         } else if (protocolService.isLoaded) {
+             final filterType = protocolService.definition!.eqFilterTypes[typeValue.toUpperCase()];
+             if (filterType != null) defaultTypeEnum = filterType.value;
+         }
+     }
+
+     final defaultQInt = int.tryParse(section.control?.rawConfig['Q']?.toString() ?? '0') ?? 0;
+     final double defaultQ = defaultQInt / 256.0;
+     
+     final defaultGainInt = int.tryParse(section.control?.rawConfig['gain']?.toString() ?? '0') ?? 0;
+     final double defaultGain = defaultGainInt / 256.0;
+     
+     final baseF0Str = section.control?.rawConfig['f0']?.toString() ?? '0';
+
+     debugPrint('Protocol: Resetting EQ Area "${section.description}" to defaults...');
+
+     // 2. Loop through bands and update everything
+     for (int i = 0; i < totalBands; i++) {
+         String bandF0Value = baseF0Str;
+         if (section.bandF0 != null && i < section.bandF0!.length) {
+             bandF0Value = section.bandF0![i];
+         }
+         int defaultF0 = int.tryParse(bandF0Value) ?? 0;
+
+         Map<String, dynamic> changes = {
+             'gain': defaultGain,
+             'f0': defaultF0,
+             'Q': defaultQ,
+             'type': defaultTypeEnum,
+         };
+
+         // This will update local state AND send to device if connected
+         await _handleEqBandMultipleChange(categoryName, commandName, i, changes, viewModel);
+     }
+     
+     _showCenterSnackBar("Đã đặt lại về mặc định");
   }
 
   void _navigateToArea(String? areaName) {
