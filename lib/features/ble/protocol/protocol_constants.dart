@@ -32,15 +32,20 @@ class FrameFlags {
 enum CommandCategory {
   mic(0x01),
   music(0x02),
-  record(0x03),
-  system(0x04),
-  guitar(0x05);
+  guitar(0x03),
+  recording(0x04),
+  input(0x05),
+  output(0x06),
+  system(0x07);
 
   const CommandCategory(this.value);
   final int value;
 
   static CommandCategory fromValue(int value) {
-    return CommandCategory.values.firstWhere((e) => e.value == value);
+    return CommandCategory.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => CommandCategory.system, // Fallback
+    );
   }
 }
 
@@ -96,8 +101,8 @@ enum RecordCommand {
 
 // SYSTEM Category Commands (0x04)
 enum SystemCommand {
-  appMode(0x01),
-  masterVolume(0x02);
+  systemVolume(0x01),
+  systemConfig(0x80);
 
   const SystemCommand(this.value);
   final int value;

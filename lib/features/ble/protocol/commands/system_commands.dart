@@ -13,7 +13,7 @@ class SystemCommands {
   static CommandPayload setAppMode(AppMode mode) {
     return CommandPayload.fromPairs(
       category: CommandCategory.system,
-      cmdId: SystemCommand.appMode.value,
+      cmdId: SystemCommand.systemVolume.value, // Was using 0x01, still 0x01
       operation: CommandOperation.set,
       pairs: [
         IndexValuePair(1, mode.value),
@@ -25,7 +25,7 @@ class SystemCommands {
   static CommandPayload getAppMode() {
     return CommandPayload(
       category: CommandCategory.system,
-      cmdId: SystemCommand.appMode.value,
+      cmdId: SystemCommand.systemVolume.value,
       operation: CommandOperation.get,
       data: [1, 1], // Count=1, Index=1
     );
@@ -48,7 +48,7 @@ class SystemCommands {
 
     return CommandPayload.fromPairs16(
       category: CommandCategory.system,
-      cmdId: SystemCommand.masterVolume.value,
+      cmdId: SystemCommand.systemVolume.value, // Corrected to 0x01
       operation: CommandOperation.set,
       pairs: pairs,
     );
@@ -62,7 +62,7 @@ class SystemCommands {
 
     return CommandPayload(
       category: CommandCategory.system,
-      cmdId: SystemCommand.masterVolume.value,
+      cmdId: SystemCommand.systemVolume.value, // Corrected to 0x01
       operation: CommandOperation.get,
       data: [indices.length, ...indices],
     );
