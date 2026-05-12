@@ -236,18 +236,22 @@ class _EqBandDialogState extends State<EqBandDialog> {
                     displayName = 'LSF';
                   } else if (upper == 'HIGH_SHELF') {
                     displayName = 'HSF';
-                  } else if (upper == 'LOW_PASS') {
-                    displayName = 'LPF';
-                  } else if (upper == 'HIGH_PASS') {
-                    displayName = 'HPF';
-                  } else if (upper == 'BAND_PASS') {
-                    displayName = 'BPF';
-                  } else if (upper == 'LOW_PASS_ORDER1') {
-                    displayName = 'LPO';
-                  } else if (upper == 'HIGH_PASS_ORDER1') {
-                    displayName = 'HPO';
+                  } else if (upper == 'LOW_PASS_LINKWITZ') {
+                    displayName = 'LLwz';
+                  } else if (upper == 'HIGH_PASS_LINKWITZ') {
+                    displayName = 'HLwz';
+                  } else if (upper == 'LOW_PASS_BUTTERWORTH') {
+                    displayName = 'LBut';
+                  } else if (upper == 'HIGH_PASS_BUTTERWORTH') {
+                    displayName = 'HBut';
+                  } else if (upper == 'LOW_PASS_BESSEL') {
+                    displayName = 'LBsl';
+                  } else if (upper == 'HIGH_PASS_BESSEL') {
+                    displayName = 'HBsl';
                   } else if (upper == 'NOTCH') {
                     displayName = 'NOTCH';
+                  } else if (upper == 'FLAT') {
+                    displayName = 'FLAT';
                   }
 
                   return DropdownMenuItem<int>(
