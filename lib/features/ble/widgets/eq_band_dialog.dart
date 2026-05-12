@@ -8,6 +8,7 @@ class EqBandDialog extends StatefulWidget {
   final double initialQ;
   final int initialType;
   final Map<String, int> filterTypes; // e.g. {'Peak': 0, 'LowShelf': 1, ...}
+  final Map<String, dynamic>? fieldLimits;
 
   const EqBandDialog({
     super.key,
@@ -17,6 +18,7 @@ class EqBandDialog extends StatefulWidget {
     required this.initialQ,
     required this.initialType,
     required this.filterTypes,
+    this.fieldLimits,
   });
 
   @override
@@ -103,14 +105,47 @@ class _EqBandDialogState extends State<EqBandDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildButton('Thay đổi', () {
-                        final gain = double.tryParse(_gainController.text) ?? widget.initialGain;
-                        final freq = int.tryParse(_freqController.text) ?? widget.initialFreq;
-                        final q = double.tryParse(_qController.text) ?? widget.initialQ;
+                        final gainValue = double.tryParse(_gainController.text) ?? widget.initialGain;
+                        final freqValue = double.tryParse(_freqController.text) ?? widget.initialFreq.toDouble();
+                        final qValue = double.tryParse(_qController.text) ?? widget.initialQ;
+
+                        // Validation
+                        if (widget.fieldLimits != null) {
+                          final gainLimit = widget.fieldLimits!['gain'];
+                          if (gainLimit != null) {
+                             final min = double.tryParse(gainLimit['min'].toString()) ?? -100.0;
+                             final max = double.tryParse(gainLimit['max'].toString()) ?? 100.0;
+                             if (gainValue < min || gainValue > max) {
+                               _showError(context, 'Gain phải nằm trong khoảng $min dB đến $max dB');
+                               return;
+                             }
+                          }
+
+                          final freqLimit = widget.fieldLimits!['f0'];
+                          if (freqLimit != null) {
+                             final min = double.tryParse(freqLimit['min'].toString()) ?? 0.0;
+                             final max = double.tryParse(freqLimit['max'].toString()) ?? 24000.0;
+                             if (freqValue < min || freqValue > max) {
+                               _showError(context, 'Tần số phải nằm trong khoảng $min Hz đến $max Hz');
+                               return;
+                             }
+                          }
+
+                          final qLimit = widget.fieldLimits!['Q'];
+                          if (qLimit != null) {
+                             final min = double.tryParse(qLimit['min'].toString()) ?? 0.0;
+                             final max = double.tryParse(qLimit['max'].toString()) ?? 100.0;
+                             if (qValue < min || qValue > max) {
+                               _showError(context, 'Q phải nằm trong khoảng $min đến $max');
+                               return;
+                             }
+                          }
+                        }
 
                         Navigator.of(context).pop({
-                          'gain': gain,
-                          'f0': freq,
-                          'Q': q,
+                          'gain': gainValue,
+                          'f0': freqValue.toInt(),
+                          'Q': qValue,
                           'type': _selectedType,
                         });
                       }),
@@ -195,15 +230,25 @@ class _EqBandDialogState extends State<EqBandDialog> {
                   String displayName = entry.key;
                   // Map display names according to requirements
                   final upper = entry.key.toUpperCase();
-                  if (upper == 'PEAKING') displayName = 'PEAK';
-                  else if (upper == 'LOW_SHELF') displayName = 'LSF';
-                  else if (upper == 'HIGH_SHELF') displayName = 'HSF';
-                  else if (upper == 'LOW_PASS') displayName = 'LPF';
-                  else if (upper == 'HIGH_PASS') displayName = 'HPF';
-                  else if (upper == 'BAND_PASS') displayName = 'BPF';
-                  else if (upper == 'LOW_PASS_ORDER1') displayName = 'LPO';
-                  else if (upper == 'HIGH_PASS_ORDER1') displayName = 'HPO';
-                  else if (upper == 'NOTCH') displayName = 'NOTCH';
+                  if (upper == 'PEAKING') {
+                    displayName = 'PEAK';
+                  } else if (upper == 'LOW_SHELF') {
+                    displayName = 'LSF';
+                  } else if (upper == 'HIGH_SHELF') {
+                    displayName = 'HSF';
+                  } else if (upper == 'LOW_PASS') {
+                    displayName = 'LPF';
+                  } else if (upper == 'HIGH_PASS') {
+                    displayName = 'HPF';
+                  } else if (upper == 'BAND_PASS') {
+                    displayName = 'BPF';
+                  } else if (upper == 'LOW_PASS_ORDER1') {
+                    displayName = 'LPO';
+                  } else if (upper == 'HIGH_PASS_ORDER1') {
+                    displayName = 'HPO';
+                  } else if (upper == 'NOTCH') {
+                    displayName = 'NOTCH';
+                  }
 
                   return DropdownMenuItem<int>(
                     value: entry.value,
@@ -257,6 +302,23 @@ class _EqBandDialogState extends State<EqBandDialog> {
           label,
           style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
+      ),
+    );
+  }
+
+  void _showError(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF333333),
+        title: const Text('Giá trị không hợp lệ', style: TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK', style: TextStyle(color: Colors.orange)),
+          ),
+        ],
       ),
     );
   }

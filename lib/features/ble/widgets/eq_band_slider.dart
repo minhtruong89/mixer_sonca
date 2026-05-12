@@ -116,10 +116,10 @@ class EqBandSlider extends StatelessWidget {
       builder: (context, constraints) {
         final h = constraints.maxHeight;
         final ticks = [
-          '+${maxGain.toStringAsFixed(1)}', '', '', '', '', '', 
-          '0.0', 
+          '+${maxGain.toInt()}', '', '', '', '', '', 
+          '0', 
           '', '', '', '', '', 
-          minGain.toStringAsFixed(1)
+          minGain.toInt().toString()
         ];
         
         return Stack(
