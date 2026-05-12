@@ -376,7 +376,7 @@
 			  "name": "SYSTEM_VOLUME",
 			  "indices": {
 					"0": { "name": "volume_gain", "type": "q8_8_le" },
-					"1": { "name": "volume_mute", "type": "int16_le" },
+					"1": { "name": "volume_mute", "type": "int16_le" }
 				}
 			},
 			
