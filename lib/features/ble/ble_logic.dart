@@ -514,10 +514,10 @@ class BleViewModel extends ChangeNotifier {
       if((frame.header.flags & FrameFlags.ackResponse) == 0){
         try {
           final payload = CommandPayload.decode(frame.payload);
-          debugPrint('Protocol: Decoded data payload - category=${payload.category}, cmdId=0x${payload.cmdId.toRadixString(16)}, op=${payload.operation}');
+          debugPrint('Protocol: Decoded data payload - category=0x${payload.category.toRadixString(16)}, cmdId=0x${payload.cmdId.toRadixString(16)}, op=0x${payload.operation.toRadixString(16)}');
 
           final protocolService = getIt<ProtocolService>();
-          final category = protocolService.getCategoryById(payload.category.value);
+          final category = protocolService.getCategoryById(payload.category);
           if (category == null) return;
 
           final command = category.getCommand(payload.cmdId);
@@ -554,10 +554,10 @@ class BleViewModel extends ChangeNotifier {
       } else {
         try {
           final payload = AckPayload.decode(frame.payload);
-          debugPrint('Protocol: Decoded ack payload - status=0x${payload.status.toRadixString(16)}, category=${payload.category}, cmdId=0x${payload.cmdId.toRadixString(16)}');
+          debugPrint('Protocol: Decoded ack payload - status=0x${payload.status.toRadixString(16)}, category=0x${payload.category.toRadixString(16)}, cmdId=0x${payload.cmdId.toRadixString(16)}');
 
           final protocolService = getIt<ProtocolService>();
-          final category = protocolService.getCategoryById(payload.category.value);
+          final category = protocolService.getCategoryById(payload.category);
           if (category == null) return;
 
           final command = category.getCommand(payload.cmdId);

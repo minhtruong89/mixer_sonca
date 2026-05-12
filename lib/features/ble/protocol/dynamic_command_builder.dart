@@ -201,9 +201,9 @@ class DynamicCommandBuilder {
       final chunk = pairs.sublist(i, end);
       
       payloads.add(CommandPayload.fromTypedPairs(
-        category: CommandCategory.values.firstWhere((c) => c.value == categoryId),
+        category: categoryId,
         cmdId: cmdId,
-        operation: operation,
+        operation: operation.value,
         pairs: chunk,
       ));
     }

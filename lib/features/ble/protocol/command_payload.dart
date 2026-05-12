@@ -45,9 +45,9 @@ class TypedIndexValuePair {
 
 /// Command Payload structure
 class CommandPayload {
-  final CommandCategory category;
+  final int category;
   final int cmdId;
-  final CommandOperation operation;
+  final int operation;
   final List<int> data;
 
   const CommandPayload({
@@ -59,9 +59,9 @@ class CommandPayload {
 
   /// Create a command payload from index-value pairs (8-bit values)
   factory CommandPayload.fromPairs({
-    required CommandCategory category,
+    required int category,
     required int cmdId,
-    required CommandOperation operation,
+    required int operation,
     required List<IndexValuePair> pairs,
   }) {
     final pairBytes = <int>[];
@@ -79,9 +79,9 @@ class CommandPayload {
 
   /// Create a command payload from index-value pairs (16-bit values)
   factory CommandPayload.fromPairs16({
-    required CommandCategory category,
+    required int category,
     required int cmdId,
-    required CommandOperation operation,
+    required int operation,
     required List<IndexValuePair> pairs,
   }) {
     final pairBytes = <int>[];
@@ -99,9 +99,9 @@ class CommandPayload {
 
   /// Create a command payload from typed index-value pairs
   factory CommandPayload.fromTypedPairs({
-    required CommandCategory category,
+    required int category,
     required int cmdId,
-    required CommandOperation operation,
+    required int operation,
     required List<TypedIndexValuePair> pairs,
   }) {
     final pairBytes = <int>[];
@@ -120,9 +120,9 @@ class CommandPayload {
   /// Encode payload to bytes
   List<int> encode() {
     return [
-      category.value,
+      category,
       cmdId,
-      operation.value,
+      operation,
       data.length,
       ...data,
     ];
@@ -134,9 +134,9 @@ class CommandPayload {
       throw Exception('Command payload too short: ${bytes.length}');
     }
 
-    final category = CommandCategory.fromValue(bytes[0]);
+    final category = bytes[0];
     final cmdId = bytes[1];
-    final operation = CommandOperation.fromValue(bytes[2]);
+    final operation = bytes[2];
     final payloadLen = bytes[3];
 
     if (bytes.length < 4 + payloadLen) {
@@ -158,15 +158,15 @@ class CommandPayload {
 
   @override
   String toString() {
-    return 'CommandPayload(category: $category, cmdId: 0x${cmdId.toRadixString(16)}, '
-        'operation: $operation, dataSize: ${data.length})';
+    return 'CommandPayload(category: 0x${category.toRadixString(16)}, cmdId: 0x${cmdId.toRadixString(16)}, '
+        'operation: 0x${operation.toRadixString(16)}, dataSize: ${data.length})';
   }
 }
 
 /// ACK Payload structure (Status + Category + CmdId + Data)
 class AckPayload {
   final int status; // 0x00 = OK, other = error
-  final CommandCategory category;
+  final int category;
   final int cmdId;
   final List<int> data;
 
@@ -184,7 +184,7 @@ class AckPayload {
     }
 
     final status = bytes[0];
-    final category = CommandCategory.fromValue(bytes[1]);
+    final category = bytes[1];
     final cmdId = bytes[2];
     
     // Data starts at offset 3 and continues to the end
@@ -200,7 +200,7 @@ class AckPayload {
 
   @override
   String toString() {
-    return 'AckPayload(status: 0x${status.toRadixString(16)}, category: $category, '
+    return 'AckPayload(status: 0x${status.toRadixString(16)}, category: 0x${category.toRadixString(16)}, '
         'cmdId: 0x${cmdId.toRadixString(16)}, dataSize: ${data.length})';
   }
 }

@@ -30,9 +30,9 @@ class MicCommands {
     if (masterVolume != null) pairs.add(IndexValuePair(5, masterVolume));
 
     return CommandPayload.fromPairs(
-      category: CommandCategory.mic,
+      category: CommandCategory.mic.value,
       cmdId: MicCommand.volume.value,
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: pairs,
     );
   }
@@ -70,9 +70,9 @@ class MicCommands {
     if (wiredGain != null) pairs.add(IndexValuePair(8, wiredGain));
 
     return CommandPayload.fromPairs16(
-      category: CommandCategory.mic,
+      category: CommandCategory.mic.value,
       cmdId: MicCommand.effectsVolume.value,
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: pairs,
     );
   }
@@ -108,9 +108,9 @@ class MicCommands {
     if (wet != null) pairs.add(IndexValuePair(8, wet));
 
     return CommandPayload.fromPairs16(
-      category: CommandCategory.mic,
+      category: CommandCategory.mic.value,
       cmdId: MicCommand.echoEffects.value,
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: pairs,
     );
   }
@@ -142,9 +142,9 @@ class MicCommands {
     if (mono != null) pairs.add(IndexValuePair(6, mono));
 
     return CommandPayload.fromPairs16(
-      category: CommandCategory.mic,
+      category: CommandCategory.mic.value,
       cmdId: MicCommand.reverbEffects.value,
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: pairs,
     );
   }
@@ -179,9 +179,9 @@ class MicCommands {
     if (wetdrymix != null) pairs.add(IndexValuePair(7, wetdrymix));
 
     return CommandPayload.fromPairs16(
-      category: CommandCategory.mic,
+      category: CommandCategory.mic.value,
       cmdId: MicCommand.plateReverbEffects.value,
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: pairs,
     );
   }
@@ -192,9 +192,9 @@ class MicCommands {
   /// - 1: enable (0=disable, 1=enable)
   static CommandPayload setFeedbackCancel(bool enable) {
     return CommandPayload.fromPairs(
-      category: CommandCategory.mic,
+      category: CommandCategory.mic.value,
       cmdId: MicCommand.feedbackCancel.value,
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: [
         IndexValuePair(1, enable ? 1 : 0),
       ],

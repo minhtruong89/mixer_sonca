@@ -12,9 +12,9 @@ class SystemCommands {
   /// - 1: app_mode (1=Bluetooth, 2=Line In, 3=Optical, 4=Sound Card, 5=HDMI, 6=USB)
   static CommandPayload setAppMode(AppMode mode) {
     return CommandPayload.fromPairs(
-      category: CommandCategory.system,
+      category: CommandCategory.system.value,
       cmdId: SystemCommand.systemVolume.value, // Was using 0x01, still 0x01
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: [
         IndexValuePair(1, mode.value),
       ],
@@ -24,9 +24,9 @@ class SystemCommands {
   /// Get app mode (CmdId 0x01)
   static CommandPayload getAppMode() {
     return CommandPayload(
-      category: CommandCategory.system,
+      category: CommandCategory.system.value,
       cmdId: SystemCommand.systemVolume.value,
-      operation: CommandOperation.get,
+      operation: CommandOperation.get.value,
       data: [1, 1], // Count=1, Index=1
     );
   }
@@ -47,9 +47,9 @@ class SystemCommands {
     }
 
     return CommandPayload.fromPairs16(
-      category: CommandCategory.system,
+      category: CommandCategory.system.value,
       cmdId: SystemCommand.systemVolume.value, // Corrected to 0x01
-      operation: CommandOperation.set,
+      operation: CommandOperation.set.value,
       pairs: pairs,
     );
   }
@@ -61,9 +61,9 @@ class SystemCommands {
     if (getDacMute) indices.add(2);
 
     return CommandPayload(
-      category: CommandCategory.system,
+      category: CommandCategory.system.value,
       cmdId: SystemCommand.systemVolume.value, // Corrected to 0x01
-      operation: CommandOperation.get,
+      operation: CommandOperation.get.value,
       data: [indices.length, ...indices],
     );
   }
