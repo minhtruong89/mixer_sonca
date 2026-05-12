@@ -981,20 +981,37 @@ class _BlePageState extends State<BlePage> {
      final defaultTypeEnum = int.tryParse(section.control?.rawConfig['type']?.toString() ?? '0') ?? 0;
      final defaultF0 = section.control?.rawConfig['f0']?.toString() ?? '0';
      final defaultQ = int.tryParse(section.control?.rawConfig['Q']?.toString() ?? '0') ?? 0;
-     final minGain = double.tryParse(section.control?.rawConfig['minGain']?.toString() ?? '-6.0') ?? -6.0;
-     final maxGain = double.tryParse(section.control?.rawConfig['maxGain']?.toString() ?? '6.0') ?? 6.0;
 
      // Calculate Q in double from Q8.8 (previously Q6.10/1024.0)
      final double qValue = defaultQ / 256.0;
      
      final protocolService = getIt<ProtocolService>();
      String categoryName = '';
+     Map<String, dynamic>? fieldLimits;
+     
      for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
-       if (cat.getCommandByName(commandName) != null) {
+       final cmd = cat.getCommandByName(commandName);
+       if (cmd != null) {
           categoryName = cat.name;
+          // Get field limits from command index rule
+          if (cmd.indexRule?.fieldLimit != null) {
+             fieldLimits = {};
+             cmd.indexRule!.fieldLimit!.forEach((key, limit) {
+                fieldLimits![key] = {
+                   'min': limit.min,
+                   'max': limit.max,
+                };
+             });
+          }
           break;
        }
      }
+
+     final minGainLimit = fieldLimits?['gain']?['min'];
+     final maxGainLimit = fieldLimits?['gain']?['max'];
+
+     final minGain = double.tryParse(minGainLimit?.toString() ?? section.control?.rawConfig['minGain']?.toString() ?? '-6.0') ?? -6.0;
+     final maxGain = double.tryParse(maxGainLimit?.toString() ?? section.control?.rawConfig['maxGain']?.toString() ?? '6.0') ?? 6.0;
      
      return Container(
        padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -1068,6 +1085,7 @@ class _BlePageState extends State<BlePage> {
                         initialQ: currentQ,
                         initialType: currentType,
                         filterTypes: filterTypes,
+                        fieldLimits: fieldLimits,
                       ),
                     );
 

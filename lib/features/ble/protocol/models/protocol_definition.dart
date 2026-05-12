@@ -268,6 +268,7 @@ class IndexRuleDefinition {
   final int bandBaseIndex; // Added for flexible starting index
   final Map<int, String> fieldOrder;
   final Map<String, String> fieldTypes;
+  final Map<String, FieldLimit>? fieldLimit;
 
   const IndexRuleDefinition({
     required this.indexRange,
@@ -276,6 +277,7 @@ class IndexRuleDefinition {
     this.bandBaseIndex = 1, // Default to 1 if not specified
     required this.fieldOrder,
     required this.fieldTypes,
+    this.fieldLimit,
   });
 
   factory IndexRuleDefinition.fromJson(Map<String, dynamic> json) {
@@ -295,6 +297,14 @@ class IndexRuleDefinition {
       });
     }
 
+    // Parse field limits
+    final fieldLimitMap = <String, FieldLimit>{};
+    if (json['fieldLimit'] != null) {
+      (json['fieldLimit'] as Map<String, dynamic>).forEach((key, value) {
+        fieldLimitMap[key] = FieldLimit.fromJson(value);
+      });
+    }
+
     return IndexRuleDefinition(
       indexRange: json['indexRange'] ?? '',
       bandCount: json['bandCount'] ?? 0,
@@ -302,6 +312,7 @@ class IndexRuleDefinition {
       bandBaseIndex: json['bandBaseIndex'] ?? 1,
       fieldOrder: fieldOrderMap,
       fieldTypes: fieldTypesMap,
+      fieldLimit: fieldLimitMap.isNotEmpty ? fieldLimitMap : null,
     );
   }
 
@@ -337,5 +348,23 @@ class IndexRuleDefinition {
     if (fieldNum == null) return null;
     
     return band * fieldsPerBand + fieldNum + bandBaseIndex;
+  }
+}
+
+/// Field limit (min/max values)
+class FieldLimit {
+  final double min;
+  final double max;
+
+  const FieldLimit({
+    required this.min,
+    required this.max,
+  });
+
+  factory FieldLimit.fromJson(Map<String, dynamic> json) {
+    return FieldLimit(
+      min: double.tryParse(json['min'].toString()) ?? 0.0,
+      max: double.tryParse(json['max'].toString()) ?? 0.0,
+    );
   }
 }
