@@ -42,6 +42,7 @@ class DisplaySection {
   final DisplayControl? control;
   final Map<String, DisplayItem> items;
   final Map<String, DisplayButton> buttons;
+  final Map<String, List<Map<String, dynamic>>> valueFilters;
 
   const DisplaySection({
     required this.description,
@@ -54,6 +55,7 @@ class DisplaySection {
     this.control,
     required this.items,
     this.buttons = const {},
+    this.valueFilters = const {},
   });
 
   factory DisplaySection.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,16 @@ class DisplaySection {
       });
     }
 
+    final filterPresets = <String, List<Map<String, dynamic>>>{};
+    json.forEach((key, value) {
+      if (key.startsWith('valueFilter') && value is List) {
+        final presetName = key.replaceFirst('valueFilter', '');
+        filterPresets[presetName] = List<Map<String, dynamic>>.from(
+          value.map((e) => Map<String, dynamic>.from(e))
+        );
+      }
+    });
+
     return DisplaySection(
       description: json['desc'] ?? '',
       areaType: json['areaType']?.toString(),
@@ -82,6 +94,7 @@ class DisplaySection {
       control: json['control'] != null ? DisplayControl.fromJson(json['control']) : null,
       items: itemsMap,
       buttons: buttonsMap,
+      valueFilters: filterPresets,
     );
   }
 }

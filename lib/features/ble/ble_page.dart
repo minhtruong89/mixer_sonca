@@ -709,6 +709,10 @@ class _BlePageState extends State<BlePage> {
                                        onPressed: () => _resetEqToDefault(section, viewModel),
                                        child: const Text('Default', style: TextStyle(color: Colors.greenAccent, fontSize: 16)),
                                    ),
+                                   ...section.valueFilters.entries.map((entry) => TextButton(
+                                       onPressed: () => _applyEqPreset(section, entry.key, entry.value, viewModel),
+                                       child: Text(entry.key, style: const TextStyle(color: Colors.orangeAccent, fontSize: 16)),
+                                   )),
                                ]
                            )
                        ),
@@ -1292,6 +1296,66 @@ class _BlePageState extends State<BlePage> {
      }
      
      _showCenterSnackBar("Đã đặt lại về mặc định");
+  }
+
+  Future<void> _applyEqPreset(DisplaySection section, String presetName, List<Map<String, dynamic>> values, BleViewModel viewModel) async {
+     final commandName = section.command ?? '';
+     
+     // Get category name
+     final protocolService = getIt<ProtocolService>();
+     String categoryName = '';
+     for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+       if (cat.getCommandByName(commandName) != null) {
+          categoryName = cat.name;
+          break;
+       }
+     }
+
+     if (categoryName.isEmpty) return;
+
+     debugPrint('Protocol: Applying EQ Preset "$presetName" to Area "${section.description}"...');
+
+     // Resolve type names to values
+     final Map<String, int> typeMap = {};
+     if (protocolService.isLoaded) {
+        protocolService.definition!.eqFilterTypes.forEach((key, val) {
+           typeMap[key.toUpperCase()] = val.value;
+        });
+     }
+
+     for (int i = 0; i < values.length; i++) {
+         final data = values[i];
+         
+         final f0 = int.tryParse(data['f0']?.toString() ?? '0') ?? 0;
+         
+         // Parse gain and Q. If they are stored as raw integers (like "179"), divide by 256.0
+         final gainValue = data['gain']?.toString() ?? '0';
+         final double gain = (double.tryParse(gainValue) ?? 0) / (gainValue.contains('.') ? 1.0 : 256.0);
+         
+         final qValue = data['Q']?.toString() ?? '0';
+         final double q = (double.tryParse(qValue) ?? 0) / (qValue.contains('.') ? 1.0 : 256.0);
+         
+         final typeValue = data['type']?.toString() ?? 'PEAKING';
+         int typeEnum = 2; // Default PEAKING
+         final parsedInt = int.tryParse(typeValue);
+         if (parsedInt != null) {
+            typeEnum = parsedInt;
+         } else {
+            typeEnum = typeMap[typeValue.toUpperCase()] ?? 2;
+         }
+
+         Map<String, dynamic> changes = {
+             'gain': gain,
+             'f0': f0,
+             'Q': q,
+             'type': typeEnum,
+         };
+
+         // _handleEqBandMultipleChange handles local viewModel update and BLE command
+         await _handleEqBandMultipleChange(categoryName, commandName, i, changes, viewModel);
+     }
+     
+     _showCenterSnackBar("Đã áp dụng chế độ $presetName");
   }
 
   void _navigateToArea(String? areaName) {
