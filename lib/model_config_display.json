@@ -13,7 +13,7 @@
 					  "typeDisplay": "eq slider",
 					  "type": "PEAKING",
 					  "f0": "125",
-					  "Q": "717",
+					  "Q": "179",
 					  "gain": "0"
 		    },
 		  "bandF0": ["125","250","500","1000","1500","2000","3000","4000","8000","16000"]
@@ -528,7 +528,7 @@
 					  "typeDisplay": "eq slider",
 					  "type": "PEAKING",
 					  "f0": "125",
-					  "Q": "717",
+					  "Q": "179",
 					  "gain": "0"
 		    },
 		  "bandF0": ["125","250","500","1000","1500","2000","3000","4000","8000","16000"],
@@ -860,7 +860,7 @@
 					  "typeDisplay": "eq slider",
 					  "type": "PEAKING",
 					  "f0": "125",
-					  "Q": "717",
+					  "Q": "179",
 					  "gain": "0"
 		    },
 		  "bandF0": ["125","250","500","1000","1500","2000","3000","4000","8000","16000"]
@@ -929,6 +929,20 @@
 				  },
 				  "event": {
 					  "click": "Area MUSIC MAIN"
+				  }
+			  },
+			  
+			  "MASTER": {
+				  "category": "SYSTEM",
+				  "command": "SYSTEM_VOLUME",
+				  "indexList": [
+					  "volume_mute",
+					  "volume_gain"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
 				  }
 			  },
 			  
