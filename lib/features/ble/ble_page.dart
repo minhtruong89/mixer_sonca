@@ -978,7 +978,23 @@ class _BlePageState extends State<BlePage> {
      final commandName = section.command ?? '';
      
      // default parsing from control
-     final defaultTypeEnum = int.tryParse(section.control?.rawConfig['type']?.toString() ?? '0') ?? 0;
+     int defaultTypeEnum = 2; // Default to PEAKING (2)
+     final typeValue = section.control?.rawConfig['type']?.toString();
+     if (typeValue != null) {
+        final parsedInt = int.tryParse(typeValue);
+        if (parsedInt != null) {
+           defaultTypeEnum = parsedInt;
+        } else {
+           // Try to resolve by name
+           final protocolService = getIt<ProtocolService>();
+           if (protocolService.isLoaded) {
+              final filterType = protocolService.definition!.eqFilterTypes[typeValue.toUpperCase()];
+              if (filterType != null) {
+                 defaultTypeEnum = filterType.value;
+              }
+           }
+        }
+     }
      final defaultF0 = section.control?.rawConfig['f0']?.toString() ?? '0';
      final defaultQ = int.tryParse(section.control?.rawConfig['Q']?.toString() ?? '0') ?? 0;
 
