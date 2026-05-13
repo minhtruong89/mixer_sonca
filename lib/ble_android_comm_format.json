@@ -144,7 +144,7 @@
 		  "0x04": {
 			"name": "MIC_REVERB_EFFECT",
 			"indices": {
-			  "0": { "name": "inGain", "type": "q8_8_le" },
+			  "0": { "name": "inGain", "type": "uint16_le" },
 			  "1": { "name": "BandWidth", "type": "uint16_le" },
 			  "2": { "name": "earlyRef", "type": "uint16_le" },
 			  "3": { "name": "RevbEff", "type": "uint16_le" },
@@ -153,7 +153,7 @@
 			  "6": { "name": "Diffusion", "type": "uint16_le" },
 			  "7": { "name": "DecayTime", "type": "uint16_le" },
 			  "8": { "name": "PreDelay", "type": "uint16_le" },
-			  "9": { "name": "outGain", "type": "q8_8_le" },
+			  "9": { "name": "outGain", "type": "uint16_le" },
 			  "10": { "name": "EnvelopeTap1", "type": "uint16_le" },
 			  "11": { "name": "EnvelopeTap2", "type": "uint16_le" },
 			  "12": { "name": "EnvelopeTap3", "type": "uint16_le" },
