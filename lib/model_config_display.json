@@ -888,7 +888,7 @@
 		  "areaFormat": "EQ Area",
 		  "backArea": "Area MAIN",
 		  "command": "RECORDING_EQ_EFFECT",
-		  "totalEQBand": 7,
+		  "totalEQBand": 10,
 		  "control": {
 					  "typeDisplay": "eq slider",
 					  "type": "PEAKING",
