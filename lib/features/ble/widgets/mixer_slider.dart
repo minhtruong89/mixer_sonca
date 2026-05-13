@@ -104,28 +104,48 @@ class MixerSlider extends StatelessWidget {
           
           // Slider Area (Scale + Slider)
           Expanded(
-            child: Row(
-              children: [
-                  // Scale Ticks
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20), // Align with thumb center
-                      child: _buildScale(),
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final height = constraints.maxHeight;
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onVerticalDragUpdate: (details) {
+                    final dy = details.localPosition.dy;
+                    final newValue = (1 - (dy / height)) * (max - min) + min;
+                    onChanged(newValue.clamp(min, max));
+                  },
+                  onTapDown: (details) {
+                    final dy = details.localPosition.dy;
+                    final newValue = (1 - (dy / height)) * (max - min) + min;
+                    onChanged(newValue.clamp(min, max));
+                  },
+                  onDoubleTap: () {
+                    onChanged((min + max) / 2);
+                  },
+                  child: Row(
+                    children: [
+                      // Scale Ticks
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20), // Align with thumb center
+                          child: _buildScale(),
+                        ),
+                      ),
+                      
+                      // Vertical Slider
+                      Expanded(
+                        child: _VerticalSlider(
+                          value: value,
+                          min: min,
+                          max: max,
+                        ),
+                      ),
+                    ],
                   ),
-                  
-                  // Vertical Slider
-                  Expanded(
-                    child: _VerticalSlider(
-                      value: value,
-                      min: min,
-                      max: max,
-                      onChanged: onChanged,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
+          ),
         ],
       ),
     );
@@ -184,13 +204,11 @@ class _VerticalSlider extends StatelessWidget {
   final double value;
   final double min;
   final double max;
-  final ValueChanged<double> onChanged;
 
   const _VerticalSlider({
     required this.value,
     required this.min,
     required this.max,
-    required this.onChanged,
   });
 
   @override
@@ -199,24 +217,9 @@ class _VerticalSlider extends StatelessWidget {
       builder: (context, constraints) {
         final height = constraints.maxHeight;
         
-        return GestureDetector(
-          onVerticalDragUpdate: (details) {
-            final localPos = details.localPosition;
-            if (localPos.dx < -constraints.maxWidth / 2 || localPos.dx > constraints.maxWidth * 1.5) {
-              return;
-            }
-            final dy = localPos.dy;
-            final newValue = (1 - (dy / height)) * (max - min) + min;
-            onChanged(newValue.clamp(min, max));
-          },
-          onTapDown: (details) {
-             final dy = details.localPosition.dy;
-             final newValue = (1 - (dy / height)) * (max - min) + min;
-             onChanged(newValue.clamp(min, max));
-          },
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
+        return Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
               // Track
               Container(
                 width: 6,
@@ -265,8 +268,7 @@ class _VerticalSlider extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        );
+          );
       },
     );
   }

@@ -29,6 +29,9 @@ class _BlePageState extends State<BlePage> {
   
   // Debouncers for slider updates to reduce BLE traffic
   final Map<String, Timer?> _debouncers = {};
+  
+  OverlayEntry? _toastEntry;
+  Timer? _toastTimer;
 
   @override
   void initState() {
@@ -45,6 +48,11 @@ class _BlePageState extends State<BlePage> {
       timer?.cancel();
     }
     _debouncers.clear();
+    _toastTimer?.cancel();
+    if (_toastEntry != null) {
+      _toastEntry!.remove();
+      _toastEntry = null;
+    }
     super.dispose();
   }
 
@@ -1391,35 +1399,47 @@ class _BlePageState extends State<BlePage> {
   void _showCenterSnackBar(String message) {
     if (!mounted) return;
     
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height / 2 - 50,
-        ),
-        content: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
+    _toastTimer?.cancel();
+    if (_toastEntry != null) {
+      _toastEntry!.remove();
+      _toastEntry = null;
+    }
+
+    _toastEntry = OverlayEntry(
+      builder: (context) => IgnorePointer(
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white10, width: 0.5),
               ),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
               child: Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
+
+    Overlay.of(context).insert(_toastEntry!);
+
+    _toastTimer = Timer(const Duration(seconds: 2), () {
+      if (_toastEntry != null) {
+        _toastEntry!.remove();
+        _toastEntry = null;
+      }
+    });
   }
 }
 
