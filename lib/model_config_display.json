@@ -196,7 +196,7 @@
 				  "typeDisplay": "vertical slider",
 				  "minValue": "0",
 				  "maxValue": "100",
-				  "displayOffset": "50",
+				  "displayOffset": "50"
 				}
 			  },
 
@@ -229,7 +229,8 @@
 				"control": {
 				  "typeDisplay": "vertical slider",
 				  "minValue": "0",
-				  "maxValue": "100"
+				  "maxValue": "100",
+				  "displayOffset": "50"
 				}
 			  },
 
@@ -262,7 +263,8 @@
 				"control": {
 				  "typeDisplay": "vertical slider",
 				  "minValue": "0",
-				  "maxValue": "100"
+				  "maxValue": "100",
+				  "displayOffset": "50"
 				}
 			  },
 
@@ -295,7 +297,8 @@
 				"control": {
 				  "typeDisplay": "vertical slider",
 				  "minValue": "0",
-				  "maxValue": "100"
+				  "maxValue": "100",
+				  "displayOffset": "50"
 				}
 			  },
 			  
