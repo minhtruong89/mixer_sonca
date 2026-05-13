@@ -80,7 +80,7 @@ class MixerSlider extends StatelessWidget {
               children: [
                 // Value Text (Centered when no icon, shifted left if icon exists to prevent overlap)
                 Text(
-                  '${(value / displayDivide - displayOffset).toStringAsFixed((value / displayDivide - displayOffset) % 1 == 0 ? 0 : 1)}$displayText',
+                  '${((value - displayOffset) / displayDivide).toStringAsFixed(((value - displayOffset) / displayDivide) % 1 == 0 ? 0 : 1)}$displayText',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -162,8 +162,8 @@ class MixerSlider extends StatelessWidget {
       builder: (context, constraints) {
         final h = constraints.maxHeight;
         
-        final scaledMin = min / displayDivide - displayOffset;
-        final scaledMax = max / displayDivide - displayOffset;
+        final scaledMin = (min - displayOffset) / displayDivide;
+        final scaledMax = (max - displayOffset) / displayDivide;
         final range = scaledMax - scaledMin;
         
         // Helper to format scale labels
@@ -208,13 +208,17 @@ class MixerSlider extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 25,
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              color: isCenter ? Colors.greenAccent : Colors.white60,
-              fontSize: 12,
+          width: 30,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: isCenter ? Colors.greenAccent : Colors.white60,
+                fontSize: 12,
+              ),
             ),
           ),
         ),
