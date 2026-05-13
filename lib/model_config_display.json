@@ -143,11 +143,13 @@
 			  "ECHO": {
 				  "category": "MIC",
 				  "command": "MIC_ECHO_EFFECT",
-				  "index": "drylevel",
+				  "index": "feedback",
 				  "control": {
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
-					  "maxValue": "100"
+					  "maxValue": "800",
+					  "displayDivide": "10",
+					  "displayText": "%"
 				}
 			  },
 			  
@@ -167,9 +169,11 @@
 				"command": "MIC_ECHO_EFFECT",
 				"index": "delaytime",
 				"control": {
-				  "typeDisplay": "vertical slider",
-				  "minValue": "0",
-				  "maxValue": "100"
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "2000",
+					  "displayDivide": "10",
+					  "displayText": "ms"
 				}
 			  },
 
@@ -191,7 +195,8 @@
 				"control": {
 				  "typeDisplay": "vertical slider",
 				  "minValue": "0",
-				  "maxValue": "100"
+				  "maxValue": "100",
+				  "displayOffset": "50",
 				}
 			  },
 
