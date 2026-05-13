@@ -641,8 +641,8 @@ class _BlePageState extends State<BlePage> {
       final muteStateKey = muteParam != null ? "${item.command}_$muteParam" : null;
 
       final volumeValue = (volumeParam != null) 
-          ? viewModel.getControlValue(volumeStateKey, defaultValue: 50).toDouble() 
-          : 50.0;
+          ? viewModel.getControlValue(volumeStateKey, defaultValue: (item.control.minValue + item.control.maxValue) / 2).toDouble() 
+          : (item.control.minValue + item.control.maxValue) / 2;
       final isMuted = (muteParam != null) 
           ? viewModel.getControlValue(muteStateKey!, defaultValue: 0) == 1 
           : false;
@@ -654,6 +654,9 @@ class _BlePageState extends State<BlePage> {
         showMute: muteParam != null,
         min: item.control.minValue,
         max: item.control.maxValue,
+        displayDivide: item.control.displayDivide,
+        displayOffset: item.control.displayOffset,
+        displayText: item.control.displayText,
         onLabelTap: item.event?.click != null 
           ? () => _navigateToArea(item.event!.click)
           : null,

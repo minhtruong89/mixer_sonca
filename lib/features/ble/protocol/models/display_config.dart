@@ -176,6 +176,9 @@ class DisplayControl {
   final List<DisplayOption> options;
   final double minValue;
   final double maxValue;
+  final double displayDivide;
+  final double displayOffset;
+  final String displayText;
   final Map<String, dynamic> rawConfig; // For storing custom fields like type, f0, Q, enable
 
   const DisplayControl({
@@ -184,6 +187,9 @@ class DisplayControl {
     this.options = const [],
     this.minValue = 0,
     this.maxValue = 100,
+    this.displayDivide = 1,
+    this.displayOffset = 0,
+    this.displayText = '',
     this.rawConfig = const {},
   });
 
@@ -200,6 +206,9 @@ class DisplayControl {
       options: optionsList,
       minValue: double.tryParse(json['minValue']?.toString() ?? '0') ?? 0,
       maxValue: double.tryParse(json['maxValue']?.toString() ?? '100') ?? 100,
+      displayDivide: double.tryParse(json['displayDivide']?.toString() ?? json['displayDevide']?.toString() ?? '1') ?? 1,
+      displayOffset: double.tryParse(json['displayOffset']?.toString() ?? '0') ?? 0,
+      displayText: json['displayText']?.toString() ?? '',
       rawConfig: json, // store the whole object for flexible field access
     );
   }

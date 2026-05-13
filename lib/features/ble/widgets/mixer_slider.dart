@@ -10,6 +10,9 @@ class MixerSlider extends StatelessWidget {
   final VoidCallback? onLabelTap;
   final ValueChanged<double> onChanged;
   final ValueChanged<bool> onMuteChanged;
+  final double displayDivide;
+  final double displayOffset;
+  final String displayText;
 
   const MixerSlider({
     super.key,
@@ -22,6 +25,9 @@ class MixerSlider extends StatelessWidget {
     this.onLabelTap,
     required this.onChanged,
     required this.onMuteChanged,
+    this.displayDivide = 1,
+    this.displayOffset = 0,
+    this.displayText = '',
   });
 
   @override
@@ -74,7 +80,7 @@ class MixerSlider extends StatelessWidget {
               children: [
                 // Value Text (Centered when no icon, shifted left if icon exists to prevent overlap)
                 Text(
-                  value.toInt().toString(),
+                  '${(value / displayDivide - displayOffset).toStringAsFixed((value / displayDivide - displayOffset) % 1 == 0 ? 0 : 1)}$displayText',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -155,19 +161,42 @@ class MixerSlider extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final h = constraints.maxHeight;
-        final ticks = ['100', '', '', '75', '', '', '50', '', '', '25', '', '', '0'];
         
+        final scaledMin = min / displayDivide - displayOffset;
+        final scaledMax = max / displayDivide - displayOffset;
+        final range = scaledMax - scaledMin;
+        
+        // Helper to format scale labels
+        String formatLabel(double val) {
+          if (val % 1 == 0) return val.toInt().toString();
+          return val.toStringAsFixed(1);
+        }
+
+        // We use 13 slots (0 to 12) for a detailed scale
+        // Labels at 100%, 75%, 50%, 25%, 0%
         return Stack(
           clipBehavior: Clip.none,
-          children: List.generate(ticks.length, (index) {
-            final label = ticks[index];
-            final topPos = (index / (ticks.length - 1)) * h;
+          children: List.generate(13, (index) {
+            String label = '';
+            if (index == 0) {
+              label = formatLabel(scaledMax);
+            } else if (index == 3) {
+              label = formatLabel(scaledMin + range * 0.75);
+            } else if (index == 6) {
+              label = formatLabel(scaledMin + range * 0.5);
+            } else if (index == 9) {
+              label = formatLabel(scaledMin + range * 0.25);
+            } else if (index == 12) {
+              label = formatLabel(scaledMin);
+            }
+            
+            final topPos = (index / 12) * h;
             
             return Positioned(
-              top: topPos - 7, // 7 is approx half height of 12pt text
+              top: topPos - 7,
               left: 0,
               right: 0,
-              child: _scaleTick(label, isCenter: label == '50'),
+              child: _scaleTick(label, isCenter: index == 6),
             );
           }),
         );
