@@ -161,7 +161,7 @@
 			  "14": { "name": "EnvelopeTap5", "type": "uint16_le" },
 			  "15": { "name": "EnvelopeTap6", "type": "uint16_le" },
 			  "16": { "name": "scale", "type": "uint16_le" },
-			  "17": { "name": "Enable", "type": "uint16_le" }
+			  "17": { "name": "enable", "type": "uint16_le" }
 			}
 		  }
 		}

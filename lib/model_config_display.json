@@ -920,6 +920,17 @@
 				  }
 			  },
 			  
+			  "EFFECT": {
+				  "category": "MIC",
+				  "command": "MIC_COMMON",
+				  "index": "effects_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				  }
+			  },
+			  
 			  "ECHO": {
 				  "category": "MIC",
 				  "command": "MIC_ECHO_EFFECT",
