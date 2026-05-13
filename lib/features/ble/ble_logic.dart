@@ -303,6 +303,31 @@ class BleViewModel extends ChangeNotifier {
     _isConnecting = true;
     _connectingDeviceId = device.id;
     notifyListeners();
+
+    // 0. Disconnect any existing connection to ensure a clean state
+    if (_selectedDevice != null) {
+      debugPrint('BLE: Disconnecting existing device ${_selectedDevice!.name} before connecting to new one.');
+      try {
+        await _repository.disconnect(_selectedDevice!);
+        // Small delay to allow BLE stack to settle
+        await Future.delayed(const Duration(milliseconds: 500));
+      } catch (e) {
+        debugPrint('BLE: Error disconnecting previous device: $e');
+      }
+    }
+
+    // Force disconnect any other stale devices
+    try {
+      final connected = FlutterBluePlus.connectedDevices;
+      for (var d in connected) {
+        if (d.remoteId.str != device.id) {
+          debugPrint('BLE: Force disconnecting stale device ${d.platformName}');
+          await d.disconnect();
+        }
+      }
+    } catch (e) {
+      debugPrint('BLE: Error cleaning up stale connections: $e');
+    }
     
     // Stop scanning before connecting to avoid interference
     try {      
