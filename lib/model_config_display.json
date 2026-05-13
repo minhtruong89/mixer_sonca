@@ -1015,7 +1015,7 @@
 				  "category": "RECORDING",
 				  "command": "RECORDING_COMMON",
 				  "indexList": [
-					  "mute",
+					  "volume_mute",
 					  "volume_gain"
 				  ],
 				  "control": {
