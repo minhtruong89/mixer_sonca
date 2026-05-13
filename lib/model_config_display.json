@@ -104,7 +104,7 @@
 			  "TREBLE": {
 				  "category": "MIC",
 				  "command": "MIC_COMMON",
-				  "index": "mic_treb_gain",
+				  "index": "treb_gain",
 				  "control": {
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
@@ -909,11 +909,13 @@
 			  "ECHO": {
 				  "category": "MIC",
 				  "command": "MIC_ECHO_EFFECT",
-				  "index": "drylevel",
+				  "index": "feedback",
 				  "control": {
 					  "typeDisplay": "vertical slider",
 					  "minValue": "0",
-					  "maxValue": "100"
+					  "maxValue": "800",
+					  "displayPercent": "10",
+					  "displayText": "%"
 				  },
 				  "event": {
 					  "click": "Area MIC ECHO"
