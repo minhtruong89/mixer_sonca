@@ -197,6 +197,15 @@ class CommandDefinition {
     IndexRuleDefinition? indexRuleDef;
     if (json['indexRule'] != null) {
       indexRuleDef = IndexRuleDefinition.fromJson(json['indexRule']);
+      
+      // Merge bandBaseIndices into the main indices map so getIndexByName works for global EQ params like "bypass"
+      if (json['indexRule']['bandBaseIndices'] != null) {
+        indicesMap ??= {};
+        (json['indexRule']['bandBaseIndices'] as Map<String, dynamic>).forEach((indexStr, indexValue) {
+          final index = int.parse(indexStr);
+          indicesMap![index] = IndexDefinition.fromJson(index, indexValue);
+        });
+      }
     }
 
     // Parse value map

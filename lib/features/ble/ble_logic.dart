@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -202,6 +203,25 @@ class BleViewModel extends ChangeNotifier {
     _controlStates[key] = value;
     if (notify) notifyListeners();
   }
+
+  final Map<int, Completer<bool>> _pendingAcks = {};
+
+  // Config load progress state
+  bool _isLoadingConfig = false;
+  bool get isLoadingConfig => _isLoadingConfig;
+
+  double _loadProgress = 0.0;
+  double get loadProgress => _loadProgress;
+
+  int _totalBatches = 1;
+  int get totalBatches => _totalBatches;
+
+  int _completedBatches = 0;
+  int get completedBatches => _completedBatches;
+
+  // Track which segments (0-indexed) failed after all retries
+  final List<int> _loadFailedSegments = [];
+  List<int> get loadFailedSegments => List.unmodifiable(_loadFailedSegments);
 
   bool _isBleListenersSetup = false;
 
@@ -503,7 +523,48 @@ class BleViewModel extends ChangeNotifier {
          final allCategories = {...batchedNormal.keys, ...batchedEq.keys}.toList();
          allCategories.sort(); // Sort by category alphabetically
 
+         // --- Pre-count total batch count for progress tracking ---
+         int totalBatches = 0;
+         int completedBatches = 0;
          for (final catName in allCategories) {
+            final normalCmds = batchedNormal[catName];
+            if (normalCmds != null) {
+               for (final cmdEntry in normalCmds.entries) {
+                  final cmdDef = protocolService.getCommandByName(catName, cmdEntry.key);
+                  if (cmdDef == null) continue;
+                  try {
+                     final cmds = builder.buildCommand(
+                       categoryName: catName, cmdId: cmdDef.id,
+                       operation: CommandOperation.set, parameters: cmdEntry.value,
+                     );
+                     totalBatches += cmds.length;
+                  } catch (_) { totalBatches++; }
+               }
+            }
+            final eqCmds = batchedEq[catName];
+            if (eqCmds != null) {
+               for (final cmdEntry in eqCmds.entries) {
+                  final cmdDef = protocolService.getCommandByName(catName, cmdEntry.key);
+                  if (cmdDef == null) continue;
+                  try {
+                     final cmds = builder.buildMultiBandEqCommand(
+                       categoryName: catName, cmdId: cmdDef.id,
+                       bands: cmdEntry.value, operation: CommandOperation.set,
+                     );
+                     totalBatches += cmds.length;
+                  } catch (_) { totalBatches++; }
+               }
+            }
+         }
+         if (totalBatches == 0) totalBatches = 1; // avoid division by zero
+
+         _loadProgress = 0.0;
+         _loadFailedSegments.clear();
+         _isLoadingConfig = true;
+         notifyListeners();
+
+         for (final catName in allCategories) {
+            debugPrint('\nBleViewModel: Sending category $catName to device...');
             // Send Normal Commands for this category
             final normalCmds = batchedNormal[catName];
             if (normalCmds != null) {
@@ -511,7 +572,13 @@ class BleViewModel extends ChangeNotifier {
                   final cmdName = cmdEntry.key;
                   final cmdDef = protocolService.getCommandByName(catName, cmdName);
                   if (cmdDef == null) continue;
-                  
+
+                  debugPrint('\n');
+
+                  for (final paramEntry in cmdEntry.value.entries) {
+                     debugPrint('$catName (${paramEntry.key}) -> ${paramEntry.value} (Cmd: $catName.$cmdName)');
+                  }
+
                   try {
                      final commands = builder.buildCommand(
                        categoryName: catName,
@@ -519,13 +586,22 @@ class BleViewModel extends ChangeNotifier {
                        operation: CommandOperation.set,
                        parameters: cmdEntry.value,
                      );
-                     // DynamicCommandBuilder automatically breaks payloads if they exceed maxPairCount
                      for (final cmd in commands) {
-                        await sendProtocolCommand(cmd);
-                        await Future.delayed(const Duration(milliseconds: 60));
+                        final segmentIndex = completedBatches;
+                        final success = await sendProtocolCommandAndWait(cmd);
+                        completedBatches++;
+                        _loadProgress = completedBatches / totalBatches;
+                        if (!success) {
+                           _loadFailedSegments.add(segmentIndex);
+                           debugPrint('BleViewModel: Failed or timeout sending normal batch for $catName.$cmdName');
+                        }
+                        notifyListeners();
                      }
                   } catch(e) {
                     debugPrint('BleViewModel: Error building normal command for $cmdName: $e');
+                    completedBatches++;
+                    _loadProgress = completedBatches / totalBatches;
+                    notifyListeners();
                   }
                }
             }
@@ -537,7 +613,15 @@ class BleViewModel extends ChangeNotifier {
                   final cmdName = cmdEntry.key;
                   final cmdDef = protocolService.getCommandByName(catName, cmdName);
                   if (cmdDef == null) continue;
-                  
+
+                  debugPrint('\n');
+
+                  for (final bandEntry in cmdEntry.value.entries) {
+                     for (final fieldEntry in bandEntry.value.entries) {
+                        debugPrint('$catName (band${bandEntry.key + 1}_${fieldEntry.key}) -> ${fieldEntry.value} (Cmd: $catName.$cmdName)');
+                     }
+                  }
+
                   try {
                      final commands = builder.buildMultiBandEqCommand(
                        categoryName: catName,
@@ -545,17 +629,30 @@ class BleViewModel extends ChangeNotifier {
                        bands: cmdEntry.value,
                        operation: CommandOperation.set,
                      );
-                     // DynamicCommandBuilder automatically breaks payloads if they exceed maxPairCount
                      for (final cmd in commands) {
-                        await sendProtocolCommand(cmd);
-                        await Future.delayed(const Duration(milliseconds: 60));
+                        final segmentIndex = completedBatches;
+                        final success = await sendProtocolCommandAndWait(cmd);
+                        completedBatches++;
+                        _loadProgress = completedBatches / totalBatches;
+                        if (!success) {
+                           _loadFailedSegments.add(segmentIndex);
+                           debugPrint('BleViewModel: Failed or timeout sending EQ batch for $catName.$cmdName');
+                        }
+                        notifyListeners();
                      }
                   } catch(e) {
                     debugPrint('BleViewModel: Error building EQ command for $cmdName: $e');
+                    completedBatches++;
+                    _loadProgress = completedBatches / totalBatches;
+                    notifyListeners();
                   }
                }
             }
          }
+
+         _loadProgress = 1.0;
+         _isLoadingConfig = false;
+         notifyListeners();
          debugPrint('BleViewModel: Synced loaded config to BLE device.');
       }
 
@@ -740,9 +837,9 @@ class BleViewModel extends ChangeNotifier {
     }
 
     try {
-      debugPrint('\n--- BLE Send ---');
-      debugPrint('BLE Send: Sending ${data.length} bytes to device ${_selectedDevice!.name}');
-      debugPrint('BLE Send: Data = ${data.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+      // debugPrint('\n--- BLE Send ---');
+      // debugPrint('BLE Send: Sending ${data.length} bytes to device ${_selectedDevice!.name}');
+      // debugPrint('BLE Send: Data = ${data.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
       
       final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
       final services = await bluetoothDevice.discoverServices();
@@ -764,11 +861,11 @@ class BleViewModel extends ChangeNotifier {
       // Write data to the characteristic
       await writableChar.write(data, withoutResponse: writableChar.properties.writeWithoutResponse);
       
-      debugPrint('BLE Send: Data sent successfully');
+      // debugPrint('BLE Send: Data sent successfully');
     } catch (e) {
       debugPrint('BLE Send: Error sending data: $e');
     }
-    debugPrint('-------------------------------------');
+    // debugPrint('-------------------------------------');
   }
 
   /// Receive byte array from the currently connected BLE device
@@ -804,10 +901,10 @@ class BleViewModel extends ChangeNotifier {
       
       // Listen for incoming data
       notifiableChar.lastValueStream.listen((value) {
-        debugPrint('BLE Receive: Received ${value.length} bytes');
-        debugPrint('BLE Receive: Data = ${value.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+        // debugPrint('BLE Receive: Received ${value.length} bytes');
+        // debugPrint('BLE Receive: Data = ${value.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
 
-        debugPrint('-------------------------------------');
+        // debugPrint('-------------------------------------');
       });
 
       debugPrint('BLE Receive: Notification listener set up successfully');
@@ -828,11 +925,11 @@ class BleViewModel extends ChangeNotifier {
       final frame = _protocolHandler.buildCommandFrame(payload, requireAck: requireAck);
       final frameBytes = frame.encode();
 
-      debugPrint('\n--- Protocol Send ---');
-      debugPrint('Protocol: Sending command frame');
-      debugPrint('Protocol: Category=${payload.category}, CmdId=0x${payload.cmdId.toRadixString(16)}, Op=${payload.operation}');
-      debugPrint('Protocol: Frame size=${frameBytes.length} bytes');
-      debugPrint('Protocol: Data=${frameBytes.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+      // debugPrint('\n--- Protocol Send ---');
+      // debugPrint('Protocol: Sending command frame');
+      // debugPrint('Protocol: Category=${payload.category}, CmdId=0x${payload.cmdId.toRadixString(16)}, Op=${payload.operation}');
+      // debugPrint('Protocol: Frame size=${frameBytes.length} bytes');
+      // debugPrint('Protocol: Data=${frameBytes.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
 
       // Send via BLE
       await sendDataToBLE(frameBytes);
@@ -841,22 +938,50 @@ class BleViewModel extends ChangeNotifier {
       if (requireAck) {
         try {
           final ackFrame = await _protocolHandler.waitForAck(frame.header.msgId);
-          debugPrint('Protocol: Received ACK - ${ackFrame.header}');
+          // debugPrint('Protocol: Received ACK - ${ackFrame.header}');
         } catch (e) {
           debugPrint('Protocol: ACK timeout or error: $e');
         }
       }
 
-      debugPrint('Protocol: Command sent successfully');
-      debugPrint('-------------------------------------');
+      // debugPrint('Protocol: Command sent successfully');
+      // debugPrint('-------------------------------------');
     } catch (e) {
       debugPrint('Protocol: Error sending command: $e');
     }
   }
 
+  /// Send a protocol command and wait for its corresponding ACK, with retries
+  Future<bool> sendProtocolCommandAndWait(CommandPayload payload, {Duration timeout = const Duration(milliseconds: 2000), int maxRetries = 3}) async {
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      final ackKey = (payload.category << 8) | payload.cmdId;
+      final completer = Completer<bool>();
+      _pendingAcks[ackKey] = completer;
+      
+      debugPrint('\nBleViewModel: Sending command 0x${payload.cmdId.toRadixString(16)} (Cat 0x${payload.category.toRadixString(16)}) [Attempt $attempt/$maxRetries]');
+      await sendProtocolCommand(payload);
+      
+      try {
+        final success = await completer.future.timeout(timeout);
+        if (success) {
+           debugPrint('BleViewModel: Command 0x${payload.cmdId.toRadixString(16)} ACK OK.');
+           return true;
+        } else {
+           debugPrint('BleViewModel: Command 0x${payload.cmdId.toRadixString(16)} failed (Status != 0).');
+           return false; // Typically don't retry if the device explicitly rejected it with an error code
+        }
+      } catch (e) {
+        debugPrint('BleViewModel: Timeout waiting for ACK for command 0x${payload.cmdId.toRadixString(16)}');
+        _pendingAcks.remove(ackKey);
+      }
+    }
+    debugPrint('BleViewModel: Max retries reached for command 0x${payload.cmdId.toRadixString(16)}.');
+    return false;
+  }
+
   /// Handle incoming protocol frames
   void _handleProtocolFrame(ProtocolFrame frame) {
-    debugPrint('Protocol: Handling frame - msgId=${frame.header.msgId}, flags=0x${frame.header.flags.toRadixString(16)}');
+    // debugPrint('Protocol: Handling frame - msgId=${frame.header.msgId}, flags=0x${frame.header.flags.toRadixString(16)}');
 
     // Check if this is an ACK response
     if ((frame.header.flags & FrameFlags.ackResponse) != 0) {
@@ -867,7 +992,7 @@ class BleViewModel extends ChangeNotifier {
           debugPrint('Protocol: Error code: $errorCode');
         }
       } else {
-        debugPrint('Protocol: Received ACK');
+        // debugPrint('Protocol: Received ACK');
       }
     }
 
@@ -876,7 +1001,7 @@ class BleViewModel extends ChangeNotifier {
       if((frame.header.flags & FrameFlags.ackResponse) == 0){
         try {
           final payload = CommandPayload.decode(frame.payload);
-          debugPrint('Protocol: Decoded data payload - category=0x${payload.category.toRadixString(16)}, cmdId=0x${payload.cmdId.toRadixString(16)}, op=0x${payload.operation.toRadixString(16)}');
+          // debugPrint('Protocol: Decoded data payload - category=0x${payload.category.toRadixString(16)}, cmdId=0x${payload.cmdId.toRadixString(16)}, op=0x${payload.operation.toRadixString(16)}');
 
           final protocolService = getIt<ProtocolService>();
           final category = protocolService.getCategoryById(payload.category);
@@ -916,7 +1041,14 @@ class BleViewModel extends ChangeNotifier {
       } else {
         try {
           final payload = AckPayload.decode(frame.payload);
-          debugPrint('Protocol: Decoded ack payload - status=0x${payload.status.toRadixString(16)}, category=0x${payload.category.toRadixString(16)}, cmdId=0x${payload.cmdId.toRadixString(16)}');
+          // debugPrint('Protocol: Decoded ack payload - status=0x${payload.status.toRadixString(16)}, category=0x${payload.category.toRadixString(16)}, cmdId=0x${payload.cmdId.toRadixString(16)}');
+
+          // Resolve pending ack
+          final ackKey = (payload.category << 8) | payload.cmdId;
+          if (_pendingAcks.containsKey(ackKey)) {
+             _pendingAcks[ackKey]?.complete(payload.status == 0);
+             _pendingAcks.remove(ackKey);
+          }
 
           final protocolService = getIt<ProtocolService>();
           final category = protocolService.getCategoryById(payload.category);

@@ -362,12 +362,86 @@ class _BlePageState extends State<BlePage> {
           // Overlay Layer
           if (_currentOverlayArea != null)
             _buildOverlayArea(context, viewModel),
+
+          // Load Config Progress Bar Overlay
+          if (viewModel.isLoadingConfig || (viewModel.loadProgress > 0.0 && viewModel.loadProgress < 1.0))
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildLoadProgressBar(context, viewModel),
+            ),
+          // Show final result briefly when done
+          if (!viewModel.isLoadingConfig && viewModel.loadProgress == 1.0 && viewModel.loadFailedSegments.isNotEmpty)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildLoadProgressBar(context, viewModel),
+            ),
         ],
       ),
       // Disable default FAB
       floatingActionButton: null, 
     );
   }
+
+  Widget _buildLoadProgressBar(BuildContext context, BleViewModel viewModel) {
+    final progress = viewModel.loadProgress.clamp(0.0, 1.0);
+    final failedSet = viewModel.loadFailedSegments.toSet();
+    final isDone = !viewModel.isLoadingConfig && progress >= 1.0;
+    final hasFailed = failedSet.isNotEmpty;
+    final total = viewModel.totalBatches;
+    final completed = viewModel.completedBatches;
+
+    return Container(
+      color: Colors.black87,
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isDone
+                    ? (hasFailed ? '⚠ Hoàn thành ($completed/$total, ${failedSet.length} lỗi)' : '✓ Sync hoàn thành ($total batches)')
+                    : 'Đang sync config... $completed/$total (${(progress * 100).toStringAsFixed(0)}%)',
+                style: TextStyle(
+                  color: isDone ? (hasFailed ? Colors.orangeAccent : Colors.greenAccent) : Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (isDone && !hasFailed)
+                const Icon(Icons.check_circle, color: Colors.greenAccent, size: 16),
+              if (isDone && hasFailed)
+                const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 16),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Segmented progress bar using CustomPainter for pixel-perfect rendering
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: CustomPaint(
+                  size: Size(constraints.maxWidth, 10),
+                  painter: _SegmentedProgressPainter(
+                    total: total,
+                    completed: completed,
+                    failedSet: failedSet,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildDynamicControl(BuildContext context, DisplayItem item, BleViewModel viewModel) {
     final stateKey = "${item.command}_${item.paramName ?? ''}";
@@ -1525,4 +1599,55 @@ class IntWidthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return IntrinsicWidth(child: child);
   }
+}
+
+/// Custom painter for pixel-perfect segmented progress bar.
+/// Each segment corresponds to one BLE batch. Failed segments are drawn red.
+class _SegmentedProgressPainter extends CustomPainter {
+  final int total;
+  final int completed;
+  final Set<int> failedSet;
+
+  const _SegmentedProgressPainter({
+    required this.total,
+    required this.completed,
+    required this.failedSet,
+  });
+
+  static const _green = Color(0xFF00C853);
+  static const _red = Color(0xFFFF5252);
+  static const _bg = Color(0x1AFFFFFF); // white10
+  static const _gap = 1.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (total <= 0) return;
+
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    // Draw background
+    paint.color = _bg;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+
+    if (completed <= 0) return;
+
+    // Width per segment, accounting for 1px gaps between all segments
+    final totalGaps = (total - 1) * _gap;
+    final segWidth = (size.width - totalGaps) / total;
+
+    for (int i = 0; i < completed; i++) {
+      final x = i * (segWidth + _gap);
+      paint.color = failedSet.contains(i) ? _red : _green;
+      canvas.drawRect(
+        Rect.fromLTWH(x, 0, segWidth, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SegmentedProgressPainter old) =>
+      old.total != total ||
+      old.completed != completed ||
+      old.failedSet.length != failedSet.length;
 }
