@@ -421,17 +421,47 @@ class _BlePageState extends State<BlePage> {
             ],
           ),
           const SizedBox(height: 6),
-          // Segmented progress bar using CustomPainter for pixel-perfect rendering
+          // Segmented progress bar: Stack of background + green fill + red markers
           LayoutBuilder(
             builder: (context, constraints) {
+              final barW = constraints.maxWidth;
+              const barH = 10.0;
               return ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: CustomPaint(
-                  size: Size(constraints.maxWidth, 10),
-                  painter: _SegmentedProgressPainter(
-                    total: total,
-                    completed: completed,
-                    failedSet: failedSet,
+                child: SizedBox(
+                  width: barW,
+                  height: barH,
+                  child: Stack(
+                    children: [
+                      // 1. Dark background track
+                      Container(
+                        width: barW,
+                        height: barH,
+                        color: Colors.white10,
+                      ),
+                      // 2. Green filled portion
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: barW * progress,
+                        height: barH,
+                        color: const Color(0xFF00C853),
+                      ),
+                      // 3. Red markers for failed segments (drawn on top)
+                      if (total > 0 && failedSet.isNotEmpty)
+                        ...failedSet.map((segIndex) {
+                          final segW = barW / total;
+                          final x = segIndex * segW;
+                          return Positioned(
+                            left: x,
+                            top: 0,
+                            child: Container(
+                              width: segW,
+                              height: barH,
+                              color: const Color(0xFFFF5252),
+                            ),
+                          );
+                        }),
+                    ],
                   ),
                 ),
               );
@@ -441,6 +471,7 @@ class _BlePageState extends State<BlePage> {
       ),
     );
   }
+
 
 
   Widget _buildDynamicControl(BuildContext context, DisplayItem item, BleViewModel viewModel) {
