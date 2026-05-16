@@ -1,4 +1,10 @@
+import 'dart:io';
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:equatable/equatable.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -227,14 +233,333 @@ class BleViewModel extends ChangeNotifier {
     });
   }
 
-  void saveConfigToFile() {
-    debugPrint('BleViewModel: saveConfigToFile called');
-    // Implement save logic here (e.g., File I/O or SharedPreferences)
+  Future<void> saveConfigToFile() async {
+    final mixerService = getIt<MixerService>();
+    final displayConfig = mixerService.displayConfig;
+    if (displayConfig == null) {
+      debugPrint('BleViewModel: saveConfigToFile - displayConfig is null');
+      return;
+    }
+
+    final Map<String, dynamic> values = {};
+    debugPrint('BleViewModel: saveConfigToFile - total control states: ${_controlStates.length}');
+    // 1. Collect all parameters and their current values from all areas
+    for (var section in displayConfig.defaultDisplay.sections.values) {
+      for (var item in section.items.values) {
+        final List<String> params = [];
+        if (item.indexList.isNotEmpty) {
+          params.addAll(item.indexList);
+        } else if (item.paramName != null && item.paramName!.isNotEmpty) {
+          params.add(item.paramName!);
+        }
+        
+        for (var param in params) {
+          final stateKey = "${item.command}_$param";
+          // Format: Category.Command.ParamName
+          final key = "${item.category}.${item.command}.$param";
+          
+          if (_controlStates.containsKey(stateKey)) {
+            values[key] = _controlStates[stateKey];
+          } else {
+            // Provide a sensible default based on control type if missing
+            if (param.toLowerCase().endsWith('mute')) {
+              values[key] = 0;
+            } else if (item.control.isSwitch) {
+              values[key] = 0;
+            } else if (item.control.isVerticalSlider) {
+              // Usually the default in UI is midpoint or 0
+              values[key] = (item.control.minValue + item.control.maxValue) / 2;
+            } else if (item.control.isRadio || item.control.isDropdown) {
+              // Default to first option or 0
+              values[key] = 0;
+            } else {
+              values[key] = 0;
+            }
+          }
+        }
+
+      }
+      
+      // Handle EQ Area which doesn't use `items`
+      if (section.areaFormat == "EQ Area" && section.command != null) {
+        final totalBands = section.totalEQBand ?? 10;
+        final commandName = section.command!;
+        
+        // Parse default EQ values from config
+        int defaultTypeEnum = 2;
+        final typeValue = section.control?.rawConfig['type']?.toString();
+        if (typeValue != null) {
+           final parsedInt = int.tryParse(typeValue);
+           if (parsedInt != null) {
+              defaultTypeEnum = parsedInt;
+           } else {
+              final protocolService = getIt<ProtocolService>();
+              if (protocolService.isLoaded) {
+                 final filterType = protocolService.definition!.eqFilterTypes[typeValue.toUpperCase()];
+                 if (filterType != null) defaultTypeEnum = filterType.value;
+              }
+           }
+        }
+        final defaultF0 = section.control?.rawConfig['f0']?.toString() ?? '0';
+        final defaultQ = int.tryParse(section.control?.rawConfig['Q']?.toString() ?? '0') ?? 0;
+        final double qValue = defaultQ / 256.0;
+        final defaultGain = double.tryParse(section.control?.rawConfig['gain']?.toString() ?? '0') ?? 0.0;
+
+        for (int b = 0; b < totalBands; b++) {
+          // Determine default F0 for this band
+          String bandF0Value = defaultF0;
+          if (section.bandF0 != null && b < section.bandF0!.length) {
+            bandF0Value = section.bandF0![b];
+          }
+          int baseF0 = int.tryParse(bandF0Value) ?? 0;
+
+          final eqParams = ['type', 'f0', 'Q', 'gain'];
+          for (var param in eqParams) {
+             final stateKey = "${commandName}_band${b}_$param";
+             
+             // Export key should use 1-based indexing (band1, band2, ...)
+             final exportParamName = 'band${b + 1}_$param';
+             
+             // Find category name for EQ Area command
+             final protocolService = getIt<ProtocolService>();
+             String categoryName = "";
+             for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+               if (cat.getCommandByName(commandName) != null) {
+                 categoryName = cat.name;
+                 break;
+               }
+             }
+             
+             final key = "$categoryName.$commandName.$exportParamName";
+             if (_controlStates.containsKey(stateKey)) {
+                var val = _controlStates[stateKey];
+                // Convert raw Q/gain (int) to double if needed, like in UI
+                if (param == 'Q' && val is int) val = val / 256.0;
+                if (param == 'gain' && val is int) val = val / 256.0;
+                values[key] = val;
+             } else {
+                // Apply defaults if missing
+                if (param == 'type') values[key] = defaultTypeEnum;
+                else if (param == 'f0') values[key] = baseF0;
+                else if (param == 'Q') values[key] = double.parse(qValue.toStringAsFixed(2)); // e.g. 0.7
+                else if (param == 'gain') values[key] = defaultGain;
+             }
+          }
+        }
+
+
+      }
+    }
+    
+    debugPrint('BleViewModel: saveConfigToFile - collected ${values.length} parameters to save.');
+
+    // 2. Sort the keys alphabetically (this naturally groups by category)
+    final sortedKeys = values.keys.toList()..sort();
+    final Map<String, dynamic> sortedValues = {
+      for (var key in sortedKeys) key: values[key]
+    };
+
+    final finalOutput = {"values": sortedValues};
+
+    // 3. Save to file with timestamp HC_yyyy_MM_dd_HH_mm.json
+    try {
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          await Permission.storage.request();
+        }
+      }
+
+      final now = DateTime.now();
+      final formatter = DateFormat('yyyy_MM_dd_HH_mm');
+      final timestamp = formatter.format(now);
+      final fileName = "HC_$timestamp.json";
+      
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          directory = await getExternalStorageDirectory();
+        }
+      } else {
+        directory = await getDownloadsDirectory();
+      }
+      
+      if (directory == null) {
+        debugPrint('BleViewModel: Cannot find Downloads directory');
+        return;
+      }
+
+      final file = File('${directory.path}/$fileName');
+      
+      const encoder = JsonEncoder.withIndent('  ');
+      await file.writeAsString(encoder.convert(finalOutput));
+      
+      debugPrint('BleViewModel: Config saved to ${file.path}');
+    } catch (e) {
+      debugPrint('BleViewModel: Error saving config: $e');
+    }
   }
 
-  void loadConfigToFile() {
+  Future<void> loadConfigToFile() async {
     debugPrint('BleViewModel: loadConfigToFile called');
-    // Implement load logic here
+    
+    try {
+      // 1. Pick file
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.single.path == null) {
+        debugPrint('BleViewModel: File picker cancelled or no file selected.');
+        return;
+      }
+
+      final file = File(result.files.single.path!);
+      final jsonString = await file.readAsString();
+      final jsonData = jsonDecode(jsonString);
+
+      if (jsonData is! Map || !jsonData.containsKey('values')) {
+        debugPrint('BleViewModel: Invalid config file format (missing "values" object).');
+        return;
+      }
+
+      final Map<String, dynamic> values = Map<String, dynamic>.from(jsonData['values']);
+      
+      // Used to batch commands for sending to BLE
+      final Map<String, Map<String, Map<String, dynamic>>> batchedNormal = {};
+      final Map<String, Map<String, Map<int, Map<String, dynamic>>>> batchedEq = {};
+
+      final protocolService = getIt<ProtocolService>();
+
+      // 2. Parse and update state
+      for (final entry in values.entries) {
+        final key = entry.key;
+        final val = entry.value;
+
+        final parts = key.split('.');
+        if (parts.length != 3) continue;
+
+        final categoryName = parts[0];
+        final commandName = parts[1];
+        String paramName = parts[2];
+
+        // Check if it's an EQ band parameter (e.g., band1_Q -> band0_Q)
+        final eqMatch = RegExp(r'^band(\d+)_(.*)$').firstMatch(paramName);
+        int? bandIndex;
+        String? eqField;
+        
+        if (eqMatch != null) {
+          final bIdx = int.tryParse(eqMatch.group(1)!) ?? 1;
+          bandIndex = bIdx - 1; // Convert 1-based export index back to 0-based
+          eqField = eqMatch.group(2)!;
+          paramName = 'band${bandIndex}_$eqField';
+        }
+
+        final stateKey = "${commandName}_$paramName";
+        
+        // Convert Q and gain doubles back to internal integer Q8.8 representation for UI state
+        dynamic internalVal = val;
+        if (eqMatch != null && (eqField == 'Q' || eqField == 'gain')) {
+           if (val is num) internalVal = (val * 256.0).round();
+           else if (val is String) internalVal = (double.parse(val) * 256.0).round();
+        } else if (val is String && num.tryParse(val) != null) {
+           internalVal = num.parse(val);
+        }
+
+        _controlStates[stateKey] = internalVal;
+
+        // Queue for BLE send
+        final cmdDef = protocolService.getCommandByName(categoryName, commandName);
+        if (cmdDef != null) {
+           if (cmdDef.isEqCommand && bandIndex != null && eqField != null) {
+              batchedEq[categoryName] ??= {};
+              batchedEq[categoryName]![commandName] ??= {};
+              batchedEq[categoryName]![commandName]![bandIndex] ??= {};
+              
+              // DynamicCommandBuilder encodes actual value directly without pre-conversion for float types
+              // Wait, UI uses internalVal (int), DynamicCommandBuilder uses index type logic.
+              // We should pass internalVal to it.
+              batchedEq[categoryName]![commandName]![bandIndex]![eqField] = internalVal;
+           } else {
+              batchedNormal[categoryName] ??= {};
+              batchedNormal[categoryName]![commandName] ??= {};
+              batchedNormal[categoryName]![commandName]![paramName] = internalVal;
+           }
+        }
+      }
+
+      // 3. Notify UI
+      notifyListeners();
+      debugPrint('BleViewModel: Loaded ${values.length} parameters to UI.');
+
+      // 4. Send to BLE device if connected
+      if (_selectedDevice != null) {
+         final builder = getIt<DynamicCommandBuilder>();
+         
+         final allCategories = {...batchedNormal.keys, ...batchedEq.keys}.toList();
+         allCategories.sort(); // Sort by category alphabetically
+
+         for (final catName in allCategories) {
+            // Send Normal Commands for this category
+            final normalCmds = batchedNormal[catName];
+            if (normalCmds != null) {
+               for (final cmdEntry in normalCmds.entries) {
+                  final cmdName = cmdEntry.key;
+                  final cmdDef = protocolService.getCommandByName(catName, cmdName);
+                  if (cmdDef == null) continue;
+                  
+                  try {
+                     final commands = builder.buildCommand(
+                       categoryName: catName,
+                       cmdId: cmdDef.id,
+                       operation: CommandOperation.set,
+                       parameters: cmdEntry.value,
+                     );
+                     // DynamicCommandBuilder automatically breaks payloads if they exceed maxPairCount
+                     for (final cmd in commands) {
+                        await sendProtocolCommand(cmd);
+                        await Future.delayed(const Duration(milliseconds: 60));
+                     }
+                  } catch(e) {
+                    debugPrint('BleViewModel: Error building normal command for $cmdName: $e');
+                  }
+               }
+            }
+
+            // Send EQ Commands for this category
+            final eqCmds = batchedEq[catName];
+            if (eqCmds != null) {
+               for (final cmdEntry in eqCmds.entries) {
+                  final cmdName = cmdEntry.key;
+                  final cmdDef = protocolService.getCommandByName(catName, cmdName);
+                  if (cmdDef == null) continue;
+                  
+                  try {
+                     final commands = builder.buildMultiBandEqCommand(
+                       categoryName: catName,
+                       cmdId: cmdDef.id,
+                       bands: cmdEntry.value,
+                       operation: CommandOperation.set,
+                     );
+                     // DynamicCommandBuilder automatically breaks payloads if they exceed maxPairCount
+                     for (final cmd in commands) {
+                        await sendProtocolCommand(cmd);
+                        await Future.delayed(const Duration(milliseconds: 60));
+                     }
+                  } catch(e) {
+                    debugPrint('BleViewModel: Error building EQ command for $cmdName: $e');
+                  }
+               }
+            }
+         }
+         debugPrint('BleViewModel: Synced loaded config to BLE device.');
+      }
+
+    } catch (e) {
+      debugPrint('BleViewModel: Error loading config file: $e');
+    }
   }
 
   void init() {
