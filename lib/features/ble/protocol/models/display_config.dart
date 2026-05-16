@@ -105,7 +105,8 @@ class DisplayItem {
   final String category; // "SYSTEM", "MIC", etc.
   final String command; // "system_app_mode", "mic_feedback_cancel"
   final String? paramName; // "app_mode", "enable" (mapped from JSON's "index")
-  final List<String> indexList; // New: for controls with multiple parameters (e.g. mute + volume)
+  final List<String> indexList;
+  final Map<String, dynamic> controlList;
   final DisplayControl control;
   final DisplayEvent? event;
 
@@ -115,6 +116,7 @@ class DisplayItem {
     required this.command,
     this.paramName,
     this.indexList = const [],
+    this.controlList = const {},
     required this.control,
     this.event,
   });
@@ -128,12 +130,13 @@ class DisplayItem {
     }
 
     return DisplayItem(
-      label: label,
+      label: json['label']?.toString() ?? label,
       category: json['category'] ?? '',
       command: json['command'] ?? '',
       // Note: JSON uses "index" key for parameter name
       paramName: json['index']?.toString(), 
       indexList: indexList,
+      controlList: json['controlList'] != null ? Map<String, dynamic>.from(json['controlList']) : {},
       control: DisplayControl.fromJson(json['control'] ?? {}),
       event: json['event'] != null ? DisplayEvent.fromJson(json['event']) : null,
     );
@@ -218,6 +221,7 @@ class DisplayControl {
   bool get isVerticalSlider => typeDisplay.contains('slider');
   bool get isDropdown => typeDisplay.contains('drop down');
   bool get isNormalButton => typeDisplay.contains('normal button');
+  bool get isCompound => typeDisplay.contains('combound');
 }
 
 /// Represents an option in a radio group

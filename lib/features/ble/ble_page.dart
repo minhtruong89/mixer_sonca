@@ -675,6 +675,53 @@ class _BlePageState extends State<BlePage> {
         },
       );
     }
+    // 6. Compound Button
+    else if (item.control.isCompound) {
+      final buttons = item.controlList.entries.toList();
+      buttons.sort((a, b) => a.key.compareTo(b.key));
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            ...buttons.map((entry) {
+              final btnConfig = entry.value as Map<String, dynamic>;
+              final label = btnConfig['label']?.toString() ?? '';
+              
+              return Container(
+                width: 70, // Fixed width for buttons
+                height: 36,
+                margin: const EdgeInsets.only(right: 4.0),
+                child: ElevatedButton(
+                  onPressed: () => _handleCompoundClick(item, btnConfig, viewModel),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.05),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero,
+                    side: const BorderSide(color: Colors.white24, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
+              );
+            }).toList(),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                item.label,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     
     // Default fallback
     return ListTile(
@@ -875,6 +922,22 @@ class _BlePageState extends State<BlePage> {
           ],
         ),
       );
+  }
+
+  void _handleCompoundClick(DisplayItem item, Map<String, dynamic> btnConfig, BleViewModel viewModel) {
+    if (item.category == "SYSTEM") {
+       final name = btnConfig['name']?.toString();
+       if (name != null) {
+          _handleDynamicControlChange(item, 1, viewModel, paramOverride: name);
+       }
+    } else if (item.category == "CODING") {
+       final event = btnConfig['event']?.toString();
+       if (event == "_saveConfigToFile") {
+          viewModel.saveConfigToFile();
+       } else if (event == "_loadConfigToFile") {
+          viewModel.loadConfigToFile();
+       }
+    }
   }
 
   Future<void> _handleDynamicControlChange(DisplayItem item, dynamic value, BleViewModel viewModel, {String? paramOverride}) async {

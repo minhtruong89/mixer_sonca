@@ -227,6 +227,16 @@ class BleViewModel extends ChangeNotifier {
     });
   }
 
+  void saveConfigToFile() {
+    debugPrint('BleViewModel: saveConfigToFile called');
+    // Implement save logic here (e.g., File I/O or SharedPreferences)
+  }
+
+  void loadConfigToFile() {
+    debugPrint('BleViewModel: loadConfigToFile called');
+    // Implement load logic here
+  }
+
   void init() {
     // Listen for incoming protocol frames
     _protocolHandler.incomingFrames.listen((frame) {

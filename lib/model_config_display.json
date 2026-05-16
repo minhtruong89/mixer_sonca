@@ -1052,10 +1052,10 @@
             }			
           }, 
 		  		  
-		  "MIC FBX": {
+		  "MIC FBC": {
             "category": "MIC",
-            "command": "MIC_ECHO_EFFECT",
-            "index": "feedback",
+            "command": "MIC_FBC",
+            "index": "feedback_cancel",
             "control": {
               "typeDisplay": "switch button",
               "valueType": "uint16"
@@ -1082,25 +1082,30 @@
             }			
           }, 
 		  
-		  "SAVE CONFIG": {
-            "category": "SYSTEM",
-            "command": "SYSTEM_CONFIG",
-            "index": "save_config",
-            "control": {
-              "typeDisplay": "normal button",
-              "valueType": "uint16"
-            }			
-          }, 
+		  "DEVICE":{
+			  "label": "Xuống Thiết Bị",
+			  "category": "SYSTEM",
+			  "command": "SYSTEM_CONFIG",			  
+			  "control": {
+				  "typeDisplay": "combound button"
+			  },
+			  "controlList": {
+				"1": { "label": "SAVE", "name": "save_config", "type": "uint16" },
+				"2": { "label": "RESET", "name": "reset_config", "type": "uint16" }
+			  }
+		  },
 		  
-		  "RESET CONFIG": {
-            "category": "SYSTEM",
-            "command": "SYSTEM_CONFIG",
-            "index": "reset_config",
-            "control": {
-              "typeDisplay": "normal button",
-              "valueType": "uint16"
-            }			
-          }
+		  "CONFIG":{
+			  "label": "File Config",
+			  "category": "CODING",		  
+			  "control": {
+				  "typeDisplay": "combound button"
+			  },
+			  "controlList": {
+				"1": { "label": "LƯU" , "event": "_saveConfigToFile"},
+				"2": { "label": "LOAD", "event": "_loadConfigToFile"}
+			  }
+		  }
 		  
         }
       }

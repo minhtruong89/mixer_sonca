@@ -1,0 +1,962 @@
+{
+  "protocol": "ble_android_comm",
+  "name": "BLE Android Communication Application Protocol",
+  "schemaVersion": 1,
+  "framing": {
+    "header": {
+      "magic": "0xAA",
+      "version": "0x01",
+      "type": {
+        "command": "0x01",
+        "data": "0x02"
+      },
+      "flags": {
+        "ackReq": "0x01",
+        "ackResp": "0x02",
+        "error": "0x04"
+      },
+      "length": "uint16_le",
+      "msgId": "uint8",
+      "seq": "uint8"
+    },
+    "crc16": {
+      "required": true,
+      "algorithm": "ISO-IEC-14443-3-A",
+      "coverage": "header+payload",
+      "order": "LSB_MSB"
+    },
+    "commandPayload": {
+      "fields": [
+        {
+          "name": "category",
+          "type": "uint8"
+        },
+        {
+          "name": "cmdId",
+          "type": "uint8"
+        },
+        {
+          "name": "op",
+          "type": "uint8",
+          "values": {
+            "GET": "0x00",
+            "SET": "0x01",
+            "EVENT": "0x02"
+          }
+        },
+        {
+          "name": "payloadLen",
+          "type": "uint8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        }
+      ],
+      "indexValuePayload": {
+        "countType": "uint8",
+        "indexType": "uint8",
+        "valueType": "int16_le_or_uint16_le"
+      }
+    },
+    "dataPayload": {
+      "fields": [
+        {
+          "name": "totalLen",
+          "type": "uint16_le"
+        },
+        {
+          "name": "segmentCount",
+          "type": "uint8"
+        },
+        {
+          "name": "segmentIndex",
+          "type": "uint8"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        }
+      ]
+    }
+  },
+  "eqFilterTypes": {
+    "source": "middleware/audio/inc/eq.h",
+    "values": [
+      {
+        "name": "UNKNOWN",
+        "value": -1
+      },
+      {
+        "name": "FLAT",
+        "value": 0
+      },
+      {
+        "name": "LOW_SHELF",
+        "value": 1
+      },
+      {
+        "name": "PEAKING",
+        "value": 2
+      },
+      {
+        "name": "HIGH_SHELF",
+        "value": 3
+      },
+      {
+        "name": "LOW_PASS_LINKWITZ",
+        "value": 4
+      },
+      {
+        "name": "HIGH_PASS_LINKWITZ",
+        "value": 5
+      },
+      {
+        "name": "LOW_PASS_BUTTERWORTH",
+        "value": 6
+      },
+      {
+        "name": "HIGH_PASS_BUTTERWORTH",
+        "value": 7
+      },
+      {
+        "name": "LOW_PASS_BESSEL",
+        "value": 8
+      },
+      {
+        "name": "HIGH_PASS_BESSEL",
+        "value": 9
+      },
+      {
+        "name": "NOTCH",
+        "value": 10
+      }
+    ]
+  },
+  "limits": {
+    "maxPairCount": 50
+  },
+  "defaultProfiles": [
+    {
+      "id": 0,
+      "name": "base",
+      "description": "Safe fallback defaults for BLE Android context",
+      "values": {
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.attack": 50,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.band_width": 50,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.frequency_center": 50,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.range": 50,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.release": 50,
+        "GUITAR.GUITAR_COMMON.autowah_enable": 0,
+        "GUITAR.GUITAR_COMMON.distortor_enable": 0,
+        "GUITAR.GUITAR_COMMON.flanger_enable": 0,
+        "GUITAR.GUITAR_COMMON.vibrato_enable": 0,
+        "GUITAR.GUITAR_COMMON.volume_gain": "50.0",
+        "GUITAR.GUITAR_DISTORTOR_EFFECT.distorted": 50,
+        "GUITAR.GUITAR_DISTORTOR_EFFECT.threshold": 50,
+        "GUITAR.GUITAR_FLANGER_EFFECT.efflevel": 50,
+        "GUITAR.GUITAR_FLANGER_EFFECT.feedback": 50,
+        "GUITAR.GUITAR_FLANGER_EFFECT.osc_depth": 50,
+        "GUITAR.GUITAR_FLANGER_EFFECT.osc_freq": 50,
+        "GUITAR.GUITAR_VIBRATO_EFFECT.depth": 50,
+        "GUITAR.GUITAR_VIBRATO_EFFECT.freq": 50,
+        "GUITAR.GUITAR_VIBRATO_EFFECT.phase": 50,
+        "INPUT.INPUT_MIC_GUITAR_1.select": 0,
+        "INPUT.INPUT_MIC_GUITAR_2.select": 1,
+        "INPUT.INPUT_MUSIC_MODE.mode": 0,
+        "MIC.MIC_COMMON.bass_gain": "50.0",
+        "MIC.MIC_COMMON.effects_gain": "25.0",
+        "MIC.MIC_COMMON.master_gain": "50.0",
+        "MIC.MIC_COMMON.master_mute": 0,
+        "MIC.MIC_COMMON.mic1_mute": 0,
+        "MIC.MIC_COMMON.mic1_volume": "50.0",
+        "MIC.MIC_COMMON.mic2_mute": 0,
+        "MIC.MIC_COMMON.mic2_volume": "50.0",
+        "MIC.MIC_COMMON.mic3_mute": 0,
+        "MIC.MIC_COMMON.mic3_volume": "50.0",
+        "MIC.MIC_COMMON.middle_gain": "50.0",
+        "MIC.MIC_COMMON.treb_gain": "50.0",
+        "MIC.MIC_ECHO_EFFECT.delayPan": 50,
+        "MIC.MIC_ECHO_EFFECT.delaylevel": 50,
+        "MIC.MIC_ECHO_EFFECT.delaytime": 1800,
+        "MIC.MIC_ECHO_EFFECT.drylevel": 90,
+        "MIC.MIC_ECHO_EFFECT.enable": 1,
+        "MIC.MIC_ECHO_EFFECT.feedback": 660,
+        "MIC.MIC_ECHO_EFFECT.tap1_level": 20,
+        "MIC.MIC_ECHO_EFFECT.tap1_pan": 50,
+        "MIC.MIC_ECHO_EFFECT.tap1_time": 95,
+        "MIC.MIC_ECHO_EFFECT.tap2_level": 10,
+        "MIC.MIC_ECHO_EFFECT.tap2_pan": 50,
+        "MIC.MIC_ECHO_EFFECT.tap2_time": 90,
+        "MIC.MIC_ECHO_EFFECT.tap3_level": 0,
+        "MIC.MIC_ECHO_EFFECT.tap3_pan": 50,
+        "MIC.MIC_ECHO_EFFECT.tap3_time": 0,
+        "MIC.MIC_EQ_EFFECT.band10_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band10_f0": 16000,
+        "MIC.MIC_EQ_EFFECT.band10_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band10_type": 2,
+        "MIC.MIC_EQ_EFFECT.band1_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band1_f0": 125,
+        "MIC.MIC_EQ_EFFECT.band1_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band1_type": 2,
+        "MIC.MIC_EQ_EFFECT.band2_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band2_f0": 250,
+        "MIC.MIC_EQ_EFFECT.band2_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band2_type": 2,
+        "MIC.MIC_EQ_EFFECT.band3_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band3_f0": 500,
+        "MIC.MIC_EQ_EFFECT.band3_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band3_type": 2,
+        "MIC.MIC_EQ_EFFECT.band4_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band4_f0": 1000,
+        "MIC.MIC_EQ_EFFECT.band4_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band4_type": 2,
+        "MIC.MIC_EQ_EFFECT.band5_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band5_f0": 1500,
+        "MIC.MIC_EQ_EFFECT.band5_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band5_type": 2,
+        "MIC.MIC_EQ_EFFECT.band6_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band6_f0": 2000,
+        "MIC.MIC_EQ_EFFECT.band6_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band6_type": 2,
+        "MIC.MIC_EQ_EFFECT.band7_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band7_f0": 3000,
+        "MIC.MIC_EQ_EFFECT.band7_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band7_type": 2,
+        "MIC.MIC_EQ_EFFECT.band8_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band8_f0": 4000,
+        "MIC.MIC_EQ_EFFECT.band8_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band8_type": 2,
+        "MIC.MIC_EQ_EFFECT.band9_Q": "0.7",
+        "MIC.MIC_EQ_EFFECT.band9_f0": 8000,
+        "MIC.MIC_EQ_EFFECT.band9_gain": "0.0",
+        "MIC.MIC_EQ_EFFECT.band9_type": 2,
+        "MIC.MIC_EQ_EFFECT.bypass": 0,
+        "MIC.MIC_REVERB_EFFECT.BandWidth": 50,
+        "MIC.MIC_REVERB_EFFECT.Damping": 100,
+        "MIC.MIC_REVERB_EFFECT.DecayTime": 4745,
+        "MIC.MIC_REVERB_EFFECT.Diffusion": 52,
+        "MIC.MIC_REVERB_EFFECT.DryPercent": 0,
+        "MIC.MIC_REVERB_EFFECT.EnvelopeTap1": 0,
+        "MIC.MIC_REVERB_EFFECT.EnvelopeTap2": 0,
+        "MIC.MIC_REVERB_EFFECT.EnvelopeTap3": 0,
+        "MIC.MIC_REVERB_EFFECT.EnvelopeTap4": 0,
+        "MIC.MIC_REVERB_EFFECT.EnvelopeTap5": 0,
+        "MIC.MIC_REVERB_EFFECT.EnvelopeTap6": 0,
+        "MIC.MIC_REVERB_EFFECT.PreDelay": 7,
+        "MIC.MIC_REVERB_EFFECT.RevbEff": 50,
+        "MIC.MIC_REVERB_EFFECT.earlyRef": 10,
+        "MIC.MIC_REVERB_EFFECT.enable": 1,
+        "MIC.MIC_REVERB_EFFECT.inGain": 550,
+        "MIC.MIC_REVERB_EFFECT.outGain": 400,
+        "MIC.MIC_REVERB_EFFECT.scale": 0,
+        "MUSIC.MUSIC_BASSBOOST_EFFECT.enable": 0,
+        "MUSIC.MUSIC_BASSBOOST_EFFECT.intensity": 50,
+        "MUSIC.MUSIC_COMMON.bass_gain": "50.0",
+        "MUSIC.MUSIC_COMMON.middle_gain": "50.0",
+        "MUSIC.MUSIC_COMMON.treb_gain": "50.0",
+        "MUSIC.MUSIC_COMMON.volume_gain": "50.0",
+        "MUSIC.MUSIC_COMMON.volume_mute": 0,
+        "MUSIC.MUSIC_ENHANCER_EFFECT.enable": 0,
+        "MUSIC.MUSIC_ENHANCER_EFFECT.level": 50,
+        "MUSIC.MUSIC_EQ_EFFECT.band10_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band10_f0": 16000,
+        "MUSIC.MUSIC_EQ_EFFECT.band10_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band10_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band1_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band1_f0": 125,
+        "MUSIC.MUSIC_EQ_EFFECT.band1_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band1_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band2_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band2_f0": 250,
+        "MUSIC.MUSIC_EQ_EFFECT.band2_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band2_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band3_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band3_f0": 500,
+        "MUSIC.MUSIC_EQ_EFFECT.band3_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band3_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band4_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band4_f0": 1000,
+        "MUSIC.MUSIC_EQ_EFFECT.band4_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band4_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band5_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band5_f0": 1500,
+        "MUSIC.MUSIC_EQ_EFFECT.band5_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band5_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band6_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band6_f0": 2000,
+        "MUSIC.MUSIC_EQ_EFFECT.band6_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band6_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band7_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band7_f0": 3000,
+        "MUSIC.MUSIC_EQ_EFFECT.band7_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band7_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band8_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band8_f0": 4000,
+        "MUSIC.MUSIC_EQ_EFFECT.band8_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band8_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.band9_Q": "0.7",
+        "MUSIC.MUSIC_EQ_EFFECT.band9_f0": 8000,
+        "MUSIC.MUSIC_EQ_EFFECT.band9_gain": "0.0",
+        "MUSIC.MUSIC_EQ_EFFECT.band9_type": 2,
+        "MUSIC.MUSIC_EQ_EFFECT.bypass": 0,
+        "RECORDING.RECORDING_COMMON.select_mixer": 0,
+        "RECORDING.RECORDING_COMMON.volume_gain": "50.0",
+        "RECORDING.RECORDING_COMMON.volume_mute": 0,
+        "RECORDING.RECORDING_EQ_EFFECT.band1_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band1_f0": 125,
+        "RECORDING.RECORDING_EQ_EFFECT.band1_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band1_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band2_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band2_f0": 250,
+        "RECORDING.RECORDING_EQ_EFFECT.band2_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band2_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band3_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band3_f0": 500,
+        "RECORDING.RECORDING_EQ_EFFECT.band3_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band3_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band4_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band4_f0": 1000,
+        "RECORDING.RECORDING_EQ_EFFECT.band4_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band4_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band5_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band5_f0": 1500,
+        "RECORDING.RECORDING_EQ_EFFECT.band5_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band5_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band6_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band6_f0": 2000,
+        "RECORDING.RECORDING_EQ_EFFECT.band6_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band6_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band7_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band7_f0": 3000,
+        "RECORDING.RECORDING_EQ_EFFECT.band7_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band7_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band8_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band8_f0": 4000,
+        "RECORDING.RECORDING_EQ_EFFECT.band8_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band8_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band9_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band9_f0": 8000,
+        "RECORDING.RECORDING_EQ_EFFECT.band9_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band9_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.band10_Q": "0.7",
+        "RECORDING.RECORDING_EQ_EFFECT.band10_f0": 16000,
+        "RECORDING.RECORDING_EQ_EFFECT.band10_gain": "0.0",
+        "RECORDING.RECORDING_EQ_EFFECT.band10_type": 2,
+        "RECORDING.RECORDING_EQ_EFFECT.bypass": 0,
+        "SYSTEM.SYSTEM_VOLUME.volume_gain": "50.0",
+        "SYSTEM.SYSTEM_VOLUME.volume_mute": 0
+      }
+    },
+    {
+      "id": 1,
+      "name": "HC6288_A",
+      "extends": "base",
+      "description": "HC6288 profile A overrides",
+      "values": {
+        "MIC.MIC_COMMON.master_gain": "60.0",
+        "MUSIC.MUSIC_COMMON.volume_gain": "45.0"
+      }
+    }
+  ],
+  "categories": {
+    "MIC": {
+      "id": "0x01",
+      "commands": {
+        "0x01": {
+          "name": "MIC_COMMON",
+          "indices": {
+            "0": {
+              "name": "master_gain",
+              "type": "q8_8_le"
+            },
+            "1": {
+              "name": "master_mute",
+              "type": "uint16_le"
+            },
+            "2": {
+              "name": "mic1_volume",
+              "type": "q8_8_le"
+            },
+            "3": {
+              "name": "mic1_mute",
+              "type": "uint16_le"
+            },
+            "4": {
+              "name": "mic2_volume",
+              "type": "q8_8_le"
+            },
+            "5": {
+              "name": "mic2_mute",
+              "type": "uint16_le"
+            },
+            "6": {
+              "name": "mic3_volume",
+              "type": "q8_8_le"
+            },
+            "7": {
+              "name": "mic3_mute",
+              "type": "uint16_le"
+            },
+            "8": {
+              "name": "bass_gain",
+              "type": "q8_8_le"
+            },
+            "9": {
+              "name": "middle_gain",
+              "type": "q8_8_le"
+            },
+            "10": {
+              "name": "treb_gain",
+              "type": "q8_8_le"
+            },
+            "11": {
+              "name": "effects_gain",
+              "type": "q8_8_le"
+            }
+          }
+        },
+        "0x02": {
+          "name": "MIC_EQ_EFFECT",
+          "paramType": "EQParam",
+          "indexRule": {
+            "indexRange": "1-41",
+            "bandCount": 10,
+            "bandBaseIndex": 1,
+            "bandBaseIndices": {
+              "0": {
+                "name": "bypass",
+                "type": "uint16_le"
+              }
+            },
+            "fieldsPerBand": 4,
+            "band": "(index-1)/4",
+            "field": "(index-1)%4",
+            "fieldOrder": {
+              "0": "gain",
+              "1": "f0",
+              "2": "Q",
+              "3": "type"
+            },
+            "fieldTypes": {
+              "gain": "q8_8_le",
+              "f0": "uint16_le",
+              "Q": "q8_8_le",
+              "type": "int16_le"
+            },
+            "fieldLimit": {
+              "gain": {
+                "min": "-12.0",
+                "max": "12.0"
+              },
+              "f0": {
+                "min": "20",
+                "max": "20000"
+              },
+              "Q": {
+                "min": "0.1",
+                "max": "128"
+              }
+            }
+          }
+        },
+        "0x03": {
+          "name": "MIC_ECHO_EFFECT",
+          "indices": {
+            "0": {
+              "name": "feedback",
+              "type": "uint16_le"
+            },
+            "1": {
+              "name": "drylevel",
+              "type": "uint16_le"
+            },
+            "2": {
+              "name": "delaytime",
+              "type": "uint16_le"
+            },
+            "3": {
+              "name": "delaylevel",
+              "type": "uint16_le"
+            },
+            "4": {
+              "name": "delayPan",
+              "type": "uint16_le"
+            },
+            "5": {
+              "name": "tap1_time",
+              "type": "uint16_le"
+            },
+            "6": {
+              "name": "tap1_level",
+              "type": "uint16_le"
+            },
+            "7": {
+              "name": "tap1_pan",
+              "type": "uint16_le"
+            },
+            "8": {
+              "name": "tap2_time",
+              "type": "uint16_le"
+            },
+            "9": {
+              "name": "tap2_level",
+              "type": "uint16_le"
+            },
+            "10": {
+              "name": "tap2_pan",
+              "type": "uint16_le"
+            },
+            "11": {
+              "name": "tap3_time",
+              "type": "uint16_le"
+            },
+            "12": {
+              "name": "tap3_level",
+              "type": "uint16_le"
+            },
+            "13": {
+              "name": "tap3_pan",
+              "type": "uint16_le"
+            },
+            "14": {
+              "name": "enable",
+              "type": "uint16_le"
+            }
+          }
+        },
+        "0x04": {
+          "name": "MIC_REVERB_EFFECT",
+          "indices": {
+            "0": {
+              "name": "inGain",
+              "type": "uint16_le"
+            },
+            "1": {
+              "name": "BandWidth",
+              "type": "uint16_le"
+            },
+            "2": {
+              "name": "earlyRef",
+              "type": "uint16_le"
+            },
+            "3": {
+              "name": "RevbEff",
+              "type": "uint16_le"
+            },
+            "4": {
+              "name": "DryPercent",
+              "type": "uint16_le"
+            },
+            "5": {
+              "name": "Damping",
+              "type": "uint16_le"
+            },
+            "6": {
+              "name": "Diffusion",
+              "type": "uint16_le"
+            },
+            "7": {
+              "name": "DecayTime",
+              "type": "uint16_le"
+            },
+            "8": {
+              "name": "PreDelay",
+              "type": "uint16_le"
+            },
+            "9": {
+              "name": "outGain",
+              "type": "uint16_le"
+            },
+            "10": {
+              "name": "EnvelopeTap1",
+              "type": "uint16_le"
+            },
+            "11": {
+              "name": "EnvelopeTap2",
+              "type": "uint16_le"
+            },
+            "12": {
+              "name": "EnvelopeTap3",
+              "type": "uint16_le"
+            },
+            "13": {
+              "name": "EnvelopeTap4",
+              "type": "uint16_le"
+            },
+            "14": {
+              "name": "EnvelopeTap5",
+              "type": "uint16_le"
+            },
+            "15": {
+              "name": "EnvelopeTap6",
+              "type": "uint16_le"
+            },
+            "16": {
+              "name": "scale",
+              "type": "uint16_le"
+            },
+            "17": {
+              "name": "enable",
+              "type": "uint16_le"
+            }
+          }
+        }
+      }
+    },
+    "MUSIC": {
+      "id": "0x02",
+      "commands": {
+        "0x01": {
+          "name": "MUSIC_COMMON",
+          "indices": {
+            "0": {
+              "name": "volume_gain",
+              "type": "q8_8_le"
+            },
+            "1": {
+              "name": "volume_mute",
+              "type": "uint16_le"
+            },
+            "2": {
+              "name": "bass_gain",
+              "type": "q8_8_le"
+            },
+            "3": {
+              "name": "middle_gain",
+              "type": "q8_8_le"
+            },
+            "4": {
+              "name": "treb_gain",
+              "type": "q8_8_le"
+            }
+          }
+        },
+        "0x02": {
+          "name": "MUSIC_EQ_EFFECT",
+          "paramType": "EQParam",
+          "indexRule": {
+            "indexRange": "1-41",
+            "bandCount": 10,
+            "bandBaseIndex": 1,
+            "bandBaseIndices": {
+              "0": {
+                "name": "bypass",
+                "type": "uint16_le"
+              }
+            },
+            "fieldsPerBand": 4,
+            "band": "(index-1)/4",
+            "field": "(index-1)%4",
+            "fieldOrder": {
+              "0": "gain",
+              "1": "f0",
+              "2": "Q",
+              "3": "type"
+            },
+            "fieldTypes": {
+              "gain": "q8_8_le",
+              "f0": "uint16_le",
+              "Q": "q8_8_le",
+              "type": "int16_le"
+            },
+            "fieldLimit": {
+              "gain": {
+                "min": "-12.0",
+                "max": "12.0"
+              },
+              "f0": {
+                "min": "20",
+                "max": "20000"
+              },
+              "Q": {
+                "min": "0.1",
+                "max": "128"
+              }
+            }
+          }
+        },
+        "0x03": {
+          "name": "MUSIC_BASSBOOST_EFFECT",
+          "indices": {
+            "0": {
+              "name": "enable",
+              "type": "int16_le"
+            },
+            "1": {
+              "name": "intensity",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x04": {
+          "name": "MUSIC_ENHANCER_EFFECT",
+          "indices": {
+            "0": {
+              "name": "enable",
+              "type": "uint16_le"
+            },
+            "1": {
+              "name": "level",
+              "type": "uint16_le"
+            }
+          }
+        }
+      }
+    },
+    "GUITAR": {
+      "id": "0x03",
+      "commands": {
+        "0x01": {
+          "name": "GUITAR_COMMON",
+          "indices": {
+            "0": {
+              "name": "volume_gain",
+              "type": "q8_8_le"
+            },
+            "1": {
+              "name": "flanger_enable",
+              "type": "int16_le"
+            },
+            "2": {
+              "name": "autowah_enable",
+              "type": "int16_le"
+            },
+            "3": {
+              "name": "vibrato_enable",
+              "type": "int16_le"
+            },
+            "4": {
+              "name": "distortor_enable",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x02": {
+          "name": "GUITAR_FLANGER_EFFECT",
+          "indices": {
+            "0": {
+              "name": "efflevel",
+              "type": "int16_le"
+            },
+            "1": {
+              "name": "feedback",
+              "type": "int16_le"
+            },
+            "2": {
+              "name": "osc_depth",
+              "type": "int16_le"
+            },
+            "3": {
+              "name": "osc_freq",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x03": {
+          "name": "GUITAR_AUTOWAH_EFFECT",
+          "indices": {
+            "0": {
+              "name": "frequency_center",
+              "type": "int16_le"
+            },
+            "1": {
+              "name": "band_width",
+              "type": "int16_le"
+            },
+            "2": {
+              "name": "attack",
+              "type": "int16_le"
+            },
+            "3": {
+              "name": "release",
+              "type": "int16_le"
+            },
+            "4": {
+              "name": "range",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x04": {
+          "name": "GUITAR_VIBRATO_EFFECT",
+          "indices": {
+            "0": {
+              "name": "freq",
+              "type": "int16_le"
+            },
+            "1": {
+              "name": "phase",
+              "type": "int16_le"
+            },
+            "2": {
+              "name": "depth",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x05": {
+          "name": "GUITAR_DISTORTOR_EFFECT",
+          "indices": {
+            "0": {
+              "name": "threshold",
+              "type": "int16_le"
+            },
+            "1": {
+              "name": "distorted",
+              "type": "int16_le"
+            }
+          }
+        }
+      }
+    },
+    "RECORDING": {
+      "id": "0x04",
+      "commands": {
+        "0x01": {
+          "name": "RECORDING_COMMON",
+          "indices": {
+            "0": {
+              "name": "volume_gain",
+              "type": "q8_8_le"
+            },
+            "1": {
+              "name": "volume_mute",
+              "type": "int16_le"
+            },
+            "2": {
+              "name": "select_mixer",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x02": {
+          "name": "RECORDING_EQ_EFFECT",
+          "paramType": "EQParam",
+          "indexRule": {
+            "indexRange": "1-41",
+            "bandCount": 10,
+            "bandBaseIndex": 1,
+            "bandBaseIndices": {
+              "0": {
+                "name": "bypass",
+                "type": "uint16_le"
+              }
+            },
+            "fieldsPerBand": 4,
+            "band": "(index-1)/4",
+            "field": "(index-1)%4",
+            "fieldOrder": {
+              "0": "gain",
+              "1": "f0",
+              "2": "Q",
+              "3": "type"
+            },
+            "fieldTypes": {
+              "gain": "q8_8_le",
+              "f0": "uint16_le",
+              "Q": "q8_8_le",
+              "type": "int16_le"
+            },
+            "fieldLimit": {
+              "gain": {
+                "min": "-12.0",
+                "max": "12.0"
+              },
+              "f0": {
+                "min": "20",
+                "max": "20000"
+              },
+              "Q": {
+                "min": "0.1",
+                "max": "128"
+              }
+            }
+          }
+        }
+      }
+    },
+    "INPUT": {
+      "id": "0x05",
+      "commands": {
+        "0x01": {
+          "name": "INPUT_MIC_GUITAR_1",
+          "indices": {
+            "0": {
+              "name": "select",
+              "type": "uint16_le"
+            }
+          },
+          "valueMap": {
+            "0": "mic",
+            "1": "guitar"
+          }
+        },
+        "0x02": {
+          "name": "INPUT_MIC_GUITAR_2",
+          "indices": {
+            "0": {
+              "name": "select",
+              "type": "uint16_le"
+            }
+          },
+          "valueMap": {
+            "0": "mic",
+            "1": "guitar"
+          }
+        },
+        "0x03": {
+          "name": "INPUT_MUSIC_MODE",
+          "indices": {
+            "0": {
+              "name": "mode",
+              "type": "uint16_le"
+            }
+          },
+          "valueMap": {
+            "0": "Bluetooth",
+            "1": "USB",
+            "2": "HDMI",
+            "3": "LineIn",
+            "4": "SpdifIn"
+          }
+        }
+      }
+    },
+    "OUTPUT": {
+      "id": "0x06",
+      "commands": {}
+    },
+    "SYSTEM": {
+      "id": "0x07",
+      "commands": {
+        "0x01": {
+          "name": "SYSTEM_VOLUME",
+          "indices": {
+            "0": {
+              "name": "volume_gain",
+              "type": "q8_8_le"
+            },
+            "1": {
+              "name": "volume_mute",
+              "type": "int16_le"
+            }
+          }
+        },
+        "0x80": {
+          "name": "SYSTEM_CONFIG",
+          "indices": {
+            "1": {
+              "name": "save_config",
+              "type": "uint16_le"
+            },
+            "2": {
+              "name": "reset_config",
+              "type": "uint16_le"
+            }
+          }
+        }
+      }
+    }
+  }
+}
