@@ -1141,6 +1141,62 @@ class _BlePageState extends State<BlePage> {
      );
   }
 
+  Future<void> _handleEqMultiBandChange(String categoryName, String commandName, Map<int, Map<String, dynamic>> bandChanges, BleViewModel viewModel) async {
+     if (categoryName.isEmpty || commandName.isEmpty) return;
+
+     if (viewModel.selectedDevice == null) {
+       _showCenterSnackBar("Vui lòng kết nối thiết bị");
+       return; 
+     }
+
+     try {
+        final builder = getIt<DynamicCommandBuilder>();
+        final protocolService = getIt<ProtocolService>();
+        final cmdDef = protocolService.getCommandByName(categoryName, commandName);
+        if (cmdDef == null) return;
+
+        // Process and format all values for state and payload
+        Map<int, Map<String, dynamic>> rawBands = {};
+        
+        bandChanges.forEach((band, fields) {
+           Map<String, dynamic> rawFields = {};
+           fields.forEach((fieldParam, value) {
+              int rawValue = 0;
+              if (fieldParam == 'gain') {
+                 double val = (value is String) ? (double.tryParse(value) ?? 0.0) : (value as num).toDouble();
+                 rawValue = (val * 256.0).round();
+              } else if (fieldParam == 'Q') {
+                 double val = (value is String) ? (double.tryParse(value) ?? 0.0) : (value as num).toDouble();
+                 rawValue = (val * 256.0).round();
+              } else if (fieldParam == 'f0' || fieldParam == 'type') {
+                 rawValue = (value is String) ? (int.tryParse(value) ?? 0) : (value is double ? value.toInt() : value as int);
+              } else {
+                 rawValue = (value is double) ? value.toInt() : (value as int);
+              }
+              
+              viewModel.updateControlValue("${commandName}_band${band}_$fieldParam", rawValue, notify: false);
+              rawFields[fieldParam] = rawValue;
+           });
+           rawBands[band] = rawFields;
+        });
+
+        // Notify UI once after all state changes
+        viewModel.notifyListeners();
+
+        final commands = builder.buildMultiBandEqCommand(
+          categoryName: categoryName,
+          cmdId: cmdDef.id,
+          bands: rawBands,
+        );
+
+        for (final command in commands) {
+            await viewModel.sendProtocolCommand(command);
+        }
+     } catch (e) {
+        debugPrint('Error sending batched multi-band EQ command: $e');
+     }
+  }
+
   Future<void> _handleEqBandChange(String categoryName, String commandName, int band, String fieldParam, double value, BleViewModel viewModel) async {
     if (categoryName.isEmpty || commandName.isEmpty) return;
 
@@ -1194,58 +1250,7 @@ class _BlePageState extends State<BlePage> {
   }
 
   Future<void> _handleEqBandMultipleChange(String categoryName, String commandName, int band, Map<String, dynamic> changes, BleViewModel viewModel) async {
-     if (categoryName.isEmpty || commandName.isEmpty) return;
-
-     debugPrint('\n_handleEqBandMultipleChange '  + changes.entries.length.toString());
-     
-     // 1. Process and format all values for state and payload
-     Map<String, dynamic> rawFields = {};
-     
-     for (var entry in changes.entries) {
-        final fieldParam = entry.key;
-        final value = entry.value;
-        
-        final stateKey = "${commandName}_band${band}_$fieldParam";
-        
-        int rawValue = 0;
-        if (fieldParam == 'gain') {
-           rawValue = (value * 256.0).round();
-        } else if (fieldParam == 'Q') {
-           rawValue = (value * 256.0).round();
-        } else if (fieldParam == 'f0' || fieldParam == 'type') {
-           rawValue = (value is double) ? value.toInt() : (value as int);
-        }
-        
-        viewModel.updateControlValue(stateKey, rawValue);
-        rawFields[fieldParam] = rawValue;
-        
-        debugPrint('\nEQ Multiple Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
-     }
-
-     if (viewModel.selectedDevice == null) {
-       _showCenterSnackBar("Vui lòng kết nối thiết bị");
-       return; 
-     }
-
-     try {
-        final builder = getIt<DynamicCommandBuilder>();
-        final protocolService = getIt<ProtocolService>();
-        final cmdDef = protocolService.getCommandByName(categoryName, commandName);
-        if (cmdDef == null) return;
-
-        final commands = builder.buildEqCommand(
-          categoryName: categoryName,
-          cmdId: cmdDef.id,
-          band: band,
-          fields: rawFields,
-        );
-
-        for (final command in commands) {
-            await viewModel.sendProtocolCommand(command);
-          }
-     } catch (e) {
-        debugPrint('Error sending batched EQ band command: $e');
-     }
+     await _handleEqMultiBandChange(categoryName, commandName, {band: changes}, viewModel);
   }
 
   Future<void> _resetEqToDefault(DisplaySection section, BleViewModel viewModel) async {
@@ -1287,7 +1292,8 @@ class _BlePageState extends State<BlePage> {
 
      debugPrint('Protocol: Resetting EQ Area "${section.description}" to defaults...');
 
-     // 2. Loop through bands and update everything
+     // 2. Build map of all bands and update everything
+     Map<int, Map<String, dynamic>> allBandChanges = {};
      for (int i = 0; i < totalBands; i++) {
          String bandF0Value = baseF0Str;
          if (section.bandF0 != null && i < section.bandF0!.length) {
@@ -1295,16 +1301,15 @@ class _BlePageState extends State<BlePage> {
          }
          int defaultF0 = int.tryParse(bandF0Value) ?? 0;
 
-         Map<String, dynamic> changes = {
+         allBandChanges[i] = {
              'gain': defaultGain,
              'f0': defaultF0,
              'Q': defaultQ,
              'type': defaultTypeEnum,
          };
-
-         // This will update local state AND send to device if connected
-         await _handleEqBandMultipleChange(categoryName, commandName, i, changes, viewModel);
      }
+
+     await _handleEqMultiBandChange(categoryName, commandName, allBandChanges, viewModel);
      
      _showCenterSnackBar("Đã đặt lại về mặc định");
   }
@@ -1334,6 +1339,7 @@ class _BlePageState extends State<BlePage> {
         });
      }
 
+     Map<int, Map<String, dynamic>> allBandChanges = {};
      for (int i = 0; i < values.length; i++) {
          final data = values[i];
          
@@ -1355,16 +1361,15 @@ class _BlePageState extends State<BlePage> {
             typeEnum = typeMap[typeValue.toUpperCase()] ?? 2;
          }
 
-         Map<String, dynamic> changes = {
+         allBandChanges[i] = {
              'gain': gain,
              'f0': f0,
              'Q': q,
              'type': typeEnum,
          };
-
-         // _handleEqBandMultipleChange handles local viewModel update and BLE command
-         await _handleEqBandMultipleChange(categoryName, commandName, i, changes, viewModel);
      }
+
+     await _handleEqMultiBandChange(categoryName, commandName, allBandChanges, viewModel);
      
      _showCenterSnackBar("Đã áp dụng chế độ $presetName");
   }
