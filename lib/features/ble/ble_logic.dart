@@ -381,6 +381,8 @@ class BleViewModel extends ChangeNotifier {
         if (!await directory.exists()) {
           directory = await getExternalStorageDirectory();
         }
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
       } else {
         directory = await getDownloadsDirectory();
       }
