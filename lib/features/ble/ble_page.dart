@@ -383,11 +383,12 @@ class _BlePageState extends State<BlePage> {
           crossAxisAlignment: CrossAxisAlignment.start, // Label "Ngõ vào" on left
           children: [
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: item.event?.click != null 
                 ? () => _navigateToArea(item.event!.click)
                 : null,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Text(
                     item.label, 
@@ -468,11 +469,12 @@ class _BlePageState extends State<BlePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: item.event?.click != null 
                 ? () => _navigateToArea(item.event!.click)
                 : null,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Text(
                     item.label, 
@@ -570,11 +572,12 @@ class _BlePageState extends State<BlePage> {
           children: [
             Expanded(
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: item.event?.click != null 
                   ? () => _navigateToArea(item.event!.click)
                   : null,
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     Flexible(
                       child: Text(

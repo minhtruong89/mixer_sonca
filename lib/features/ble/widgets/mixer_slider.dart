@@ -43,9 +43,10 @@ class MixerSlider extends StatelessWidget {
         children: [
           // Label
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: onLabelTap,
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Flexible(
