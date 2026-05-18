@@ -210,6 +210,9 @@ class BleViewModel extends ChangeNotifier {
   bool _isLoadingConfig = false;
   bool get isLoadingConfig => _isLoadingConfig;
 
+  bool _showLoadProgressBar = false;
+  bool get showLoadProgressBar => _showLoadProgressBar;
+
   double _loadProgress = 0.0;
   double get loadProgress => _loadProgress;
 
@@ -222,6 +225,10 @@ class BleViewModel extends ChangeNotifier {
   // Track which segments (0-indexed) failed after all retries
   final List<int> _loadFailedSegments = [];
   List<int> get loadFailedSegments => List.unmodifiable(_loadFailedSegments);
+
+  // Track which commands failed to send during load
+  final List<String> _loadFailedCommands = [];
+  List<String> get loadFailedCommands => List.unmodifiable(_loadFailedCommands);
 
   bool _isBleListenersSetup = false;
 
@@ -253,12 +260,12 @@ class BleViewModel extends ChangeNotifier {
     });
   }
 
-  Future<void> saveConfigToFile() async {
+  Future<String?> saveConfigToFile() async {
     final mixerService = getIt<MixerService>();
     final displayConfig = mixerService.displayConfig;
     if (displayConfig == null) {
       debugPrint('BleViewModel: saveConfigToFile - displayConfig is null');
-      return;
+      return null;
     }
 
     final Map<String, dynamic> values = {};
@@ -409,7 +416,7 @@ class BleViewModel extends ChangeNotifier {
       
       if (directory == null) {
         debugPrint('BleViewModel: Cannot find Downloads directory');
-        return;
+        return null;
       }
 
       final file = File('${directory.path}/$fileName');
@@ -418,8 +425,10 @@ class BleViewModel extends ChangeNotifier {
       await file.writeAsString(encoder.convert(finalOutput));
       
       debugPrint('BleViewModel: Config saved to ${file.path}');
+      return file.path;
     } catch (e) {
       debugPrint('BleViewModel: Error saving config: $e');
+      return null;
     }
   }
 
@@ -558,10 +567,12 @@ class BleViewModel extends ChangeNotifier {
          }
          if (totalBatches == 0) totalBatches = 1; // avoid division by zero
 
-         _loadProgress = 0.0;
-         _loadFailedSegments.clear();
-         _isLoadingConfig = true;
-         notifyListeners();
+          _loadProgress = 0.0;
+          _loadFailedSegments.clear();
+          _loadFailedCommands.clear();
+          _isLoadingConfig = true;
+          _showLoadProgressBar = true;
+          notifyListeners();
 
          for (final catName in allCategories) {
             debugPrint('\nBleViewModel: Sending category $catName to device...');
@@ -593,12 +604,14 @@ class BleViewModel extends ChangeNotifier {
                         _loadProgress = completedBatches / totalBatches;
                         if (!success) {
                            _loadFailedSegments.add(segmentIndex);
+                           _loadFailedCommands.add("Normal command: $catName.$cmdName");
                            debugPrint('BleViewModel: Failed or timeout sending normal batch for $catName.$cmdName');
                         }
                         notifyListeners();
                      }
                   } catch(e) {
                     debugPrint('BleViewModel: Error building normal command for $cmdName: $e');
+                    _loadFailedCommands.add("Build error: $catName.$cmdName ($e)");
                     completedBatches++;
                     _loadProgress = completedBatches / totalBatches;
                     notifyListeners();
@@ -636,12 +649,14 @@ class BleViewModel extends ChangeNotifier {
                         _loadProgress = completedBatches / totalBatches;
                         if (!success) {
                            _loadFailedSegments.add(segmentIndex);
+                           _loadFailedCommands.add("EQ command: $catName.$cmdName");
                            debugPrint('BleViewModel: Failed or timeout sending EQ batch for $catName.$cmdName');
                         }
                         notifyListeners();
                      }
                   } catch(e) {
                     debugPrint('BleViewModel: Error building EQ command for $cmdName: $e');
+                    _loadFailedCommands.add("Build EQ error: $catName.$cmdName ($e)");
                     completedBatches++;
                     _loadProgress = completedBatches / totalBatches;
                     notifyListeners();
@@ -650,16 +665,31 @@ class BleViewModel extends ChangeNotifier {
             }
          }
 
-         _loadProgress = 1.0;
-         _isLoadingConfig = false;
-         notifyListeners();
-         debugPrint('BleViewModel: Synced loaded config to BLE device.');
-      }
+          _loadProgress = 1.0;
+          _isLoadingConfig = false;
+          notifyListeners();
+          debugPrint('BleViewModel: Synced loaded config to BLE device.');
+          
+          await Future.delayed(const Duration(seconds: 3));
+          _showLoadProgressBar = false;
+          _loadProgress = 0.0;
+          _loadFailedSegments.clear();
+          notifyListeners();
+       }
 
-    } catch (e) {
-      debugPrint('BleViewModel: Error loading config file: $e');
-    }
-  }
+     } catch (e) {
+       debugPrint('BleViewModel: Error loading config file: $e');
+       _isLoadingConfig = false;
+       _loadProgress = 1.0;
+       _loadFailedCommands.add("Error loading config: $e");
+       notifyListeners();
+       await Future.delayed(const Duration(seconds: 3));
+       _showLoadProgressBar = false;
+       _loadProgress = 0.0;
+       _loadFailedSegments.clear();
+       notifyListeners();
+     }
+   }
 
   void init() {
     // Listen for incoming protocol frames

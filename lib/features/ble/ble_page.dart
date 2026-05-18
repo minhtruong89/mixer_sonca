@@ -364,15 +364,7 @@ class _BlePageState extends State<BlePage> {
             _buildOverlayArea(context, viewModel),
 
           // Load Config Progress Bar Overlay
-          if (viewModel.isLoadingConfig || (viewModel.loadProgress > 0.0 && viewModel.loadProgress < 1.0))
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: _buildLoadProgressBar(context, viewModel),
-            ),
-          // Show final result briefly when done
-          if (!viewModel.isLoadingConfig && viewModel.loadProgress == 1.0 && viewModel.loadFailedSegments.isNotEmpty)
+          if (viewModel.showLoadProgressBar)
             Positioned(
               bottom: 0,
               left: 0,
@@ -1029,7 +1021,7 @@ class _BlePageState extends State<BlePage> {
       );
   }
 
-  void _handleCompoundClick(DisplayItem item, Map<String, dynamic> btnConfig, BleViewModel viewModel) {
+  Future<void> _handleCompoundClick(DisplayItem item, Map<String, dynamic> btnConfig, BleViewModel viewModel) async {
     if (item.category == "SYSTEM") {
        final name = btnConfig['name']?.toString();
        if (name != null) {
@@ -1038,9 +1030,99 @@ class _BlePageState extends State<BlePage> {
     } else if (item.category == "CODING") {
        final event = btnConfig['event']?.toString();
        if (event == "_saveConfigToFile") {
-          viewModel.saveConfigToFile();
+          final filePath = await viewModel.saveConfigToFile();
+          if (filePath != null && mounted) {
+             showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                   backgroundColor: const Color(0xFF2C2C2C),
+                   shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.white10, width: 0.5),
+                   ),
+                   title: const Row(
+                      children: [
+                         Icon(Icons.check_circle, color: Colors.greenAccent, size: 24),
+                         SizedBox(width: 8),
+                         Text(
+                            'Đã lưu cấu hình',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                         ),
+                      ],
+                   ),
+                   content: Text(
+                      'Đường dẫn file:\n$filePath',
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                   ),
+                   actions: [
+                      TextButton(
+                         onPressed: () => Navigator.of(ctx).pop(),
+                         child: const Text(
+                            'OK',
+                            style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 16),
+                         ),
+                      ),
+                   ],
+                ),
+             );
+          }
        } else if (event == "_loadConfigToFile") {
-          viewModel.loadConfigToFile();
+          await viewModel.loadConfigToFile();
+          if (viewModel.loadFailedCommands.isNotEmpty && mounted) {
+             showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                   backgroundColor: const Color(0xFF2C2C2C),
+                   shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.white10, width: 0.5),
+                   ),
+                   title: const Row(
+                      children: [
+                         Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 24),
+                         SizedBox(width: 8),
+                         Text(
+                            'Lỗi đồng bộ cấu hình',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                         ),
+                      ],
+                   ),
+                   content: SizedBox(
+                      width: double.maxFinite,
+                      child: ListView.builder(
+                         shrinkWrap: true,
+                         itemCount: viewModel.loadFailedCommands.length,
+                         itemBuilder: (context, index) {
+                            return Padding(
+                               padding: const EdgeInsets.symmetric(vertical: 4.0),
+                               child: Row(
+                                  children: [
+                                     const Icon(Icons.error_outline, color: Colors.redAccent, size: 16),
+                                     const SizedBox(width: 8),
+                                     Expanded(
+                                        child: Text(
+                                           viewModel.loadFailedCommands[index],
+                                           style: const TextStyle(color: Colors.white70, fontSize: 14),
+                                        ),
+                                     ),
+                                  ],
+                               ),
+                            );
+                         },
+                      ),
+                   ),
+                   actions: [
+                      TextButton(
+                         onPressed: () => Navigator.of(ctx).pop(),
+                         child: const Text(
+                            'Đóng',
+                            style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 16),
+                         ),
+                      ),
+                   ],
+                ),
+             );
+          }
        }
     }
   }
