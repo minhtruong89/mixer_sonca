@@ -22,8 +22,8 @@ double q8_8ToDouble(int value) {
   // Handle sign extension for 16-bit signed integer
   int signedValue = value;
   if (signedValue & 0x8000 != 0) {
-    // Negative number - sign extend to 32 bits
-    signedValue = signedValue | 0xFFFF0000;
+    // Negative number - sign extend to 64 bits by subtracting 65536
+    signedValue = signedValue - 0x10000;
   }
   
   return signedValue / 256.0;
@@ -66,9 +66,9 @@ dynamic decodeValue(List<int> bytes, String type) {
       // Signed 16-bit integer, little-endian
       if (bytes.length < 2) throw Exception('Insufficient bytes for int16');
       int value = bytes[0] | (bytes[1] << 8);
-      // Sign extend if negative
+      // Sign extend if negative to 64 bits by subtracting 65536
       if (value & 0x8000 != 0) {
-        value = value | 0xFFFF0000;
+        value = value - 0x10000;
       }
       return value;
     

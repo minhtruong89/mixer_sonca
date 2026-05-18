@@ -1333,13 +1333,13 @@ class _BlePageState extends State<BlePage> {
 
                     int baseF0 = int.tryParse(bandF0Value) ?? 0;
                     final rawF0 = viewModel.getControlValue("${commandName}_band${index}_f0", defaultValue: baseF0);
-                    int currentF0 = (rawF0 is int) ? rawF0 : baseF0;
+                    int currentF0 = (rawF0 is int) ? rawF0 : (rawF0 is double ? rawF0.toInt() : baseF0);
 
                     final rawQ = viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
-                    double currentQ = (rawQ is int) ? (rawQ / 256.0) : qValue;
+                    double currentQ = (rawQ is int) ? (rawQ / 256.0) : (rawQ is double ? rawQ : qValue);
 
                     final rawType = viewModel.getControlValue("${commandName}_band${index}_type", defaultValue: defaultTypeEnum);
-                    int currentType = (rawType is int) ? rawType : defaultTypeEnum;
+                    int currentType = (rawType is int) ? rawType : (rawType is double ? rawType.toInt() : defaultTypeEnum);
 
                     String displayF0Text = "${currentF0}Hz";
                     if (currentF0 >= 1000 && currentF0 % 1000 == 0) {

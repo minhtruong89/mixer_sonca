@@ -1048,16 +1048,38 @@ class BleViewModel extends ChangeNotifier {
               if (offset >= payload.data.length) break;
 
               final index = payload.data[offset++];
-              final indexDef = command.getIndex(index);
+              String? fieldName;
+              String? fieldType;
+              int? eqBand;
 
+              final indexDef = command.getIndex(index);
               if (indexDef != null) {
-                final typeSize = getTypeSize(indexDef.type);
+                fieldName = indexDef.name;
+                fieldType = indexDef.type;
+              } else if (command.isEqCommand && command.indexRule != null) {
+                final indexRule = command.indexRule!;
+                final maxBandIndex = indexRule.bandBaseIndex + (indexRule.bandCount * indexRule.fieldsPerBand);
+                if (index >= indexRule.bandBaseIndex && index < maxBandIndex) {
+                  final (band, field) = indexRule.calculateBandAndField(index);
+                  final name = indexRule.getFieldName(field);
+                  if (name != null) {
+                    fieldName = name;
+                    fieldType = indexRule.getFieldType(name);
+                    eqBand = band;
+                  }
+                }
+              }
+
+              if (fieldName != null && fieldType != null) {
+                final typeSize = getTypeSize(fieldType);
                 if (offset + typeSize <= payload.data.length) {
                   final valueBytes = payload.data.sublist(offset, offset + typeSize);
-                  final value = decodeValue(valueBytes, indexDef.type);
+                  final value = decodeValue(valueBytes, fieldType);
                   offset += typeSize;
 
-                  final stateKey = "${command.name}_${indexDef.name}";
+                  final stateKey = eqBand != null 
+                      ? "${command.name}_band${eqBand}_$fieldName"
+                      : "${command.name}_$fieldName";
                   debugPrint('Protocol: Updating state - $stateKey = $value');
                   updateControlValue(stateKey, value);
                 }
@@ -1096,16 +1118,38 @@ class BleViewModel extends ChangeNotifier {
               if (offset >= payload.data.length) break;
 
               final index = payload.data[offset++];
-              final indexDef = command.getIndex(index);
+              String? fieldName;
+              String? fieldType;
+              int? eqBand;
 
+              final indexDef = command.getIndex(index);
               if (indexDef != null) {
-                final typeSize = getTypeSize(indexDef.type);
+                fieldName = indexDef.name;
+                fieldType = indexDef.type;
+              } else if (command.isEqCommand && command.indexRule != null) {
+                final indexRule = command.indexRule!;
+                final maxBandIndex = indexRule.bandBaseIndex + (indexRule.bandCount * indexRule.fieldsPerBand);
+                if (index >= indexRule.bandBaseIndex && index < maxBandIndex) {
+                  final (band, field) = indexRule.calculateBandAndField(index);
+                  final name = indexRule.getFieldName(field);
+                  if (name != null) {
+                    fieldName = name;
+                    fieldType = indexRule.getFieldType(name);
+                    eqBand = band;
+                  }
+                }
+              }
+
+              if (fieldName != null && fieldType != null) {
+                final typeSize = getTypeSize(fieldType);
                 if (offset + typeSize <= payload.data.length) {
                   final valueBytes = payload.data.sublist(offset, offset + typeSize);
-                  final value = decodeValue(valueBytes, indexDef.type);
+                  final value = decodeValue(valueBytes, fieldType);
                   offset += typeSize;
 
-                  final stateKey = "${command.name}_${indexDef.name}";
+                  final stateKey = eqBand != null 
+                      ? "${command.name}_band${eqBand}_$fieldName"
+                      : "${command.name}_$fieldName";
                   debugPrint('Protocol: Updating state - $stateKey = $value');
                   updateControlValue(stateKey, value);
                 }
