@@ -260,7 +260,7 @@ class BleViewModel extends ChangeNotifier {
     });
   }
 
-  Future<String?> saveConfigToFile() async {
+  Future<String?> saveConfigToFile({String? customFileName}) async {
     final mixerService = getIt<MixerService>();
     final displayConfig = mixerService.displayConfig;
     if (displayConfig == null) {
@@ -397,10 +397,16 @@ class BleViewModel extends ChangeNotifier {
         }
       }
 
-      final now = DateTime.now();
-      final formatter = DateFormat('yyyy_MM_dd_HH_mm');
-      final timestamp = formatter.format(now);
-      final fileName = "HC_$timestamp.json";
+      final String fileName;
+      if (customFileName != null && customFileName.trim().isNotEmpty) {
+        final name = customFileName.trim();
+        fileName = name.toLowerCase().endsWith('.json') ? name : '$name.json';
+      } else {
+        final now = DateTime.now();
+        final formatter = DateFormat('yyyy_MM_dd_HH_mm');
+        final timestamp = formatter.format(now);
+        fileName = "HC_$timestamp.json";
+      }
       
       Directory? directory;
       if (Platform.isAndroid) {

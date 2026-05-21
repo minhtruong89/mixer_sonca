@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/widgets/app_scaffold.dart';
@@ -1029,44 +1030,152 @@ class _BlePageState extends State<BlePage> {
        }
     } else if (item.category == "CODING") {
        final event = btnConfig['event']?.toString();
-       if (event == "_saveConfigToFile") {
-          final filePath = await viewModel.saveConfigToFile();
-          if (filePath != null && mounted) {
-             showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                   backgroundColor: const Color(0xFF2C2C2C),
-                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: Colors.white10, width: 0.5),
-                   ),
-                   title: const Row(
-                      children: [
-                         Icon(Icons.check_circle, color: Colors.greenAccent, size: 24),
-                         SizedBox(width: 8),
-                         Text(
-                            'Đã lưu cấu hình',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                         ),
-                      ],
-                   ),
-                   content: Text(
-                      'Đường dẫn file:\n$filePath',
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
-                   ),
-                   actions: [
-                      TextButton(
-                         onPressed: () => Navigator.of(ctx).pop(),
-                         child: const Text(
-                            'OK',
-                            style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 16),
-                         ),
-                      ),
-                   ],
-                ),
-             );
-          }
-       } else if (event == "_loadConfigToFile") {
+        if (event == "_saveConfigToFile") {
+           final now = DateTime.now();
+           final formatter = DateFormat('yyyy_MM_dd_HH_mm');
+           final timestamp = formatter.format(now);
+           final defaultFileName = "HC_$timestamp";
+           final textController = TextEditingController(text: defaultFileName);
+
+           if (!mounted) return;
+
+            final inputName = await showDialog<String>(
+               context: context,
+               builder: (ctx) => Dialog(
+                  backgroundColor: const Color(0xFF2C2C2C),
+                  shape: RoundedRectangleBorder(
+                     borderRadius: BorderRadius.circular(12),
+                     side: const BorderSide(color: Colors.white10, width: 0.5),
+                  ),
+                  child: ConstrainedBox(
+                     constraints: BoxConstraints(
+                        maxWidth: 340,
+                        maxHeight: MediaQuery.of(ctx).size.height - MediaQuery.of(ctx).viewInsets.bottom - 16,
+                     ),
+                     child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(ctx).copyWith(scrollbars: false),
+                        child: SingleChildScrollView(
+                           physics: const ClampingScrollPhysics(),
+                           child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                 mainAxisSize: MainAxisSize.min,
+                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                 children: [
+                                    const Row(
+                                       children: [
+                                          Icon(Icons.save_outlined, color: Colors.greenAccent, size: 24),
+                                          SizedBox(width: 8),
+                                          Text(
+                                             'Lưu cấu hình',
+                                             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                                          ),
+                                       ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                       'Nhập tên file cấu hình:',
+                                       style: TextStyle(color: Colors.white70, fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextField(
+                                       controller: textController,
+                                       autofocus: true,
+                                       style: const TextStyle(color: Colors.white, fontSize: 16),
+                                       decoration: InputDecoration(
+                                          hintText: 'Tên file',
+                                          hintStyle: const TextStyle(color: Colors.white30),
+                                          suffixText: '.json',
+                                          suffixStyle: const TextStyle(color: Colors.white54, fontSize: 14),
+                                          filled: true,
+                                          fillColor: Colors.white.withOpacity(0.05),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                          enabledBorder: OutlineInputBorder(
+                                             borderRadius: BorderRadius.circular(8),
+                                             borderSide: const BorderSide(color: Colors.white24, width: 1),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                             borderRadius: BorderRadius.circular(8),
+                                             borderSide: const BorderSide(color: Colors.greenAccent, width: 1.5),
+                                          ),
+                                       ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                       mainAxisAlignment: MainAxisAlignment.end,
+                                       children: [
+                                          TextButton(
+                                             onPressed: () => Navigator.of(ctx).pop(),
+                                             child: const Text(
+                                                'Hủy',
+                                                style: TextStyle(color: Colors.white54, fontSize: 16),
+                                             ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          TextButton(
+                                             onPressed: () {
+                                                final val = textController.text.trim();
+                                                Navigator.of(ctx).pop(val.isNotEmpty ? val : null);
+                                             },
+                                             child: const Text(
+                                                'Lưu',
+                                                style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 16),
+                                             ),
+                                          ),
+                                       ],
+                                    ),
+                                 ],
+                              ),
+                           ),
+                        ),
+                     ),
+                  ),
+               ),
+            );
+
+           textController.dispose();
+
+           if (inputName == null) {
+              return;
+           }
+
+           final filePath = await viewModel.saveConfigToFile(customFileName: inputName);
+           if (filePath != null && mounted) {
+              showDialog(
+                 context: context,
+                 builder: (ctx) => AlertDialog(
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(12),
+                       side: const BorderSide(color: Colors.white10, width: 0.5),
+                    ),
+                    title: const Row(
+                       children: [
+                          Icon(Icons.check_circle, color: Colors.greenAccent, size: 24),
+                          SizedBox(width: 8),
+                          Text(
+                             'Đã lưu cấu hình',
+                             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                       ],
+                    ),
+                    content: Text(
+                       'Đường dẫn file:\n$filePath',
+                       style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    actions: [
+                       TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text(
+                             'OK',
+                             style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                       ),
+                    ],
+                 ),
+              );
+           }
+        } else if (event == "_loadConfigToFile") {
           await viewModel.loadConfigToFile();
           if (viewModel.loadFailedCommands.isNotEmpty && mounted) {
              showDialog(
