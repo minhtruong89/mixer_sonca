@@ -30,6 +30,7 @@ class _BlePageState extends State<BlePage> {
   
   // Debouncers for slider updates to reduce BLE traffic
   final Map<String, Timer?> _debouncers = {};
+  final Map<String, _ThrottleState> _throttleStates = {};
   
   OverlayEntry? _toastEntry;
   Timer? _toastTimer;
@@ -49,6 +50,10 @@ class _BlePageState extends State<BlePage> {
       timer?.cancel();
     }
     _debouncers.clear();
+    for (var state in _throttleStates.values) {
+      state.debounceTimer?.cancel();
+    }
+    _throttleStates.clear();
     _toastTimer?.cancel();
     if (_toastEntry != null) {
       _toastEntry!.remove();
@@ -762,6 +767,12 @@ class _BlePageState extends State<BlePage> {
           ? () => _navigateToArea(item.event!.click)
           : null,
         onChanged: (val) {
+          if (muteParam != null) {
+            final muteStateKey = "${item.command}_$muteParam";
+            if (viewModel.getControlValue(muteStateKey, defaultValue: 0) == 1) {
+              _handleDynamicControlChange(item, 0, viewModel, paramOverride: muteParam);
+            }
+          }
           if (volumeParam != null) {
             _handleDynamicControlChange(item, val, viewModel, paramOverride: volumeParam);
           }
@@ -1291,28 +1302,100 @@ class _BlePageState extends State<BlePage> {
         return;
       }
 
-      // Debounce the BLE command sending
-      _debouncers[stateKey]?.cancel();
-      _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
-        try {
-          final builder = getIt<DynamicCommandBuilder>();
-          final commands = builder.buildCommand(
-            categoryName: item.category,
-            cmdId: cmdId,
-            operation: CommandOperation.set,
-            parameters: {
-              paramName: finalValue
-            },
-          );
-          
-          for (final command in commands) {
-            await viewModel.sendProtocolCommand(command);
+      // Smart Throttle / Debounce logic
+      if (finalValue is num) {
+        final now = DateTime.now();
+        final state = _throttleStates[stateKey];
+        
+        bool shouldSendNow = false;
+        int currentDirection = 0;
+        double numValue = finalValue.toDouble();
+        
+        if (state != null) {
+          if (numValue > state.lastValue) {
+            currentDirection = 1;
+          } else if (numValue < state.lastValue) {
+            currentDirection = -1;
           }
           
-        } catch (e) {
-          debugPrint('Error sending dynamic command: $e');
+          if (currentDirection != 0 && currentDirection == state.lastDirection) {
+            // Linear movement (increasing or decreasing continuously)
+            // Throttle: Send more frequently, e.g., every 40ms
+            if (now.difference(state.lastSentTime).inMilliseconds >= 40) {
+              shouldSendNow = true;
+            }
+          } else {
+            // Direction changed (oscillating/gật lên xuống)
+            // Wait longer, do standard debounce
+            shouldSendNow = false;
+          }
+          
+          state.lastValue = numValue;
+          if (currentDirection != 0) {
+            state.lastDirection = currentDirection;
+          }
+        } else {
+          // First time
+          _throttleStates[stateKey] = _ThrottleState(numValue, now, 0);
+          shouldSendNow = true;
         }
-      });
+        
+        final currentState = _throttleStates[stateKey]!;
+        currentState.debounceTimer?.cancel();
+        
+        Future<void> sendCmd() async {
+          currentState.lastSentTime = DateTime.now();
+          try {
+            final builder = getIt<DynamicCommandBuilder>();
+            final commands = builder.buildCommand(
+              categoryName: item.category,
+              cmdId: cmdId,
+              operation: CommandOperation.set,
+              parameters: {
+                paramName: finalValue
+              },
+            );
+            
+            for (final command in commands) {
+              await viewModel.sendProtocolCommand(command);
+            }
+          } catch (e) {
+            debugPrint('Error sending dynamic command: $e');
+          }
+        }
+        
+        if (shouldSendNow) {
+          sendCmd();
+        } else {
+          // Debounce for oscillation (100ms)
+          currentState.debounceTimer = Timer(const Duration(milliseconds: 100), () {
+            sendCmd();
+          });
+        }
+      } else {
+        // Fallback for non-numeric values
+        _debouncers[stateKey]?.cancel();
+        _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
+          try {
+            final builder = getIt<DynamicCommandBuilder>();
+            final commands = builder.buildCommand(
+              categoryName: item.category,
+              cmdId: cmdId,
+              operation: CommandOperation.set,
+              parameters: {
+                paramName: finalValue
+              },
+            );
+            
+            for (final command in commands) {
+              await viewModel.sendProtocolCommand(command);
+            }
+            
+          } catch (e) {
+            debugPrint('Error sending dynamic command: $e');
+          }
+        });
+      }
   }
 
   /// Helper to map raw protocol values (integers) to UI display strings.
