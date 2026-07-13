@@ -1037,7 +1037,21 @@ class _BlePageState extends State<BlePage> {
     if (item.category == "SYSTEM") {
        final name = btnConfig['name']?.toString();
        if (name != null) {
-          _handleDynamicControlChange(item, 1, viewModel, paramOverride: name);
+          await _handleDynamicControlChange(item, 1, viewModel, paramOverride: name);
+          
+          if (name == 'reset_config') {
+             // Delay to allow device to process reset
+             await Future.delayed(const Duration(milliseconds: 500));
+             
+             final mixerService = getIt<MixerService>();
+             final mainAreaSections = mixerService.getSectionNamesByType("Main Area");
+             
+             for (final section in mainAreaSections) {
+                await viewModel.fetchSectionStates(section);
+             }
+             
+             _showCenterSnackBar("Đã đồng bộ lại sau khi Reset");
+          }
        }
     } else if (item.category == "CODING") {
        final event = btnConfig['event']?.toString();

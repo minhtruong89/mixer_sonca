@@ -1197,7 +1197,10 @@ class BleViewModel extends ChangeNotifier {
 
   /// Fetch state for all parameters in a specific section
   Future<void> fetchSectionStates(String sectionName) async {
-    if (_selectedDevice == null) return;
+    if (_selectedDevice == null) {
+      debugPrint('fetchSectionStates "$sectionName" - return device not connected');
+      return;
+    }
 
     final mixerService = getIt<MixerService>();
     final protocolService = getIt<ProtocolService>();
