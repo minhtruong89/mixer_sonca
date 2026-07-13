@@ -3,6 +3,7 @@ library;
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'models/protocol_definition.dart';
 
@@ -25,7 +26,7 @@ class ProtocolService {
     try {
       debugPrint('Protocol: Loading protocol definition from $protocolUrl');
 
-      final response = await http.get(Uri.parse(protocolUrl));
+      final response = await http.get(Uri.parse(protocolUrl)).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         // Handle UTF-8 BOM if present
@@ -49,8 +50,20 @@ class ProtocolService {
         throw Exception('Failed to load protocol: HTTP ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Protocol: Error loading protocol definition: $e');
-      rethrow;
+      debugPrint('Protocol: Error loading protocol definition via HTTP ($e), falling back to local asset...');
+      try {
+        String jsonString = await rootBundle.loadString('lib/ble_android_comm_format.json');
+        if (jsonString.codeUnits.isNotEmpty && jsonString.codeUnits[0] == 0xFEFF) {
+          jsonString = jsonString.substring(1);
+        }
+        final jsonData = json.decode(jsonString) as Map<String, dynamic>;
+        _definition = ProtocolDefinition.fromJson(jsonData);
+        _isLoaded = true;
+        debugPrint('Protocol: Successfully loaded protocol definition from local asset');
+      } catch (assetError) {
+        debugPrint('Protocol: Error loading from local asset: $assetError');
+        rethrow;
+      }
     }
   }
 

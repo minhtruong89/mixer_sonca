@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
 
@@ -13,7 +14,7 @@ class MixerService {
   Future<void> loadDisplayConfig() async {
     try {
       debugPrint('MixerService: Downloading display config from $_displayUrl');
-      final response = await http.get(Uri.parse(_displayUrl));
+      final response = await http.get(Uri.parse(_displayUrl)).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         String content = utf8.decode(response.bodyBytes);
@@ -30,10 +31,21 @@ class MixerService {
           debugPrint('MixerService: Found sections: ${_displayConfig!.defaultDisplay.sections.keys.join(", ")}');
         }
       } else {
-        debugPrint('MixerService: Failed to load display config. Status code: ${response.statusCode}');
+        throw Exception('Failed to load display config. Status code: ${response.statusCode}');
       }
     } catch (e) {
-       debugPrint('MixerService: Error fetching display config: $e');
+       debugPrint('MixerService: Error fetching display config via HTTP ($e), falling back to local asset...');
+       try {
+         String content = await rootBundle.loadString('lib/model_config_display.json');
+         if (content.startsWith('\uFEFF')) {
+             content = content.substring(1);
+         }
+         final Map<String, dynamic> jsonMap = json.decode(content);
+         _displayConfig = DisplayConfig.fromJson(jsonMap);
+         debugPrint('MixerService: Display config loaded successfully from local asset');
+       } catch (assetError) {
+         debugPrint('MixerService: Error loading from local asset: $assetError');
+       }
     }
   }
 
