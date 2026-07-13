@@ -32,6 +32,12 @@ class _BlePageState extends State<BlePage> {
   final Map<String, Timer?> _debouncers = {};
   final Map<String, _ThrottleState> _throttleStates = {};
   
+  // Store dynamic control heights
+  final Map<String, double> _controlHeights = {};
+  
+  // Drawer state for Area 2
+  bool _isArea2Open = false;
+  
   OverlayEntry? _toastEntry;
   Timer? _toastTimer;
 
@@ -102,17 +108,31 @@ class _BlePageState extends State<BlePage> {
           Container(color: Colors.black),
 
           // Main Content Layers
-          Column(
+          Row(
             children: [
-              const SizedBox(height: 10),
+              // Left Side (Expanded Main Area + Slide-out Area 2)
               Expanded(
-                child: Row(
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    // Area 1 (Mixed Sliders) - Left Side
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.only(left: 10, right: 5, bottom: 20),
-                        child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                    // Area 1 (Base Layer)
+                    GestureDetector(
+                      onTap: () {
+                        if (_isArea2Open) {
+                          setState(() { _isArea2Open = false; });
+                        }
+                      },
+                      onPanDown: (_) {
+                        if (_isArea2Open) {
+                          setState(() { _isArea2Open = false; });
+                        }
+                      },
+                      behavior: HitTestBehavior.translucent,
+                      child: AbsorbPointer(
+                        absorbing: _isArea2Open,
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 10, right: 10, bottom: 20, top: 10),
+                          child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
                           final section = getIt<MixerService>().getItemsForSection("Area 1");
                           
                           if (section != null) {
@@ -130,16 +150,174 @@ class _BlePageState extends State<BlePage> {
                             );
                           }
                           return const Center(child: Text("Area 1 empty", style: TextStyle(color: Colors.white24)));
-                         }),
+                        }),
                       ),
                     ),
+                    ),
+                    
+                    // Area 2 (Slide-out Drawer)
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      top: 10,
+                      bottom: 20,
+                      right: _isArea2Open ? 0 : -MediaQuery.of(context).size.width * (Platform.isIOS ? 0.45 : 0.35) - 20,
+                      width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.45 : 0.35),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E1E1E).withOpacity(0.98),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 15,
+                              offset: const Offset(-5, 0),
+                            ),
+                          ],
+                          border: Border.all(color: Colors.white10, width: 0.5),
+                        ),
+                        clipBehavior: Clip.hardEdge,
+                        child: Column(
+                          children: [
+                            // Content
+                            Expanded(
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.only(top: 20, left: 12, right: 12, bottom: 12),
+                                child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                                  final section = getIt<MixerService>().getItemsForSection("Area 2");
+                                  
+                                  if (section != null) {
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
+                                      ],
+                                    );
+                                  } else {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text("Loading Area 2...", style: TextStyle(color: Colors.white54)),
+                                    );
+                                  }
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-                    // Area 2 (Selection Area) - Right Side
+              // Right Sidebar
+              GestureDetector(
+                onTap: () {
+                  setState(() { _isArea2Open = !_isArea2Open; });
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 65,
+                  color: const Color(0xFF0F0F0F),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      // Menu Icon to toggle Area 2
+                      FloatingActionButton(
+                        mini: true,
+                        heroTag: "sidebar_menu",
+                        onPressed: () {
+                          setState(() { _isArea2Open = !_isArea2Open; });
+                        },
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _isArea2Open ? Colors.greenAccent : Colors.white24, 
+                            width: 1
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.tune,
+                          size: 20,
+                          color: _isArea2Open ? Colors.greenAccent : Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      
+                      // Bluetooth Button
+                      Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                        return FloatingActionButton(
+                          mini: true,
+                          heroTag: "sidebar_bt",
+                          onPressed: _toggleScan,
+                          backgroundColor: viewModel.isScanning ? Colors.grey[800] : Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: viewModel.selectedDevice != null ? Colors.greenAccent : Colors.white24, 
+                              width: 1
+                            ),
+                          ),
+                          child: viewModel.isScanning 
+                            ? const SizedBox(
+                                width: 18, 
+                                height: 18, 
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                              )
+                            : Icon(
+                                Icons.bluetooth_searching, 
+                                size: 20,
+                                color: viewModel.selectedDevice != null ? Colors.greenAccent : Colors.white
+                              ),
+                        );
+                      }),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Dropdown for Bluetooth List (Positioned over everything, left of sidebar)
+          if (_isDropdownOpen)
+            Positioned(
+              top: 70, // Align below the top menu icon
+              right: 75,
+              child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Connection status text
                     Container(
-                      width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.35 : 0.28),
-                      margin: const EdgeInsets.only(right: 5, bottom: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
                         color: Colors.black87,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Text(
+                        viewModel.selectedDevice == null 
+                           ? 'Chưa kết nối' 
+                           : 'Đã kết nối: ${viewModel.selectedDevice!.soncaName}',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: viewModel.selectedDevice == null ? Colors.white : Colors.greenAccent,
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    
+                    // Dropdown Container
+                    Container(
+                      width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.4 : 0.31),
+                      constraints: const BoxConstraints(maxHeight: 500),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -148,222 +326,112 @@ class _BlePageState extends State<BlePage> {
                             offset: const Offset(0, 5),
                           ),
                         ],
-                        border: Border.all(color: Colors.transparent, width: 0.5),
+                        border: Border.all(color: Colors.white24, width: 0.5),
                       ),
                       clipBehavior: Clip.hardEdge,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(top: 40, left: 12, right: 12, bottom: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                             // Dynamic Content from JSON
-                             Consumer<BleViewModel>(builder: (context, viewModel, child) {
-                                  final section = getIt<MixerService>().getItemsForSection("Area 2");
-                                  
-                                  if (section != null) {
-                                     return Column(
-                                       crossAxisAlignment: CrossAxisAlignment.start,
-                                       mainAxisSize: MainAxisSize.min,
-                                       children: [
-                                          ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
-                                       ],
-                                     );
-                                  } else {
-                                     return const Padding(
-                                       padding: EdgeInsets.all(8.0),
-                                       child: Text("Loading Area 2...", style: TextStyle(color: Colors.white54)),
-                                     );
-                                  }
-                             }),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          // Fixed Header: Bluetooth Button and Dropdown (Top Right) - MOVED TO END FOR Z-INDEX
-          Positioned(
-            top: 7,
-            right: 7,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Status and Action Button Row
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (viewModel.selectedDevice == null)
-                      Text(
-                        'Chưa kết nối',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
-                      )
-                    else
-                      Text(
-                        viewModel.selectedDevice!.soncaName,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold, 
-                          color: Colors.greenAccent,
-                        ),
-                      ),
-                    const SizedBox(width: 16),
-                    FloatingActionButton(
-                      onPressed: _toggleScan,
-                      backgroundColor: viewModel.isScanning ? Colors.grey : Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: Colors.white24, width: 1),
-                      ),
-                      child: viewModel.isScanning 
-                        ? const SizedBox(
-                            width: 24, 
-                            height: 24, 
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                          )
-                        : Icon(
-                            Icons.bluetooth_searching, 
-                            color: viewModel.selectedDevice != null ? Colors.greenAccent : Colors.white
-                          ),
-                    ),
-                  ],
-                ),
-                
-                // The Dropdown List (Visible only when open)
-                if (_isDropdownOpen) ...[
-                  const SizedBox(height: 10),
-                  Container(
-                    width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.4 : 0.31),
-                    constraints: const BoxConstraints(maxHeight: 500),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900], // Dark background for dropdown
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                      border: Border.all(color: Colors.white24, width: 0.5),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Header
-                        ListTile(
-                          dense: true,
-                          title: Text(
-                             viewModel.isScanning ? 'Scanning...' : 'Devices Found',
-                             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.close, size: 20, color: Colors.white),
-                            onPressed: () => setState(() => _isDropdownOpen = false),
-                          ),
-                        ),
-                        const Divider(height: 1, color: Colors.white24),
-                        
-                        // Device List
-                        if (viewModel.devices.isEmpty && !viewModel.isScanning)
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header
                           ListTile(
-                            title: const Text('Không tìm thấy thiết bị', style: TextStyle(color: Colors.white70)),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.refresh, color: Colors.blueAccent),
-                              onPressed: () => viewModel.scanDevices(),
+                            dense: true,
+                            title: Text(
+                               viewModel.isScanning ? 'Scanning...' : 'Devices Found',
+                               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                             ),
-                          )
-                        else
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 440),
-                            child: ListView.separated(
-                              shrinkWrap: true,
-                              padding: EdgeInsets.zero,
-                              itemCount: viewModel.devices.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white10),
-                              itemBuilder: (context, index) {
-                                final device = viewModel.devices[index];
-                                
-                                return InkWell(
-                                  onTap: () {
-                                    if (viewModel.isConnecting) return;
-                                    
-                                    if (viewModel.selectedDevice?.id == device.id) {
-                                      viewModel.disconnectDevice();
-                                    } else {
-                                      viewModel.connectToDevice(device);
-                                    }
-                                    setState(() => _isDropdownOpen = false);
-                                  },
-                                  child: Container(
-                                    color: Colors.transparent, 
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const CircleAvatar(
-                                              backgroundColor: Colors.blueGrey,
-                                              radius: 16,
-                                              child: Icon(Icons.bluetooth, color: Colors.white, size: 16),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    device.soncaName,
-                                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
-                                                  ),
-                                                  Text(
-                                                    device.id,
-                                                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: (viewModel.selectedDevice?.id == device.id) 
-                                                    ? Colors.red.shade900 
-                                                    : (viewModel.connectingDeviceId == device.id) 
-                                                        ? Colors.orange.shade900 
-                                                        : Colors.blueGrey.shade800,
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: viewModel.connectingDeviceId == device.id
-                                                ? const SizedBox(
-                                                    width: 12, height: 12, 
-                                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
-                                                  )
-                                                : Text(
-                                                    (viewModel.selectedDevice?.id == device.id) ? 'DISCONNECT' : 'CONNECT',
-                                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)
-                                                  ),
-                                            )
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, size: 20, color: Colors.white),
+                              onPressed: () => setState(() => _isDropdownOpen = false),
                             ),
                           ),
-                      ],
+                          const Divider(height: 1, color: Colors.white24),
+                          
+                          // Device List
+                          if (viewModel.devices.isEmpty && !viewModel.isScanning)
+                            ListTile(
+                              title: const Text('Không tìm thấy thiết bị', style: TextStyle(color: Colors.white70)),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.refresh, color: Colors.blueAccent),
+                                onPressed: () => viewModel.scanDevices(),
+                              ),
+                            )
+                          else
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 440),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                padding: EdgeInsets.zero,
+                                itemCount: viewModel.devices.length,
+                                separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white10),
+                                itemBuilder: (context, index) {
+                                  final device = viewModel.devices[index];
+                                  
+                                  return InkWell(
+                                    onTap: () {
+                                      if (viewModel.isConnecting) return;
+                                      
+                                      // If already connected to this device, disconnect
+                                      if (viewModel.selectedDevice?.id == device.id) {
+                                        viewModel.disconnectDevice();
+                                        return;
+                                      }
+                                      
+                                      // Connect to new device
+                                      viewModel.connectToDevice(device).then((_) {
+                                        setState(() => _isDropdownOpen = false);
+                                      }).catchError((e) {
+                                        _showCenterSnackBar('Kết nối thất bại');
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.bluetooth,
+                                            color: viewModel.selectedDevice?.id == device.id ? Colors.greenAccent : Colors.white54,
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  device.soncaName,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: viewModel.selectedDevice?.id == device.id ? Colors.greenAccent : Colors.white,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  device.id,
+                                                  style: const TextStyle(fontSize: 12, color: Colors.white54),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          if (viewModel.isConnecting && viewModel.connectingDeviceId == device.id)
+                                            const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            ),
+                                          if (viewModel.selectedDevice?.id == device.id)
+                                            const Icon(Icons.check_circle, color: Colors.greenAccent),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ],
+                  ],
+                );
+              }),
             ),
-          ),
 
           // Overlay Layer
           if (_currentOverlayArea != null)
