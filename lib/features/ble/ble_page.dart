@@ -136,16 +136,19 @@ class _BlePageState extends State<BlePage> {
                           final section = getIt<MixerService>().getItemsForSection("Area 1");
                           
                           if (section != null) {
-                            return SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: section.items.values.map((item) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 12),
-                                    child: _buildDynamicControl(context, item, viewModel),
-                                  );
-                                }).toList(),
+                            return _HorizontalScrollIndicator(
+                              builder: (controller) => SingleChildScrollView(
+                                controller: controller,
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: section.items.values.map((item) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 12),
+                                      child: _buildDynamicControl(context, item, viewModel),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             );
                           }
@@ -977,19 +980,22 @@ class _BlePageState extends State<BlePage> {
                right: MediaQuery.of(context).size.width * rightSideRatio + 5,
               child: Container(
                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                 child: SingleChildScrollView(
-                   scrollDirection: Axis.horizontal,
-                   child: Row(
-                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                     children: section.items.values
-                        .where((item) => !item.control.isSwitch && !item.control.isDropdown)
-                        .map((item) {
-                       return Padding(
-                         padding: const EdgeInsets.only(right: 12),
-                         child: _buildDynamicControl(context, item, viewModel),
-                       );
-                     }).toList(),
-                   ),
+                 child: _HorizontalScrollIndicator(
+                    builder: (controller) => SingleChildScrollView(
+                      controller: controller,
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: section.items.values
+                           .where((item) => !item.control.isSwitch && !item.control.isDropdown)
+                           .map((item) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: _buildDynamicControl(context, item, viewModel),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                  ),
                ),
             ),
@@ -1575,18 +1581,20 @@ class _BlePageState extends State<BlePage> {
      final minGain = double.tryParse(minGainLimit?.toString() ?? section.control?.rawConfig['minGain']?.toString() ?? '-6.0') ?? -6.0;
      final maxGain = double.tryParse(maxGainLimit?.toString() ?? section.control?.rawConfig['maxGain']?.toString() ?? '6.0') ?? 6.0;
      
-     return Container(
-       padding: const EdgeInsets.symmetric(horizontal: 10),
-       child: SingleChildScrollView(
-         scrollDirection: Axis.horizontal,
-         child: Row(
-           crossAxisAlignment: CrossAxisAlignment.stretch,
-           children: List.generate(totalBands, (index) {
-              
-              final stateKey = "${commandName}_band${index}_gain";
-              
-              // Raw gain from BLE is int16 (Q8.8). 0 = 0.0, 256 = 1.0, -256 = -1.0
-              final rawGain = viewModel.getControlValue(stateKey, defaultValue: 0);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: _HorizontalScrollIndicator(
+          builder: (controller) => SingleChildScrollView(
+            controller: controller,
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: List.generate(totalBands, (index) {
+                 
+                 final stateKey = "${commandName}_band${index}_gain";
+                 
+                 // Raw gain from BLE is int16 (Q8.8). 0 = 0.0, 256 = 1.0, -256 = -1.0
+                 final rawGain = viewModel.getControlValue(stateKey, defaultValue: 0);
               double currentGain;
               if (rawGain is int) {
                  currentGain = rawGain / 256.0;
@@ -1664,6 +1672,7 @@ class _BlePageState extends State<BlePage> {
               );
            }).toList(),
          ),
+       ),
        ),
      );
   }
@@ -2046,4 +2055,126 @@ class _ThrottleState {
   Timer? debounceTimer;
   
   _ThrottleState(this.lastValue, this.lastSentTime, this.lastDirection);
+}
+
+
+class _HorizontalScrollIndicator extends StatefulWidget {
+  final Widget Function(ScrollController controller) builder;
+  const _HorizontalScrollIndicator({required this.builder, Key? key}) : super(key: key);
+
+  @override
+  State<_HorizontalScrollIndicator> createState() => _HorizontalScrollIndicatorState();
+}
+
+class _HorizontalScrollIndicatorState extends State<_HorizontalScrollIndicator> {
+  final ScrollController _controller = ScrollController();
+  bool _canScrollLeft = false;
+  bool _canScrollRight = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_updateScrollState);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollState());
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_updateScrollState);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _updateScrollState() {
+    if (!_controller.hasClients) return;
+    final maxScroll = _controller.position.maxScrollExtent;
+    final currentScroll = _controller.offset;
+    
+    final canScrollLeft = currentScroll > 0;
+    final canScrollRight = currentScroll < maxScroll;
+    
+    if (canScrollLeft != _canScrollLeft || canScrollRight != _canScrollRight) {
+      setState(() {
+        _canScrollLeft = canScrollLeft;
+        _canScrollRight = canScrollRight;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.builder(_controller),
+        if (_canScrollLeft)
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 40,
+            child: IgnorePointer(
+              child: ClipPath(
+                clipper: _LeftTriangleClipper(),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [Colors.greenAccent.withOpacity(0.25), Colors.transparent],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (_canScrollRight)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 40,
+            child: IgnorePointer(
+              child: ClipPath(
+                clipper: _RightTriangleClipper(),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: [Colors.greenAccent.withOpacity(0.25), Colors.transparent],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _LeftTriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, size.height / 2)
+      ..lineTo(0, size.height)
+      ..close();
+  }
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class _RightTriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(size.width, 0)
+      ..lineTo(0, size.height / 2)
+      ..lineTo(size.width, size.height)
+      ..close();
+  }
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
