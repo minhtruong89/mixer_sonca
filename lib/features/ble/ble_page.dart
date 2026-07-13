@@ -1367,8 +1367,8 @@ class _BlePageState extends State<BlePage> {
         if (shouldSendNow) {
           sendCmd();
         } else {
-          // Debounce for oscillation (100ms)
-          currentState.debounceTimer = Timer(const Duration(milliseconds: 100), () {
+          // Debounce for oscillation (60ms)
+          currentState.debounceTimer = Timer(const Duration(milliseconds: 60), () {
             sendCmd();
           });
         }
@@ -1955,4 +1955,13 @@ class _SegmentedProgressPainter extends CustomPainter {
       old.total != total ||
       old.completed != completed ||
       old.failedSet.length != failedSet.length;
+}
+
+class _ThrottleState {
+  double lastValue;
+  int lastDirection;
+  DateTime lastSentTime;
+  Timer? debounceTimer;
+  
+  _ThrottleState(this.lastValue, this.lastSentTime, this.lastDirection);
 }
