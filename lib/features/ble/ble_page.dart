@@ -16,6 +16,7 @@ import 'package:mixer_sonca/features/ble/widgets/mixer_slider.dart';
 import 'package:mixer_sonca/features/ble/widgets/eq_band_slider.dart';
 import 'package:mixer_sonca/features/ble/widgets/eq_band_dialog.dart';
 import 'package:mixer_sonca/injection.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class BlePage extends StatefulWidget {
   const BlePage({super.key});
@@ -195,6 +196,34 @@ class _BlePageState extends State<BlePage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        FutureBuilder<PackageInfo>(
+                                          future: PackageInfo.fromPlatform(),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              return Column(
+                                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                                    child: Center(
+                                                      child: Text(
+                                                        "Version app: ${snapshot.data!.version}",
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const Divider(color: Colors.white24, thickness: 1, height: 16),
+                                                  const SizedBox(height: 8),
+                                                ],
+                                              );
+                                            }
+                                            return const SizedBox.shrink();
+                                          },
+                                        ),
                                         ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
                                       ],
                                     );
