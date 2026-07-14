@@ -158,7 +158,7 @@ class BleRepositoryImpl implements BleRepository {
   @override
   Future<List<BluetoothService>> discoverServices(BleDevice device) async {
     final bluetoothDevice = BluetoothDevice.fromId(device.id);
-    return await bluetoothDevice.discoverServices();
+    return await bluetoothDevice.discoverServices(subscribeToServicesChanged: false);
   }
 }
 
@@ -183,6 +183,9 @@ class BleViewModel extends ChangeNotifier {
 
   BleDevice? _selectedDevice;
   BleDevice? get selectedDevice => _selectedDevice;
+
+  // Strong reference to prevent premature garbage collection of the BluetoothDevice wrapper on iOS
+  BluetoothDevice? _activeDevice;
 
   bool _isConnecting = false;
   bool get isConnecting => _isConnecting;
@@ -714,6 +717,8 @@ class BleViewModel extends ChangeNotifier {
   }
 
   void _handleDeviceDisconnected() {
+    _activeDevice = null;
+    _writeCharacteristic = null;
     _selectedDevice = null;
     _controlStates.clear();
     _connectingDeviceId = null;
@@ -815,35 +820,47 @@ class BleViewModel extends ChangeNotifier {
       }
     } catch(e) { /* ignore scan stop error */ }
 
+    // Settling delay for iOS CoreBluetooth after stopping scan
+    await Future.delayed(const Duration(milliseconds: 600));
+
     try {
-      await _repository.connect(device);
+      _activeDevice = BluetoothDevice.fromId(device.id);
+      
+      // Check if it is already connected to avoid duplicate or hung connection requests
+      final connected = FlutterBluePlus.connectedDevices;
+      final isAlreadyConnected = connected.any((d) => d.remoteId.str == device.id);
+      
+      if (isAlreadyConnected) {
+        debugPrint('BLE: Device ${device.name} is already connected. Reusing connection.');
+      } else {
+        debugPrint('BLE: Initiating new connection to ${device.name}');
+        await _activeDevice!.connect(autoConnect: false, timeout: const Duration(seconds: 15));
+      }
+      
       _selectedDevice = device;
       
-      // Discover services after connection
-      //final services = await _repository.discoverServices(device);
-      //_logServices(services);
-
-      // Setup protocol listener for incoming frames
-      await _setupProtocolListener();
-
-      // Test send and receive BLE
-      /*await sendDataToBLE([0x02, 0x80, 0x01, 0x00, 0xF4]);
-      await receiveDataFromBLE();
-
-      final helper = getIt<ProtocolHelper>();
-      final command1 = helper.setAppMode(AppModeValue.lineIn);
-      await sendProtocolCommand(command1);*/
-
-      // Get data and save value into display item
-      await fetchInitialStates();
+      // Initialize connection details (service discovery, fetching initial states) in background
+      _initializeConnectionDetails();
       
     } catch (e) {
       debugPrint("Error connecting to device: $e");
-      // Handle error (maybe clear selection or show toast)
+      _handleDeviceDisconnected();
     } finally {
       _isConnecting = false;
       _connectingDeviceId = null;
       notifyListeners();
+    }
+  }
+
+  Future<void> _initializeConnectionDetails() async {
+    try {
+      // Setup protocol listener (performs discoverServices)
+      await _setupProtocolListener();
+
+      // Get data and save value into display item
+      await fetchInitialStates();
+    } catch (e) {
+      debugPrint("Error initializing connection details: $e");
     }
   }
 
@@ -874,9 +891,32 @@ class BleViewModel extends ChangeNotifier {
 
   /// Send byte array to the currently connected BLE device (using a Queue)
   Future<void> sendDataToBLE(List<int> data) async {
-    if (_selectedDevice == null || _writeCharacteristic == null) {
-      debugPrint('BLE Send: No device connected or write characteristic not found');
+    if (_selectedDevice == null || _activeDevice == null) {
+      debugPrint('BLE Send: No device connected');
       return;
+    }
+
+    // Lazily discover and cache write characteristic if null
+    if (_writeCharacteristic == null) {
+      try {
+        debugPrint('BLE Send: Write characteristic not cached. Discovering...');
+        // Settle delay for CoreBluetooth before first discovery
+        await Future.delayed(const Duration(milliseconds: 800));
+        
+        final services = await _activeDevice!.discoverServices(subscribeToServicesChanged: false);
+        final soncaService = services.firstWhere(
+          (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
+          orElse: () => throw Exception('Sonca service not found'),
+        );
+        _writeCharacteristic = soncaService.characteristics.firstWhere(
+          (c) => c.properties.write || c.properties.writeWithoutResponse,
+          orElse: () => throw Exception('No writable characteristic found'),
+        );
+        debugPrint('BLE Send: Write characteristic discovered and cached successfully');
+      } catch (e) {
+        debugPrint('BLE Send: Error discovering write characteristic: $e');
+        return;
+      }
     }
 
     // Push data to the queue
@@ -918,8 +958,8 @@ class BleViewModel extends ChangeNotifier {
       debugPrint('\n--- BLE Receive ---');
       debugPrint('BLE Receive: Setting up notification listener for device ${_selectedDevice!.name}');
       
-      final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
-      final services = await bluetoothDevice.discoverServices();
+      await Future.delayed(const Duration(milliseconds: 800));
+      final services = await _activeDevice!.discoverServices(subscribeToServicesChanged: false);
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
@@ -1337,8 +1377,10 @@ class BleViewModel extends ChangeNotifier {
       debugPrint('\n--- Protocol Listener Setup ---');
       debugPrint('Protocol: Setting up notification listener for device ${_selectedDevice!.name}');
       
-      final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
-      final services = await bluetoothDevice.discoverServices();
+      // Small delay for iOS / BLE stack stabilization before GATT discovery
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      final services = await _activeDevice!.discoverServices(subscribeToServicesChanged: false);
       
       // Find the Sonca service
       final soncaService = services.firstWhere(
@@ -1360,6 +1402,9 @@ class BleViewModel extends ChangeNotifier {
       
       //debugPrint('Protocol: Using characteristic UUID: 0x${notifiableChar.uuid.str.toUpperCase()}');
       
+      // Small delay before setting notify value to prevent GATT congestion / race conditions
+      await Future.delayed(const Duration(milliseconds: 300));
+      
       // Enable notifications
       await notifiableChar.setNotifyValue(true);
       
@@ -1376,18 +1421,21 @@ class BleViewModel extends ChangeNotifier {
       debugPrint('-------------------------------------');
     } catch (e) {
       debugPrint('Protocol: Error setting up listener: $e');
+      rethrow;
     }
   }
 
   Future<void> disconnectDevice() async {
-    if (_selectedDevice != null) {
+    if (_activeDevice != null) {
        try {
-        await _repository.disconnect(_selectedDevice!);
-        _selectedDevice = null;
-        notifyListeners();
+        await _activeDevice!.disconnect();
       } catch (e) {
         debugPrint("Error disconnecting device: $e");
       }
     }
+    _activeDevice = null;
+    _writeCharacteristic = null;
+    _selectedDevice = null;
+    notifyListeners();
   }
 }

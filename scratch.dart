@@ -1,5 +1,6 @@
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 void main() {
-  print(FilePicker.platform.saveFile);
+  // Test discoverServices parameters
+  // e.g. does it support something like services or serviceUuids parameter?
 }
