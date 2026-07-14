@@ -187,6 +187,13 @@ class BleViewModel extends ChangeNotifier {
   bool _isConnecting = false;
   bool get isConnecting => _isConnecting;
 
+  // Caching the write characteristic for performance
+  BluetoothCharacteristic? _writeCharacteristic;
+  
+  // Write Queue to prevent overlapping BLE writes
+  final List<List<int>> _writeQueue = [];
+  bool _isWriting = false;
+
   String? _connectingDeviceId;
   String? get connectingDeviceId => _connectingDeviceId;
 
@@ -865,43 +872,39 @@ class BleViewModel extends ChangeNotifier {
     debugPrint('--------------------------------------------------');
   }
 
-  /// Send byte array to the currently connected BLE device
+  /// Send byte array to the currently connected BLE device (using a Queue)
   Future<void> sendDataToBLE(List<int> data) async {
-    if (_selectedDevice == null) {
-      debugPrint('BLE Send: No device connected');
+    if (_selectedDevice == null || _writeCharacteristic == null) {
+      debugPrint('BLE Send: No device connected or write characteristic not found');
       return;
     }
 
+    // Push data to the queue
+    _writeQueue.add(data);
+    
+    // Process the queue asynchronously
+    _processWriteQueue();
+  }
+
+  Future<void> _processWriteQueue() async {
+    if (_isWriting || _writeQueue.isEmpty) return;
+    
+    _isWriting = true;
     try {
-      // debugPrint('\n--- BLE Send ---');
-      // debugPrint('BLE Send: Sending ${data.length} bytes to device ${_selectedDevice!.name}');
-      // debugPrint('BLE Send: Data = ${data.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
-      
-      final bluetoothDevice = BluetoothDevice.fromId(_selectedDevice!.id);
-      final services = await bluetoothDevice.discoverServices();
-      
-      // Find the Sonca service
-      final soncaService = services.firstWhere(
-        (s) => s.uuid.toString().toLowerCase().contains(SONCA_SERVICE.toLowerCase()),
-        orElse: () => throw Exception('Sonca service not found'),
-      );
-      
-      // Find a writable characteristic
-      final writableChar = soncaService.characteristics.firstWhere(
-        (c) => c.properties.write || c.properties.writeWithoutResponse,
-        orElse: () => throw Exception('No writable characteristic found'),
-      );
-      
-      debugPrint('BLE Send: Using characteristic UUID: 0x${writableChar.uuid.str.toUpperCase()}');
-      
-      // Write data to the characteristic
-      await writableChar.write(data, withoutResponse: writableChar.properties.writeWithoutResponse);
-      
-      // debugPrint('BLE Send: Data sent successfully');
+      while (_writeQueue.isNotEmpty) {
+        final data = _writeQueue.removeAt(0);
+        
+        // Write data to the characteristic
+        await _writeCharacteristic!.write(data, withoutResponse: _writeCharacteristic!.properties.writeWithoutResponse);
+        
+        // Small delay to prevent overwhelming the Android BLE Stack buffer
+        await Future.delayed(const Duration(milliseconds: 15));
+      }
     } catch (e) {
       debugPrint('BLE Send: Error sending data: $e');
+    } finally {
+      _isWriting = false;
     }
-    // debugPrint('-------------------------------------');
   }
 
   /// Receive byte array from the currently connected BLE device
@@ -1347,6 +1350,12 @@ class BleViewModel extends ChangeNotifier {
       final notifiableChar = soncaService.characteristics.firstWhere(
         (c) => c.properties.notify || c.properties.indicate,
         orElse: () => throw Exception('No notifiable characteristic found'),
+      );
+      
+      // Find and cache a writable characteristic
+      _writeCharacteristic = soncaService.characteristics.firstWhere(
+        (c) => c.properties.write || c.properties.writeWithoutResponse,
+        orElse: () => throw Exception('No writable characteristic found'),
       );
       
       //debugPrint('Protocol: Using characteristic UUID: 0x${notifiableChar.uuid.str.toUpperCase()}');

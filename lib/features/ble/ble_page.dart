@@ -1437,8 +1437,8 @@ class _BlePageState extends State<BlePage> {
           
           if (currentDirection != 0 && currentDirection == state.lastDirection) {
             // Linear movement (increasing or decreasing continuously)
-            // Throttle: Send more frequently, e.g., every 40ms
-            if (now.difference(state.lastSentTime).inMilliseconds >= 40) {
+            // Throttle: Send more frequently, e.g., every 70ms
+            if (now.difference(state.lastSentTime).inMilliseconds >= 70) {
               shouldSendNow = true;
             }
           } else {
