@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
-import 'package:mixer_sonca/core/utils/debouncer.dart';
-import 'package:mixer_sonca/injection.dart';
-import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
-import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
-import 'package:mixer_sonca/features/ble/protocol/protocol_types.dart';
-import 'package:mixer_sonca/features/ble/protocol/protocol_constants.dart';
+import 'modern_slider_helper.dart';
 
 class ModernHorizontalSlider extends StatefulWidget {
   final DisplayItem item;
@@ -20,109 +16,122 @@ class ModernHorizontalSlider extends StatefulWidget {
 }
 
 class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
-  final Debouncer _debouncer = Debouncer(milliseconds: 100);
   double _currentValue = 50.0;
   bool _isDragging = false;
+  bool _hasVibratedAtPoint = false;
   late double _min;
   late double _max;
+  String? _muteParam;
+  String? _volumeParam;
 
   @override
   void initState() {
     super.initState();
     _min = widget.item.control.minValue.toDouble();
     _max = widget.item.control.maxValue.toDouble();
+
+    if (widget.item.indexList.isNotEmpty) {
+      for (final p in widget.item.indexList) {
+        if (p.endsWith('_mute')) {
+          _muteParam = p;
+          break;
+        }
+      }
+      _volumeParam = widget.item.indexList.firstWhere(
+        (p) => p != _muteParam, 
+        orElse: () => widget.item.indexList[0]
+      );
+    } else {
+      _volumeParam = widget.item.paramName;
+    }
   }
 
   void _sendValue(double val) {
     final viewModel = context.read<BleViewModel>();
-    final stateKey = "${widget.item.command}_${widget.item.indexList.isNotEmpty ? widget.item.indexList.first : widget.item.paramName}";
-    
-    viewModel.updateControlValue(stateKey, val.round(), notify: false);
-    
-    _debouncer.run(() {
-      final protocolService = getIt<ProtocolService>();
-      final cmdDef = protocolService.getCommandByName(widget.item.category, widget.item.command);
-      if (cmdDef != null) {
-        final builder = getIt<DynamicCommandBuilder>();
-        final Map<String, dynamic> params = {};
-        for (var idx in (widget.item.indexList.isNotEmpty ? widget.item.indexList : [widget.item.paramName!])) {
-           params[idx] = viewModel.getControlValue("${widget.item.command}_$idx", defaultValue: _min.round());
-        }
-        final cmds = builder.buildCommand(
-          categoryName: widget.item.category, 
-          cmdId: cmdDef.id, 
-          operation: CommandOperation.set, 
-          parameters: params
-        );
-        for (var cmd in cmds) {
-          viewModel.sendDataToBLE(cmd.encode());
-        }
+
+    if (_muteParam != null) {
+      final muteStateKey = "${widget.item.command}_$_muteParam";
+      if (viewModel.getControlValue(muteStateKey, defaultValue: 0) == 1) {
+        ModernSliderHelper.throttledSend(context, widget.item, 0, _muteParam!);
       }
-    });
+    }
+    
+    if (_volumeParam != null) {
+      ModernSliderHelper.throttledSend(context, widget.item, val, _volumeParam!);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<BleViewModel>();
-    final stateKey = "${widget.item.command}_${widget.item.indexList.isNotEmpty ? widget.item.indexList.first : widget.item.paramName}";
+    final stateKey = "${widget.item.command}_${_volumeParam ?? ''}";
     
     if (!_isDragging) {
       dynamic val = viewModel.getControlValue(stateKey);
       if (val != null) {
-        if (val is int) _currentValue = val.toDouble();
-        else if (val is double) _currentValue = val;
+        if (val is int) {
+          _currentValue = val.toDouble();
+        } else if (val is double) {
+          _currentValue = val;
+        }
       }
     }
     
-    final displayVal = _currentValue.round().toString();
+    final displayVal = ModernSliderHelper.formatDisplayValue(_currentValue, widget.item);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              widget.label,
-              style: const TextStyle(color: Colors.white54, fontSize: 14),
-            ),
-            Text(
-              '$displayVal dB',
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 40,
-          child: GestureDetector(
-            onHorizontalDragStart: (details) {
-              setState(() {
-                _isDragging = true;
-                _updateValueFromLocalPosition(details.localPosition.dx, context.size!.width);
-              });
-            },
-            onHorizontalDragUpdate: (details) {
-              setState(() {
-                _updateValueFromLocalPosition(details.localPosition.dx, context.size!.width);
-              });
-            },
-            onHorizontalDragEnd: (details) {
-              setState(() {
-                _isDragging = false;
-              });
-            },
-            child: CustomPaint(
-              painter: _HorizontalSliderPainter(
-                value: _currentValue,
-                min: _min,
-                max: _max,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.label,
+                style: const TextStyle(color: Colors.white54, fontSize: 14),
+              ),
+              Text(
+                displayVal,
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 40,
+            width: double.infinity,
+            child: GestureDetector(
+              onHorizontalDragStart: (details) {
+                setState(() {
+                  _isDragging = true;
+                  _updateValueFromLocalPosition(details.localPosition.dx, context.size!.width);
+                });
+              },
+              onHorizontalDragUpdate: (details) {
+                setState(() {
+                  _updateValueFromLocalPosition(details.localPosition.dx, context.size!.width);
+                });
+              },
+              onHorizontalDragEnd: (details) {
+                setState(() {
+                  _isDragging = false;
+                });
+              },
+              child: CustomPaint(
+                painter: _HorizontalSliderPainter(
+                  value: _currentValue,
+                  min: _min,
+                  max: _max,
+                  vibrateValue: widget.item.control.vibrateValue,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -130,6 +139,20 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
     double percent = dx / width;
     percent = percent.clamp(0.0, 1.0);
     double newValue = _min + percent * (_max - _min);
+
+    final vibrateVal = widget.item.control.vibrateValue;
+    if (vibrateVal != null) {
+      final range = _max - _min;
+      final threshold = range > 0 ? range * 0.025 : 1.0;
+      final isNear = (newValue - vibrateVal).abs() <= threshold;
+      if (isNear && !_hasVibratedAtPoint) {
+        HapticFeedback.mediumImpact();
+        _hasVibratedAtPoint = true;
+      } else if (!isNear && _hasVibratedAtPoint) {
+        _hasVibratedAtPoint = false;
+      }
+    }
+
     _currentValue = newValue;
     _sendValue(_currentValue);
   }
@@ -139,8 +162,14 @@ class _HorizontalSliderPainter extends CustomPainter {
   final double value;
   final double min;
   final double max;
+  final double? vibrateValue;
 
-  _HorizontalSliderPainter({required this.value, required this.min, required this.max});
+  _HorizontalSliderPainter({
+    required this.value,
+    required this.min,
+    required this.max,
+    this.vibrateValue,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -154,30 +183,50 @@ class _HorizontalSliderPainter extends CustomPainter {
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 
-    // Draw inactive track (full)
-    final centerY = size.height / 2;
-    canvas.drawLine(Offset(0, centerY), Offset(size.width, centerY), trackPaint);
+    // Faint ticks - nearly invisible
+    final faintTickPaint = Paint()
+      ..color = const Color.fromARGB(20, 255, 255, 255)
+      ..strokeWidth = 1;
 
-    // Calculate percent and position
-    double percent = (value - min) / (max - min);
+    final trackY = size.height / 2;
+    canvas.drawLine(Offset(0, trackY), Offset(size.width, trackY), trackPaint);
+
+    int numTicks = 11;
+    for (int i = 0; i < numTicks; i++) {
+      double tickX = size.width * (i / (numTicks - 1));
+      canvas.drawLine(Offset(tickX, trackY - 3), Offset(tickX, trackY + 3), faintTickPaint);
+    }
+
+    // Draw vibrateValue tick longer and clearer
+    if (vibrateValue != null && max > min) {
+      final vibratePercent = ((vibrateValue! - min) / (max - min)).clamp(0.0, 1.0);
+      final vibrateX = size.width * vibratePercent;
+
+      final vibrateTickPaint = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2.5;
+
+      canvas.drawLine(Offset(vibrateX, trackY - 10), Offset(vibrateX, trackY + 10), vibrateTickPaint);
+    }
+
+    double percent = 0.0;
+    if (max > min) {
+      percent = (value - min) / (max - min);
+    }
     percent = percent.clamp(0.0, 1.0);
     double thumbX = size.width * percent;
 
-    // Draw active track from left to thumb
-    canvas.drawLine(Offset(0, centerY), Offset(thumbX, centerY), activeTrackPaint);
+    canvas.drawLine(Offset(0, trackY), Offset(thumbX, trackY), activeTrackPaint);
 
-    // Draw thumb
     final thumbPaint = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(thumbX, centerY), 10, thumbPaint);
-    
-    // Draw cross inside thumb (as seen in image)
-    final thumbLinePaint = Paint()..color = Colors.grey[800]!..strokeWidth = 2;
-    canvas.drawLine(Offset(thumbX, centerY - 10), Offset(thumbX, centerY + 10), thumbLinePaint);
-    canvas.drawLine(Offset(thumbX - 10, centerY), Offset(thumbX + 10, centerY), thumbLinePaint);
+    canvas.drawCircle(Offset(thumbX, trackY), 10, thumbPaint);
   }
 
   @override
   bool shouldRepaint(covariant _HorizontalSliderPainter oldDelegate) {
-    return oldDelegate.value != value || oldDelegate.min != min || oldDelegate.max != max;
+    return oldDelegate.value != value ||
+        oldDelegate.min != min ||
+        oldDelegate.max != max ||
+        oldDelegate.vibrateValue != vibrateValue;
   }
 }

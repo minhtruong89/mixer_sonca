@@ -13,6 +13,7 @@
 				  "index": "bass_gain",
 				  "control": {
 					  "typeDisplay": "modern vertical slider",
+					  "vibrateValue": "50",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
@@ -24,6 +25,7 @@
 				  "index": "middle_gain",
 				  "control": {
 					  "typeDisplay": "modern vertical slider",
+					  "vibrateValue": "50",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
@@ -35,6 +37,7 @@
 				  "index": "treb_gain",
 				  "control": {
 					  "typeDisplay": "modern vertical slider",
+					  "vibrateValue": "50",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
@@ -49,6 +52,7 @@
 				  ],
 				  "control": {
 					  "typeDisplay": "modern horizontal slider",
+					  "vibrateValue": "50",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}

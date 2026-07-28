@@ -185,6 +185,7 @@ class DisplayControl {
   final double displayDivide;
   final double displayOffset;
   final String displayText;
+  final double? vibrateValue;
   final Map<String, dynamic> rawConfig; // For storing custom fields like type, f0, Q, enable
 
   const DisplayControl({
@@ -196,6 +197,7 @@ class DisplayControl {
     this.displayDivide = 1,
     this.displayOffset = 0,
     this.displayText = '',
+    this.vibrateValue,
     this.rawConfig = const {},
   });
 
@@ -215,6 +217,7 @@ class DisplayControl {
       displayDivide: double.tryParse(json['displayDivide']?.toString() ?? json['displayDevide']?.toString() ?? '1') ?? 1,
       displayOffset: double.tryParse(json['displayOffset']?.toString() ?? '0') ?? 0,
       displayText: json['displayText']?.toString() ?? '',
+      vibrateValue: json['vibrateValue'] != null ? double.tryParse(json['vibrateValue'].toString()) : null,
       rawConfig: json, // store the whole object for flexible field access
     );
   }
