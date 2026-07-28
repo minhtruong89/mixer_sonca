@@ -90,7 +90,7 @@ class ProtocolHandler {
     try {
       final frame = ProtocolFrame.decode(data);
       
-      //debugPrint('Protocol: Received frame - ${frame.header}');
+      debugPrint('Protocol: Received frame - ${frame.header}');
 
       // Check if this is a response to a pending request
       if ((frame.header.flags & FrameFlags.ackResponse) != 0) {
@@ -100,8 +100,10 @@ class ProtocolHandler {
         }
       }
 
+      //debugPrint('Protocol: Adding frame to stream');
       // Broadcast to listeners
       _incomingFrames.add(frame);
+      //debugPrint('Protocol: Added frame to stream');
     } catch (e) {
       debugPrint('Protocol: Error handling incoming frame: $e');
     }

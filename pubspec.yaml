@@ -32,6 +32,7 @@ flutter:
   assets:
     - lib/ble_android_comm_format.json
     - lib/model_config_display.json
+    - lib/model_config_display_modern.json
     - assets/images/app_icon.png
 
 flutter_launcher_icons:

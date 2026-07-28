@@ -40,13 +40,14 @@ class MixerService {
     } catch (e) {
        debugPrint('MixerService: Error fetching display config via HTTP ($e), falling back to local asset...');
        try {
-         String content = await rootBundle.loadString('lib/model_config_display.json');
+         String fallbackAsset = themeMode == 1 ? 'lib/model_config_display_modern.json' : 'lib/model_config_display.json';
+         String content = await rootBundle.loadString(fallbackAsset);
          if (content.startsWith('\uFEFF')) {
              content = content.substring(1);
          }
          final Map<String, dynamic> jsonMap = json.decode(content);
          _displayConfig = DisplayConfig.fromJson(jsonMap);
-         debugPrint('MixerService: Display config loaded successfully from local asset');
+         debugPrint('MixerService: Display config loaded successfully from local asset ($fallbackAsset)');
        } catch (assetError) {
          debugPrint('MixerService: Error loading from local asset: $assetError');
        }

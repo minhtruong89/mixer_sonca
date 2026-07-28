@@ -18,7 +18,7 @@
 				}
 			  },
 
-			  "MIDDLE": {
+			  "MID": {
 				  "category": "MUSIC",
 				  "command": "MUSIC_COMMON",
 				  "index": "middle_gain",
@@ -85,28 +85,19 @@
 						  "unmuteValue": "oldValue"						  
 					  }
 				  }				  
-				}		  
-			  
-		  },
-		  "buttons": {
+				},
 			  "Mixer": {
 				  "alignment": "right",
 				  "event": {
 					  "click": "Area Modern MIXER"
 				  }				  
-				}
-			  
-			  
-		  },
-		  "buttons": {
+			  },
 			  "Setting": {
 				  "alignment": "right",
 				  "event": {
 					  "click": "Area Modern Area 2"
 				  }				  
-				}
-			  
-			  
+			  }
 		  }
 		  
 	  },

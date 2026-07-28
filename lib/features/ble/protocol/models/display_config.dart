@@ -158,16 +158,19 @@ class DisplayEvent {
 class DisplayButton {
   final String label;
   final DisplayEvent? event;
+  final Map<String, dynamic> rawConfig;
 
   const DisplayButton({
     required this.label,
     this.event,
+    this.rawConfig = const {},
   });
 
   factory DisplayButton.fromJson(String label, Map<String, dynamic> json) {
     return DisplayButton(
       label: label,
       event: json['event'] != null ? DisplayEvent.fromJson(json['event']) : null,
+      rawConfig: json,
     );
   }
 }
