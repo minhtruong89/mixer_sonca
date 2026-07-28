@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
 import 'package:mixer_sonca/features/ble/ui/theme_view_model.dart';
 import 'package:mixer_sonca/core/services/theme_service.dart';
+import 'package:mixer_sonca/features/ble/ui/modern/modern_settings_screen.dart';
 
 class ModernBlePage extends StatelessWidget {
   const ModernBlePage({super.key});
@@ -17,31 +18,46 @@ class ModernBlePage extends StatelessWidget {
         backgroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Cài đặt',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 8.0),
+          child: Text(
+            'Cài đặt',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+            ),
           ),
         ),
         actions: [
-          // Temporarily adding a button here to easily switch back to Classic while testing
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.more_horiz, color: Colors.white, size: 28),
             onPressed: () {
-              final tvm = context.read<ThemeViewModel>();
-              tvm.setThemeMode(AppThemeMode.classic);
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ModernSettingsScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0); // Slide from right
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    return SlideTransition(position: animation.drive(tween), child: child);
+                  },
+                ),
+              );
             },
           ),
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
               const Text(
@@ -89,6 +105,7 @@ class ModernBlePage extends StatelessWidget {
                 ),
             ],
           ),
+        ),
         ),
       ),
     );
