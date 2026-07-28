@@ -726,6 +726,13 @@ class BleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> checkPermissionsAndBluetooth() async {
+    final granted = await _repository.checkPermissions();
+    if (!granted) return false;
+    final isOn = await _repository.isBluetoothOn;
+    return isOn;
+  }
+
   Future<void> scanDevices() async {
     _ensureBleInitialized();
     _isScanning = true;

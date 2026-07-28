@@ -4,27 +4,15 @@
 	
 	  "Area Modern MUSIC MAIN" :{
 		  "desc": "Area for main screen",
+		  "areaType": "Main Area",
 		  "items": {
-			  "MUSIC": {
-				  "category": "MUSIC",
-				  "command": "MUSIC_COMMON",
-				  "indexList": [
-					  "volume_mute",
-					  "volume_gain"
-				  ],
-				  "control": {
-					  "typeDisplay": "vertical slider",
-					  "minValue": "0",
-					  "maxValue": "100"
-				}
-			  },
 			  
 			  "BASS": {
 				  "category": "MUSIC",
 				  "command": "MUSIC_COMMON",
 				  "index": "bass_gain",
 				  "control": {
-					  "typeDisplay": "vertical slider",
+					  "typeDisplay": "modern vertical slider",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
@@ -35,7 +23,7 @@
 				  "command": "MUSIC_COMMON",
 				  "index": "middle_gain",
 				  "control": {
-					  "typeDisplay": "vertical slider",
+					  "typeDisplay": "modern vertical slider",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
@@ -46,16 +34,30 @@
 				  "command": "MUSIC_COMMON",
 				  "index": "treb_gain",
 				  "control": {
-					  "typeDisplay": "vertical slider",
+					  "typeDisplay": "modern vertical slider",
 					  "minValue": "0",
 					  "maxValue": "100"
 				}
-			  } 			  
+			  },
+
+
+			  "MUSIC": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "indexList": [
+					  "volume_gain"
+				  ],
+				  "control": {
+					  "typeDisplay": "modern horizontal slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  }		  
 			  
 			  
 		  },
 		  "buttons": {
-			  "MUTE": {
+			  "Mute": {
 				  "alignment": "left",
 				  "commandList": {
 					  "MUSIC":{
@@ -64,19 +66,19 @@
 						  "muteValue": 1,
 						  "unmuteValue": 0
 					  },
-					  "MUSIC":{
+					  "BASS":{
 						  "command": "MUSIC_COMMON",
 						  "index": "bass_gain",
 						  "muteValue": 0, 
 						  "unmuteValue": "oldValue"
 					  },
-					  "MUSIC":{
+					  "MID":{
 						  "command": "MUSIC_COMMON",
 						  "index": "middle_gain",
 						  "muteValue": 0, 
 						  "unmuteValue": "oldValue"						  
 					  },
-					  "MUSIC":{
+					  "TREBLE":{
 						  "command": "MUSIC_COMMON",
 						  "index": "treb_gain",
 						  "muteValue": 0, 
@@ -87,10 +89,20 @@
 			  
 		  },
 		  "buttons": {
-			  "MIXER": {
+			  "Mixer": {
 				  "alignment": "right",
 				  "event": {
 					  "click": "Area Modern MIXER"
+				  }				  
+				}
+			  
+			  
+		  },
+		  "buttons": {
+			  "Setting": {
+				  "alignment": "right",
+				  "event": {
+					  "click": "Area Modern Area 2"
 				  }				  
 				}
 			  
@@ -101,6 +113,8 @@
 	  
 	  "Area Modern MIXER" :{
 		  "desc": "Area for MIXER list",
+		  "areaType": "List Area",
+		  "areaFormat": "Vertical Full",
 		  "items": {
 			  "MUSIC": {
 				  "category": "MUSIC",

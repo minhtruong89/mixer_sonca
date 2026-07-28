@@ -1,118 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
-import 'package:mixer_sonca/features/ble/ui/theme_view_model.dart';
-import 'package:mixer_sonca/core/services/theme_service.dart';
-import 'package:mixer_sonca/features/ble/ui/modern/modern_settings_screen.dart';
+import 'package:mixer_sonca/features/ble/ui/modern/modern_permission_page.dart';
+import 'package:mixer_sonca/features/ble/ui/modern/modern_scan_page.dart';
 
-class ModernBlePage extends StatelessWidget {
+class ModernBlePage extends StatefulWidget {
   const ModernBlePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = context.watch<BleViewModel>();
+  State<ModernBlePage> createState() => _ModernBlePageState();
+}
 
+class _ModernBlePageState extends State<ModernBlePage> {
+  bool _isChecking = true;
+  bool _hasPermissions = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    if (!mounted) return;
+    
+    // Wait for the next frame so context.read works
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final viewModel = context.read<BleViewModel>();
+      final isOk = await viewModel.checkPermissionsAndBluetooth();
+      
+      if (mounted) {
+        setState(() {
+          _hasPermissions = isOk;
+          _isChecking = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Top Right Action Icon
-            Positioned(
-              top: 8,
-              right: 8,
-              child: IconButton(
-                icon: const Icon(Icons.more_horiz, color: Colors.white, size: 28),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const ModernSettingsScreen(),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  );
-                },
-              ),
-            ),
-            
-            // Main Content
-            SizedBox(
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 100), // Khoảng cách đẩy chữ xuống
-                  const Text(
-                    'Cài đặt',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Spacer(),
-                          const Text(
-                            'Bluetooth là bắt buộc để điều khiển loa.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          const Text(
-                            'Vui lòng đảm bảo rằng Bluetooth được hỗ trợ và đã bật.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const Spacer(),
-                          if (viewModel.isScanning)
-                            const Center(
-                              child: CircularProgressIndicator(color: Colors.red),
-                            )
-                          else
-                            ElevatedButton(
-                              onPressed: () {
-                                viewModel.scanDevices();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text(
-                                'Cho phép Bluetooth',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: _isChecking
+          ? const Center(child: CircularProgressIndicator(color: Colors.red))
+          : _hasPermissions
+              ? const ModernScanPage()
+              : ModernPermissionPage(
+                  onPermissionsGranted: () {
+                    setState(() {
+                      _hasPermissions = true;
+                    });
+                  },
+                ),
     );
   }
 }
