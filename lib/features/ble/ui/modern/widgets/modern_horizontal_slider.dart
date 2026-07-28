@@ -66,14 +66,14 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
     final viewModel = context.watch<BleViewModel>();
     final stateKey = "${widget.item.command}_${_volumeParam ?? ''}";
     
-    if (!_isDragging) {
-      dynamic val = viewModel.getControlValue(stateKey);
-      if (val != null) {
-        if (val is int) {
-          _currentValue = val.toDouble();
-        } else if (val is double) {
-          _currentValue = val;
-        }
+    dynamic rawVal = viewModel.getControlValue(stateKey);
+    final bool hasValue = (rawVal != null) || _isDragging;
+    
+    if (!_isDragging && rawVal != null) {
+      if (rawVal is int) {
+        _currentValue = rawVal.toDouble();
+      } else if (rawVal is double) {
+        _currentValue = rawVal;
       }
     }
     
@@ -82,7 +82,7 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
         : "${widget.item.command}_volume_mute";
     final bool isMuted = (viewModel.getControlValue(muteKey, defaultValue: 0) == 1);
 
-    final displayVal = ModernSliderHelper.formatDisplayValue(_currentValue, widget.item);
+    final displayVal = hasValue ? ModernSliderHelper.formatDisplayValue(_currentValue, widget.item) : "";
 
     return Container(
       width: double.infinity,
@@ -138,6 +138,7 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
                       min: _min,
                       max: _max,
                       isMuted: isMuted,
+                      hasValue: hasValue,
                       vibrateValue: widget.item.control.vibrateValue,
                     ),
                   ),
@@ -183,6 +184,7 @@ class _HorizontalSliderPainter extends CustomPainter {
   final double max;
   final double? vibrateValue;
   final bool isMuted;
+  final bool hasValue;
 
   _HorizontalSliderPainter({
     required this.value,
@@ -190,6 +192,7 @@ class _HorizontalSliderPainter extends CustomPainter {
     required this.max,
     this.vibrateValue,
     this.isMuted = false,
+    this.hasValue = true,
   });
 
   @override
@@ -219,6 +222,8 @@ class _HorizontalSliderPainter extends CustomPainter {
 
     // 2. Draw base track line (grey)
     canvas.drawLine(Offset(0, trackY), Offset(size.width, trackY), trackPaint);
+
+    if (!hasValue) return;
 
     // Calculate positions
     double percent = 0.0;

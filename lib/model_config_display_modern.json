@@ -1,7 +1,42 @@
 {
   "defaultDisplay": {
     "sections": {
-	
+		  
+	  "Area Modern Area Summary" :{
+		  "desc": "Area for Summary list",
+		  "areaType": "Pop Top Area",
+		  "items": {
+
+			  "MIC FBC": {
+				  "category": "MIC",
+				  "command": "MIC_FBC",
+				  "index": "feedback_cancel"
+			  },
+			  
+			  "BASS BOOT": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_BASSBOOST_EFFECT",
+				  "index": "enable"
+			  },
+			  
+			  "ENHANCER": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_ENHANCER_EFFECT",
+				  "index": "enable"
+			  },
+			  
+			  "NGÕ VÀO": {
+				  "category": "INPUT",
+				  "command": "INPUT_MUSIC_MODE",
+				  "index": "mode",				  
+				  "typeValue": "Options"
+			  }
+			  
+			  
+		  }
+		  
+	  },
+	  
 	  "Area Modern MUSIC MAIN" :{
 		  "desc": "Area for main screen",
 		  "areaType": "Main Area",
@@ -99,16 +134,20 @@
 			  "Setting": {
 				  "alignment": "right",
 				  "event": {
-					  "click": "Area Modern Area 2"
+					  "click": "Area Modern Area Summary"
 				  }				  
 			  }
 		  }
 		  
 	  },
 	  
+	  
+	  
+	  
 	  "Area Modern MIXER" :{
 		  "desc": "Area for MIXER list",
-		  "areaType": "List Area",
+		  "areaType": "Sub Area",
+		  "backArea": "Area Modern MUSIC MAIN",
 		  "areaFormat": "Vertical Full",
 		  "items": {
 			  "MUSIC": {

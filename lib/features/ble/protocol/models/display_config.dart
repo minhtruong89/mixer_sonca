@@ -102,6 +102,7 @@ class DisplaySection {
 /// Represents an individual item like "Ngõ vào" or "MIC FBX"
 class DisplayItem {
   final String label; // The key in "items" map (e.g., "Ngõ vào")
+  final String? name; // Optional display name (e.g., "Music", "Mixer")
   final String category; // "SYSTEM", "MIC", etc.
   final String command; // "system_app_mode", "mic_feedback_cancel"
   final String? paramName; // "app_mode", "enable" (mapped from JSON's "index")
@@ -109,9 +110,11 @@ class DisplayItem {
   final Map<String, dynamic> controlList;
   final DisplayControl control;
   final DisplayEvent? event;
+  final Map<String, dynamic> rawConfig;
 
   const DisplayItem({
     required this.label,
+    this.name,
     required this.category,
     required this.command,
     this.paramName,
@@ -119,6 +122,7 @@ class DisplayItem {
     this.controlList = const {},
     required this.control,
     this.event,
+    this.rawConfig = const {},
   });
 
   factory DisplayItem.fromJson(String label, Map<String, dynamic> json) {
@@ -131,6 +135,7 @@ class DisplayItem {
 
     return DisplayItem(
       label: json['label']?.toString() ?? label,
+      name: json['name']?.toString(),
       category: json['category'] ?? '',
       command: json['command'] ?? '',
       // Note: JSON uses "index" key for parameter name
@@ -139,6 +144,7 @@ class DisplayItem {
       controlList: json['controlList'] != null ? Map<String, dynamic>.from(json['controlList']) : {},
       control: DisplayControl.fromJson(json['control'] ?? {}),
       event: json['event'] != null ? DisplayEvent.fromJson(json['event']) : null,
+      rawConfig: json,
     );
   }
 }

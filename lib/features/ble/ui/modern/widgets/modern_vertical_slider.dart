@@ -66,14 +66,14 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
     final viewModel = context.watch<BleViewModel>();
     final stateKey = "${widget.item.command}_${_volumeParam ?? ''}";
     
-    if (!_isDragging) {
-      dynamic val = viewModel.getControlValue(stateKey);
-      if (val != null) {
-        if (val is int) {
-          _currentValue = val.toDouble();
-        } else if (val is double) {
-          _currentValue = val;
-        }
+    dynamic rawVal = viewModel.getControlValue(stateKey);
+    final bool hasValue = (rawVal != null) || _isDragging;
+    
+    if (!_isDragging && rawVal != null) {
+      if (rawVal is int) {
+        _currentValue = rawVal.toDouble();
+      } else if (rawVal is double) {
+        _currentValue = rawVal;
       }
     }
     
@@ -82,7 +82,7 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
         : "${widget.item.command}_volume_mute";
     final bool isMuted = (viewModel.getControlValue(muteKey, defaultValue: 0) == 1);
 
-    final displayVal = ModernSliderHelper.formatDisplayValue(_currentValue, widget.item);
+    final displayVal = hasValue ? ModernSliderHelper.formatDisplayValue(_currentValue, widget.item) : "";
 
         const double sliderHeight = 300.0;
 
@@ -129,6 +129,7 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
                     min: _min,
                     max: _max,
                     isMuted: isMuted,
+                    hasValue: hasValue,
                     vibrateValue: widget.item.control.vibrateValue,
                   ),
                 ),
@@ -171,6 +172,7 @@ class _VerticalSliderPainter extends CustomPainter {
   final double max;
   final double? vibrateValue;
   final bool isMuted;
+  final bool hasValue;
 
   _VerticalSliderPainter({
     required this.value,
@@ -178,6 +180,7 @@ class _VerticalSliderPainter extends CustomPainter {
     required this.max,
     this.vibrateValue,
     this.isMuted = false,
+    this.hasValue = true,
   });
 
   @override
@@ -208,6 +211,8 @@ class _VerticalSliderPainter extends CustomPainter {
     // 2. Draw base track line (grey)
     canvas.drawLine(Offset(trackX, 0), Offset(trackX, size.height), trackPaint);
 
+    if (!hasValue) return;
+
     // Calculate positions
     double percent = 0.0;
     if (max > min) {
@@ -233,7 +238,8 @@ class _VerticalSliderPainter extends CustomPainter {
         ..color = Colors.white
         ..strokeWidth = 1.5;
 
-      canvas.drawLine(Offset(trackX - 14, startY), Offset(trackX + 14, startY), vibrateTickPaint);
+      canvas.drawLine(Offset(trackX - 14, startY), Offset(trackX + 14, startY),
+          vibrateTickPaint);
     }
 
     // 5. Draw thumb circle (white)
