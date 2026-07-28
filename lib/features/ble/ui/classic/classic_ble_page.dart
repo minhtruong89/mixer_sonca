@@ -118,7 +118,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                       contentPadding: EdgeInsets.zero,
                       onChanged: (value) {
                         if (value != null) {
-                          tvm.setThemeMode(value);
+                          tvm.setThemeMode(context, value);
                         }
                       },
                       activeColor: Colors.greenAccent,
@@ -136,7 +136,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                       contentPadding: EdgeInsets.zero,
                       onChanged: (value) {
                         if (value != null) {
-                          tvm.setThemeMode(value);
+                          tvm.setThemeMode(context, value);
                         }
                       },
                       activeColor: Colors.greenAccent,
@@ -190,8 +190,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                         groupValue: tvm.currentMode,
                         onChanged: (value) {
                           if (value != null) {
-                            tvm.setThemeMode(value);
-                            Navigator.pop(context);
+                            tvm.setThemeMode(context, value);
                           }
                         },
                         activeColor: Colors.greenAccent,
@@ -202,8 +201,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                         groupValue: tvm.currentMode,
                         onChanged: (value) {
                           if (value != null) {
-                            tvm.setThemeMode(value);
-                            Navigator.pop(context);
+                            tvm.setThemeMode(context, value);
                           }
                         },
                         activeColor: Colors.greenAccent,

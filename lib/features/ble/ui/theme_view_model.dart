@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mixer_sonca/core/services/theme_service.dart';
 import 'package:mixer_sonca/core/services/mixer_service.dart';
+import 'package:mixer_sonca/injection.dart';
 
 class ThemeViewModel extends ChangeNotifier {
   final ThemeService _themeService;
@@ -16,13 +17,28 @@ class ThemeViewModel extends ChangeNotifier {
 
   AppThemeMode get currentMode => _currentMode;
 
-  void setThemeMode(AppThemeMode mode) {
+  Future<void> setThemeMode(BuildContext context, AppThemeMode mode) async {
     if (_currentMode != mode) {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.red)),
+      );
+
       _currentMode = mode;
-      _themeService.setThemeMode(mode);
+      await _themeService.setThemeMode(mode);
       MixerService.themeMode = mode.value;
       _applyOrientation(mode);
+      
+      // Reload display config for the new theme
+      await getIt<MixerService>().loadDisplayConfig();
+
       notifyListeners();
+      
+      // Close loading and pop all routes to return to HomeSwitchPage
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss dialog
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
