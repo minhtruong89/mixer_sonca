@@ -1,8 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeMode {
-  classic,
-  modern,
+  classic(0),
+  modern(1);
+
+  final int value;
+  const AppThemeMode(this.value);
 }
 
 class ThemeService {

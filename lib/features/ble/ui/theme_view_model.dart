@@ -20,7 +20,7 @@ class ThemeViewModel extends ChangeNotifier {
     if (_currentMode != mode) {
       _currentMode = mode;
       _themeService.setThemeMode(mode);
-      MixerService.themeMode = (mode == AppThemeMode.modern) ? 1 : 0;
+      MixerService.themeMode = mode.value;
       _applyOrientation(mode);
       notifyListeners();
     }

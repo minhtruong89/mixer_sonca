@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mixer_sonca/app.dart';
+import 'package:mixer_sonca/core/services/theme_service.dart';
 import 'package:mixer_sonca/injection.dart';
 import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
@@ -39,6 +40,7 @@ void main() async {
   EqFilterTypeValue.initializeFromProtocol(protocolService);
 
   // Download display file on startup and mapping with protocol define
+  MixerService.themeMode = savedMode == 'modern' ? AppThemeMode.modern.value : AppThemeMode.classic.value;
   await getIt<MixerService>().loadDisplayConfig();
 
   
