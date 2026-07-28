@@ -22,18 +22,39 @@ class ModernMainAreaPage extends StatefulWidget {
 class _ModernMainAreaPageState extends State<ModernMainAreaPage> {
   // Store old values for mute functionality
   final Map<String, dynamic> _oldValues = {};
-  bool _isMuted = false;
+
+  bool _getMuteState(DisplayButton? buttonDef, BleViewModel viewModel) {
+    if (buttonDef == null) return false;
+    final commandList = buttonDef.rawConfig['commandList'] as Map<String, dynamic>?;
+    if (commandList == null) return false;
+
+    for (var key in commandList.keys) {
+      final cmdObj = commandList[key] as Map<String, dynamic>;
+      final commandName = cmdObj['command'] as String;
+      final index = cmdObj['index'] as String;
+      final muteValue = cmdObj['muteValue'];
+
+      final stateKey = "${commandName}_$index";
+      final currentVal = viewModel.getControlValue(stateKey);
+      if (currentVal != null && currentVal == muteValue) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   void _handleMuteToggle(DisplayButton buttonDef, BleViewModel viewModel) {
-    setState(() {
-      _isMuted = !_isMuted;
-    });
+    final currentlyMuted = _getMuteState(buttonDef, viewModel);
+    final nextMuteState = !currentlyMuted;
 
     final commandList = buttonDef.rawConfig['commandList'] as Map<String, dynamic>?;
     if (commandList == null) return;
 
     final protocolService = getIt<ProtocolService>();
     final builder = getIt<DynamicCommandBuilder>();
+
+    // Group parameters by category and cmdId
+    final Map<String, Map<int, Map<String, dynamic>>> groupedCmds = {};
 
     for (var key in commandList.keys) {
       final cmdObj = commandList[key] as Map<String, dynamic>;
@@ -42,8 +63,6 @@ class _ModernMainAreaPageState extends State<ModernMainAreaPage> {
       final muteValue = cmdObj['muteValue'];
       final unmuteValue = cmdObj['unmuteValue'];
 
-      // Figure out category for this command from the items definition or protocol definition
-      // We can look it up from protocol definition
       String categoryName = "";
       for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
         if (cat.getCommandByName(commandName) != null) {
@@ -51,43 +70,62 @@ class _ModernMainAreaPageState extends State<ModernMainAreaPage> {
           break;
         }
       }
-
       if (categoryName.isEmpty) continue;
 
       final stateKey = "${commandName}_$index";
       final cmdDef = protocolService.getCommandByName(categoryName, commandName);
       if (cmdDef == null) continue;
 
-      if (_isMuted) {
-        // Saving old value before muting
-        _oldValues[stateKey] = viewModel.getControlValue(stateKey);
-        
-        // Update UI and send to device
-        viewModel.updateControlValue(stateKey, muteValue, notify: true);
-        final cmds = builder.buildCommand(
-          categoryName: categoryName, 
-          cmdId: cmdDef.id, 
-          operation: CommandOperation.set, 
-          parameters: {index: muteValue}
-        );
-        for (var cmd in cmds) viewModel.sendDataToBLE(cmd.encode());
-
+      dynamic valToSend;
+      if (nextMuteState) {
+        // Muting: store old value if available
+        final currentVal = viewModel.getControlValue(stateKey);
+        if (currentVal != null) {
+          _oldValues[stateKey] = currentVal;
+        }
+        valToSend = muteValue;
       } else {
-        // Unmuting
-        dynamic valToSend = unmuteValue;
+        // Unmuting: restore old value if requested
+        valToSend = unmuteValue;
         if (unmuteValue == "oldValue") {
           valToSend = _oldValues[stateKey] ?? 0;
         }
-        
-        // Update UI and send to device
-        viewModel.updateControlValue(stateKey, valToSend, notify: true);
+      }
+
+      // Convert to num if parameter type requires double/Q8_8_LE
+      final paramType = protocolService.getParameterType(categoryName, cmdDef.id, index);
+      if (paramType?.toLowerCase() == 'q8_8_le' && valToSend is! double) {
+        valToSend = double.tryParse(valToSend.toString()) ?? 0.0;
+      }
+
+      debugPrint('\nUI Change: $key ($index) -> $valToSend (Cmd: $categoryName.$commandName)');
+
+      viewModel.updateControlValue(stateKey, valToSend, notify: false);
+
+      groupedCmds[categoryName] ??= {};
+      groupedCmds[categoryName]![cmdDef.id] ??= {};
+      groupedCmds[categoryName]![cmdDef.id]![index] = valToSend;
+    }
+
+    viewModel.notifyListeners();
+
+    // Send the batched SET commands to BLE device
+    for (final catEntry in groupedCmds.entries) {
+      final categoryName = catEntry.key;
+      for (final cmdEntry in catEntry.value.entries) {
+        final cmdId = cmdEntry.key;
+        final params = cmdEntry.value;
+
         final cmds = builder.buildCommand(
-          categoryName: categoryName, 
-          cmdId: cmdDef.id, 
-          operation: CommandOperation.set, 
-          parameters: {index: valToSend}
+          categoryName: categoryName,
+          cmdId: cmdId,
+          operation: CommandOperation.set,
+          parameters: params,
         );
-        for (var cmd in cmds) viewModel.sendDataToBLE(cmd.encode());
+
+        for (var cmd in cmds) {
+          viewModel.sendProtocolCommand(cmd);
+        }
       }
     }
   }
@@ -224,76 +262,94 @@ class _ModernMainAreaPageState extends State<ModernMainAreaPage> {
             ),
             
             // Bottom Buttons
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // Mute button
-                  if (section.buttons.containsKey('Mute'))
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        onPressed: () => _handleMuteToggle(section.buttons['Mute']!, viewModel),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _isMuted ? Colors.red : Colors.grey[800],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Mute', style: TextStyle(fontSize: 16)),
-                      ),
-                    )
-                  else
-                    const Expanded(flex: 1, child: SizedBox()),
-                  
-                  const SizedBox(width: 16),
-                  
-                  // Mixer button
-                  if (section.buttons.containsKey('Mixer'))
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        onPressed: () {
-                           // Navigate to Mixer Area (Area Modern MIXER)
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Mixer', style: TextStyle(fontSize: 16)),
-                      ),
-                    )
-                  else
-                    const Expanded(flex: 1, child: SizedBox()),
-                    
-                  const SizedBox(width: 16),
-                  
-                  // Settings button
-                  if (section.buttons.containsKey('Setting'))
-                    ElevatedButton(
-                      onPressed: () {
-                         // Navigate to Setting Area
-                      },
+            Builder(
+              builder: (context) {
+                final leftButtons = <Widget>[];
+                final rightButtons = <Widget>[];
+
+                section.buttons.forEach((name, btnConfig) {
+                  final align = btnConfig.alignment;
+                  Widget btnWidget;
+
+                  if (name == 'Mute') {
+                    final isMuted = _getMuteState(btnConfig, viewModel);
+                    btnWidget = ElevatedButton(
+                      onPressed: () => _handleMuteToggle(btnConfig, viewModel),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800],
+                        backgroundColor: isMuted ? Colors.red : Colors.grey[800],
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Icon(Icons.tune, color: Colors.white),
-                    )
-                  else
-                    const SizedBox(width: 64), // Placeholder if missing
-                ],
-              ),
+                      child: const Text('Mute', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                    );
+                  } else if (name == 'Mixer') {
+                    btnWidget = ElevatedButton(
+                      onPressed: () {
+                        // Navigate to Mixer Area (Area Modern MIXER)
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Mixer', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                    );
+                  } else if (name == 'Setting') {
+                    btnWidget = ElevatedButton(
+                      onPressed: () {
+                        // Navigate to Setting Area
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[800],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Icon(Icons.tune, color: Colors.white, size: 20),
+                    );
+                  } else {
+                    btnWidget = ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[800],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    );
+                  }
+
+                  if (align == 'left') {
+                    if (leftButtons.isNotEmpty) leftButtons.add(const SizedBox(width: 12));
+                    leftButtons.add(btnWidget);
+                  } else {
+                    if (rightButtons.isNotEmpty) rightButtons.add(const SizedBox(width: 12));
+                    rightButtons.add(btnWidget);
+                  }
+                });
+
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(children: leftButtons),
+                      Row(children: rightButtons),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),

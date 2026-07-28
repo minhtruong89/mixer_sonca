@@ -1343,6 +1343,38 @@ class BleViewModel extends ChangeNotifier {
        }
     }
 
+    // 2.b Handle parameters defined in buttons (e.g. Mute button commandList)
+    for (final button in section.buttons.values) {
+      final commandList = button.rawConfig['commandList'] as Map<String, dynamic>?;
+      if (commandList == null) continue;
+
+      commandList.forEach((catKey, cmdObjRaw) {
+        if (cmdObjRaw is Map<String, dynamic>) {
+          final commandName = cmdObjRaw['command']?.toString() ?? '';
+          final indexName = cmdObjRaw['index']?.toString() ?? '';
+          if (commandName.isEmpty || indexName.isEmpty) return;
+
+          CommandDefinition? cmdDef;
+          String categoryName = catKey;
+          for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+            final d = cat.getCommandByName(commandName);
+            if (d != null) {
+              cmdDef = d;
+              categoryName = cat.name;
+              break;
+            }
+          }
+          cmdDef ??= protocolService.findCommand(categoryName, indexName);
+
+          if (cmdDef != null) {
+            batchedRequests[categoryName] ??= {};
+            batchedRequests[categoryName]![cmdDef.id] ??= {};
+            batchedRequests[categoryName]![cmdDef.id]![indexName] = 0;
+          }
+        }
+      });
+    }
+
     // 3. Dispatch the batched requests
     for (final categoryEntry in batchedRequests.entries) {
       final categoryName = categoryEntry.key;

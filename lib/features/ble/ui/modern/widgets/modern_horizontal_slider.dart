@@ -77,6 +77,11 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
       }
     }
     
+    final String muteKey = _muteParam != null
+        ? "${widget.item.command}_$_muteParam"
+        : "${widget.item.command}_volume_mute";
+    final bool isMuted = (viewModel.getControlValue(muteKey, defaultValue: 0) == 1);
+
     final displayVal = ModernSliderHelper.formatDisplayValue(_currentValue, widget.item);
 
     return Container(
@@ -132,6 +137,7 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
                       value: _currentValue,
                       min: _min,
                       max: _max,
+                      isMuted: isMuted,
                       vibrateValue: widget.item.control.vibrateValue,
                     ),
                   ),
@@ -176,12 +182,14 @@ class _HorizontalSliderPainter extends CustomPainter {
   final double min;
   final double max;
   final double? vibrateValue;
+  final bool isMuted;
 
   _HorizontalSliderPainter({
     required this.value,
     required this.min,
     required this.max,
     this.vibrateValue,
+    this.isMuted = false,
   });
 
   @override
@@ -192,7 +200,7 @@ class _HorizontalSliderPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final activeTrackPaint = Paint()
-      ..color = Colors.red
+      ..color = isMuted ? Colors.white : Colors.red
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 

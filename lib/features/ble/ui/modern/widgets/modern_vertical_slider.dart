@@ -77,6 +77,11 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
       }
     }
     
+    final String muteKey = _muteParam != null
+        ? "${widget.item.command}_$_muteParam"
+        : "${widget.item.command}_volume_mute";
+    final bool isMuted = (viewModel.getControlValue(muteKey, defaultValue: 0) == 1);
+
     final displayVal = ModernSliderHelper.formatDisplayValue(_currentValue, widget.item);
 
         const double sliderHeight = 300.0;
@@ -123,6 +128,7 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
                     value: _currentValue,
                     min: _min,
                     max: _max,
+                    isMuted: isMuted,
                     vibrateValue: widget.item.control.vibrateValue,
                   ),
                 ),
@@ -164,12 +170,14 @@ class _VerticalSliderPainter extends CustomPainter {
   final double min;
   final double max;
   final double? vibrateValue;
+  final bool isMuted;
 
   _VerticalSliderPainter({
     required this.value,
     required this.min,
     required this.max,
     this.vibrateValue,
+    this.isMuted = false,
   });
 
   @override
@@ -180,7 +188,7 @@ class _VerticalSliderPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final activeTrackPaint = Paint()
-      ..color = Colors.red
+      ..color = isMuted ? Colors.white : Colors.red
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 

@@ -173,6 +173,8 @@ class DisplayButton {
       rawConfig: json,
     );
   }
+
+  String get alignment => rawConfig['alignment']?.toString() ?? 'left';
 }
 
 /// Represents the UI control details
