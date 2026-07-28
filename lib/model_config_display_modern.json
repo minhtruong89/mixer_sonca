@@ -1,0 +1,168 @@
+{
+  "defaultDisplay": {
+    "sections": {
+	
+	  "Area Modern MUSIC MAIN" :{
+		  "desc": "Area for main screen",
+		  "items": {
+			  "MUSIC": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "indexList": [
+					  "volume_mute",
+					  "volume_gain"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "BASS": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "bass_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+
+			  "MIDDLE": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "middle_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+
+			  "TREBLE": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "treb_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  } 			  
+			  
+			  
+		  },
+		  "buttons": {
+			  "MUTE": {
+				  "alignment": "left",
+				  "commandList": {
+					  "MUSIC":{
+						  "command": "MUSIC_COMMON",
+						  "index": "volume_mute",
+						  "muteValue": 1,
+						  "unmuteValue": 0
+					  },
+					  "MUSIC":{
+						  "command": "MUSIC_COMMON",
+						  "index": "bass_gain",
+						  "muteValue": 0, 
+						  "unmuteValue": "oldValue"
+					  },
+					  "MUSIC":{
+						  "command": "MUSIC_COMMON",
+						  "index": "middle_gain",
+						  "muteValue": 0, 
+						  "unmuteValue": "oldValue"						  
+					  },
+					  "MUSIC":{
+						  "command": "MUSIC_COMMON",
+						  "index": "treb_gain",
+						  "muteValue": 0, 
+						  "unmuteValue": "oldValue"						  
+					  }
+				  }				  
+				}		  
+			  
+		  },
+		  "buttons": {
+			  "MIXER": {
+				  "alignment": "right",
+				  "event": {
+					  "click": "Area Modern MIXER"
+				  }				  
+				}
+			  
+			  
+		  }
+		  
+	  },
+	  
+	  "Area Modern MIXER" :{
+		  "desc": "Area for MIXER list",
+		  "items": {
+			  "MUSIC": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "indexList": [
+					  "volume_mute",
+					  "volume_gain"
+				  ],
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+			  
+			  "BASS": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "bass_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+
+			  "MIDDLE": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "middle_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  },
+
+			  "TREBLE": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "treb_gain",
+				  "control": {
+					  "typeDisplay": "vertical slider",
+					  "minValue": "0",
+					  "maxValue": "100"
+				}
+			  } 			  
+			  
+			  
+		  },
+		  "buttons": {
+			  "MUSIC": {
+				  "event": {
+					  "click": "Area MUSIC EQ"
+				  }				  
+				}
+			  
+			  
+		  }
+		  
+	  }
+	  
+    }
+  }
+}

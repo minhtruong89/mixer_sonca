@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mixer_sonca/core/theme/app_theme.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
-import 'package:mixer_sonca/features/ble/ble_page.dart';
+import 'package:mixer_sonca/features/ble/ui/theme_view_model.dart';
+import 'package:mixer_sonca/features/ble/ui/home_switch_page.dart';
 import 'package:mixer_sonca/features/counter/counter_logic.dart';
 import 'package:mixer_sonca/injection.dart';
 
@@ -19,12 +20,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => getIt<BleViewModel>(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => getIt<ThemeViewModel>(),
+        ),
       ],
       child: MaterialApp(
         title: 'Sonca Mixer',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
-        home: const BlePage(),
+        home: const HomeSwitchPage(),
       ),
     );
   }

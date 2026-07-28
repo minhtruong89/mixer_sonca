@@ -5,14 +5,28 @@ import 'package:mixer_sonca/injection.dart';
 import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  
+  final prefs = await SharedPreferences.getInstance();
+  getIt.registerLazySingleton<SharedPreferences>(() => prefs);
+  
+  final savedMode = prefs.getString('app_theme_mode');
+  MixerService.themeMode = savedMode == 'modern' ? 1 : 0;
+  if (savedMode == 'modern') {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  } else {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
   
   setupInjection();
 

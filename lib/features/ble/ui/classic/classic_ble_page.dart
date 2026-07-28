@@ -18,14 +18,18 @@ import 'package:mixer_sonca/features/ble/widgets/eq_band_dialog.dart';
 import 'package:mixer_sonca/injection.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class BlePage extends StatefulWidget {
-  const BlePage({super.key});
+import 'package:mixer_sonca/features/ble/ui/theme_view_model.dart';
+import 'package:mixer_sonca/core/services/theme_service.dart';
+
+class ClassicBlePage extends StatefulWidget {
+  const ClassicBlePage({super.key});
 
   @override
-  State<BlePage> createState() => _BlePageState();
+  State<ClassicBlePage> createState() => _ClassicBlePageState();
 }
+enum DrawerContent { none, area2, settings }
 
-class _BlePageState extends State<BlePage> {
+class _ClassicBlePageState extends State<ClassicBlePage> {
   bool _isDropdownOpen = false;
   String? _currentOverlayArea;
   
@@ -37,7 +41,8 @@ class _BlePageState extends State<BlePage> {
   final Map<String, double> _controlHeights = {};
   
   // Drawer state for Area 2
-  bool _isArea2Open = false;
+
+  DrawerContent _activeDrawer = DrawerContent.none;
   
   OverlayEntry? _toastEntry;
   Timer? _toastTimer;
@@ -82,6 +87,144 @@ class _BlePageState extends State<BlePage> {
     }
   }
 
+  Widget _buildSettingsContent(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final version = snapshot.hasData ? snapshot.data!.version : '...';
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Cài đặt',
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Version app: $version',
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 24),
+            const Text('Chọn giao diện:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Consumer<ThemeViewModel>(
+              builder: (context, tvm, child) {
+                return Column(
+                  children: [
+                    RadioListTile<AppThemeMode>(
+                      title: const Text('Classic (Landscape)', style: TextStyle(color: Colors.white, fontSize: 14)),
+                      value: AppThemeMode.classic,
+                      groupValue: tvm.currentMode,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (value) {
+                        if (value != null) {
+                          tvm.setThemeMode(value);
+                        }
+                      },
+                      activeColor: Colors.greenAccent,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.greenAccent;
+                        }
+                        return Colors.white54;
+                      }),
+                    ),
+                    RadioListTile<AppThemeMode>(
+                      title: const Text('Modern (Portrait)', style: TextStyle(color: Colors.white, fontSize: 14)),
+                      value: AppThemeMode.modern,
+                      groupValue: tvm.currentMode,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (value) {
+                        if (value != null) {
+                          tvm.setThemeMode(value);
+                        }
+                      },
+                      activeColor: Colors.greenAccent,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.greenAccent;
+                        }
+                        return Colors.white54;
+                      }),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  void _showSettingsDialog() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+
+    final themeViewModel = context.read<ThemeViewModel>();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: const Text('Cài đặt', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Version app: ${packageInfo.version}',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 20),
+              const Text('Chọn giao diện:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Consumer<ThemeViewModel>(
+                builder: (context, tvm, child) {
+                  return Column(
+                    children: [
+                      RadioListTile<AppThemeMode>(
+                        title: const Text('Classic (Landscape)', style: TextStyle(color: Colors.white)),
+                        value: AppThemeMode.classic,
+                        groupValue: tvm.currentMode,
+                        onChanged: (value) {
+                          if (value != null) {
+                            tvm.setThemeMode(value);
+                            Navigator.pop(context);
+                          }
+                        },
+                        activeColor: Colors.greenAccent,
+                      ),
+                      RadioListTile<AppThemeMode>(
+                        title: const Text('Modern (Portrait)', style: TextStyle(color: Colors.white)),
+                        value: AppThemeMode.modern,
+                        groupValue: tvm.currentMode,
+                        onChanged: (value) {
+                          if (value != null) {
+                            tvm.setThemeMode(value);
+                            Navigator.pop(context);
+                          }
+                        },
+                        activeColor: Colors.greenAccent,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Đóng', style: TextStyle(color: Colors.greenAccent)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<BleViewModel>();
@@ -119,18 +262,18 @@ class _BlePageState extends State<BlePage> {
                     // Area 1 (Base Layer)
                     GestureDetector(
                       onTap: () {
-                        if (_isArea2Open) {
-                          setState(() { _isArea2Open = false; });
+                        if (_activeDrawer != DrawerContent.none) {
+                          setState(() { _activeDrawer = DrawerContent.none; });
                         }
                       },
                       onPanDown: (_) {
-                        if (_isArea2Open) {
-                          setState(() { _isArea2Open = false; });
+                        if (_activeDrawer != DrawerContent.none) {
+                          setState(() { _activeDrawer = DrawerContent.none; });
                         }
                       },
                       behavior: HitTestBehavior.translucent,
                       child: AbsorbPointer(
-                        absorbing: _isArea2Open,
+                        absorbing: _activeDrawer != DrawerContent.none,
                         child: Container(
                           margin: const EdgeInsets.only(left: 10, right: 10, bottom: 20, top: 10),
                           child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
@@ -165,7 +308,7 @@ class _BlePageState extends State<BlePage> {
                       curve: Curves.easeInOut,
                       top: 10,
                       bottom: 20,
-                      right: _isArea2Open ? 0 : -MediaQuery.of(context).size.width * (Platform.isIOS ? 0.45 : 0.35) - 20,
+                      right: _activeDrawer != DrawerContent.none ? 0 : -MediaQuery.of(context).size.width * (Platform.isIOS ? 0.45 : 0.35) - 20,
                       width: MediaQuery.of(context).size.width * (Platform.isIOS ? 0.45 : 0.35),
                       child: Container(
                         margin: const EdgeInsets.only(right: 10),
@@ -188,7 +331,9 @@ class _BlePageState extends State<BlePage> {
                             Expanded(
                               child: SingleChildScrollView(
                                 padding: const EdgeInsets.only(top: 20, left: 12, right: 12, bottom: 12),
-                                child: Consumer<BleViewModel>(builder: (context, viewModel, child) {
+                                child: _activeDrawer == DrawerContent.settings
+                                  ? _buildSettingsContent(context)
+                                  : Consumer<BleViewModel>(builder: (context, viewModel, child) {
                                   final section = getIt<MixerService>().getItemsForSection("Area 2");
                                   
                                   if (section != null) {
@@ -196,34 +341,7 @@ class _BlePageState extends State<BlePage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        FutureBuilder<PackageInfo>(
-                                          future: PackageInfo.fromPlatform(),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasData) {
-                                              return Column(
-                                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "Version app: ${snapshot.data!.version}",
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 14,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const Divider(color: Colors.white24, thickness: 1, height: 16),
-                                                  const SizedBox(height: 8),
-                                                ],
-                                              );
-                                            }
-                                            return const SizedBox.shrink();
-                                          },
-                                        ),
+
                                         ...section.items.values.map((item) => _buildDynamicControl(context, item, viewModel)).toList(),
                                       ],
                                     );
@@ -247,7 +365,13 @@ class _BlePageState extends State<BlePage> {
               // Right Sidebar
               GestureDetector(
                 onTap: () {
-                  setState(() { _isArea2Open = !_isArea2Open; });
+                  setState(() {
+                            if (_activeDrawer == DrawerContent.area2) {
+                              _activeDrawer = DrawerContent.none;
+                            } else {
+                              _activeDrawer = DrawerContent.area2;
+                            }
+                          });
                 },
                 behavior: HitTestBehavior.opaque,
                 child: Container(
@@ -261,20 +385,26 @@ class _BlePageState extends State<BlePage> {
                         mini: true,
                         heroTag: "sidebar_menu",
                         onPressed: () {
-                          setState(() { _isArea2Open = !_isArea2Open; });
+                          setState(() {
+                            if (_activeDrawer == DrawerContent.area2) {
+                              _activeDrawer = DrawerContent.none;
+                            } else {
+                              _activeDrawer = DrawerContent.area2;
+                            }
+                          });
                         },
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
-                            color: _isArea2Open ? Colors.greenAccent : Colors.white24, 
+                            color: _activeDrawer == DrawerContent.area2 ? Colors.greenAccent : Colors.white24, 
                             width: 1
                           ),
                         ),
                         child: Icon(
                           Icons.tune,
                           size: 20,
-                          color: _isArea2Open ? Colors.greenAccent : Colors.white,
+                          color: _activeDrawer == DrawerContent.area2 ? Colors.greenAccent : Colors.white,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -307,6 +437,33 @@ class _BlePageState extends State<BlePage> {
                         );
                       }),
                       const Spacer(),
+                      FloatingActionButton(
+                        mini: true,
+                        heroTag: "sidebar_settings",
+                        onPressed: () {
+                          setState(() {
+                            if (_activeDrawer == DrawerContent.settings) {
+                              _activeDrawer = DrawerContent.none;
+                            } else {
+                              _activeDrawer = DrawerContent.settings;
+                            }
+                          });
+                        },
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _activeDrawer == DrawerContent.settings ? Colors.greenAccent : Colors.white24,
+                            width: 1
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.settings,
+                          size: 20,
+                          color: _activeDrawer == DrawerContent.settings ? Colors.greenAccent : Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

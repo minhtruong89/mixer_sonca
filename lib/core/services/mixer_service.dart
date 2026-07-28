@@ -6,6 +6,9 @@ import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
 
 class MixerService {
   static const String _displayUrl = 'http://data.soncamedia.com/firmware/smartbox/model_config_display.json';
+  static const String _displayModernUrl = 'http://data.soncamedia.com/firmware/smartbox/model_config_display_modern.json';
+
+  static int themeMode = 0; // 0 = classic, 1 = modern
 
   DisplayConfig? _displayConfig;
   DisplayConfig? get displayConfig => _displayConfig;
@@ -13,8 +16,9 @@ class MixerService {
   /// Load display configuration (Area 2 layout)
   Future<void> loadDisplayConfig() async {
     try {
-      debugPrint('MixerService: Downloading display config from $_displayUrl');
-      final response = await http.get(Uri.parse(_displayUrl)).timeout(const Duration(seconds: 5));
+      final targetUrl = themeMode == 1 ? _displayModernUrl : _displayUrl;
+      debugPrint('MixerService: Downloading display config from $targetUrl');
+      final response = await http.get(Uri.parse(targetUrl)).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         String content = utf8.decode(response.bodyBytes);

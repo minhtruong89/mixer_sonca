@@ -5,11 +5,18 @@ import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_helper.dart';
+import 'package:mixer_sonca/core/services/theme_service.dart';
+import 'package:mixer_sonca/features/ble/ui/theme_view_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final getIt = GetIt.instance;
 
 void setupInjection() {
   // Services
+
+  getIt.registerLazySingleton<ThemeService>(
+    () => ThemeService(getIt<SharedPreferences>()),
+  );
 
   getIt.registerLazySingleton<MixerService>(
     () => MixerService(),
@@ -38,5 +45,8 @@ void setupInjection() {
   );
   getIt.registerFactory<BleViewModel>(
     () => BleViewModel(repository: getIt()),
+  );
+  getIt.registerFactory<ThemeViewModel>(
+    () => ThemeViewModel(themeService: getIt()),
   );
 }
