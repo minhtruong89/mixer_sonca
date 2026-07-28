@@ -7,6 +7,7 @@ import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_constants.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/protocol_definition.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
 class _ThrottleState {
@@ -21,6 +22,17 @@ class _ThrottleState {
 final Map<String, _ThrottleState> _modernThrottleStates = {};
 
 class ModernSliderHelper {
+  static const MethodChannel _hapticChannel = MethodChannel('com.mixer.sonca/haptic');
+
+  static void triggerHaptic() async {
+    try {
+      await _hapticChannel.invokeMethod('vibrate');
+      debugPrint('ModernSliderHelper: Native vibrate MethodChannel invoked!');
+    } catch (e) {
+      debugPrint('ModernSliderHelper: MethodChannel failed: $e');
+      HapticFeedback.selectionClick();
+    }
+  }
   static void throttledSend(BuildContext context, DisplayItem item, dynamic value, String paramName) {
     final viewModel = context.read<BleViewModel>();
     final protocolService = getIt<ProtocolService>();
@@ -79,16 +91,17 @@ class ModernSliderHelper {
       
       Future<void> sendCmd() async {
         currentState.lastSentTime = DateTime.now();
+        debugPrint('\nUI Change: ${item.label} ($paramName) -> $finalValue (Cmd: ${item.category}.${cmdDef!.name})');
         try {
           final builder = getIt<DynamicCommandBuilder>();
           final cmds = builder.buildCommand(
             categoryName: item.category,
-            cmdId: cmdDef!.id,
+            cmdId: cmdDef.id,
             operation: CommandOperation.set,
             parameters: {paramName: finalValue},
           );
           for (var cmd in cmds) {
-            await viewModel.sendDataToBLE(cmd.encode());
+            await viewModel.sendProtocolCommand(cmd);
           }
         } catch (e) {
           debugPrint('Error sending modern cmd: $e');
@@ -98,24 +111,26 @@ class ModernSliderHelper {
       if (shouldSendNow) {
         sendCmd();
       } else {
-        currentState.debounceTimer = Timer(const Duration(milliseconds: 150), sendCmd);
+        currentState.debounceTimer = Timer(const Duration(milliseconds: 60), sendCmd);
       }
     } else {
       // Not a num, send immediately
-      try {
-        final builder = getIt<DynamicCommandBuilder>();
-        final cmds = builder.buildCommand(
-          categoryName: item.category,
-          cmdId: cmdDef.id,
-          operation: CommandOperation.set,
-          parameters: {paramName: finalValue},
-        );
-        for (var cmd in cmds) {
-          viewModel.sendDataToBLE(cmd.encode());
+      Future<void>(() async {
+        try {
+          final builder = getIt<DynamicCommandBuilder>();
+          final cmds = builder.buildCommand(
+            categoryName: item.category,
+            cmdId: cmdDef!.id,
+            operation: CommandOperation.set,
+            parameters: {paramName: finalValue},
+          );
+          for (var cmd in cmds) {
+            await viewModel.sendProtocolCommand(cmd);
+          }
+        } catch (e) {
+          debugPrint('Error sending non-num command: $e');
         }
-      } catch (e) {
-        debugPrint('Error sending non-num command: $e');
-      }
+      });
     }
   }
 

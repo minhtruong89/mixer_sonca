@@ -79,51 +79,57 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
     
     final displayVal = ModernSliderHelper.formatDisplayValue(_currentValue, widget.item);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          widget.label,
-          style: const TextStyle(color: Colors.white54, fontSize: 12),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          displayVal,
-          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          width: 60,
-          child: GestureDetector(
-            onVerticalDragStart: (details) {
-              setState(() {
-                _isDragging = true;
-                _updateValueFromLocalPosition(details.localPosition.dy, 180);
-              });
-            },
-            onVerticalDragUpdate: (details) {
-              setState(() {
-                _updateValueFromLocalPosition(details.localPosition.dy, 180);
-              });
-            },
-            onVerticalDragEnd: (details) {
-              setState(() {
-                _isDragging = false;
-              });
-            },
-            child: CustomPaint(
-              painter: _VerticalSliderPainter(
-                value: _currentValue,
-                min: _min,
-                max: _max,
-                vibrateValue: widget.item.control.vibrateValue,
+        const double sliderHeight = 300.0;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.label,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              displayVal,
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: sliderHeight,
+              width: 60,
+              child: GestureDetector(
+                onTapDown: (details) {
+                  setState(() {
+                    _updateValueFromLocalPosition(details.localPosition.dy, sliderHeight);
+                  });
+                },
+                onVerticalDragStart: (details) {
+                  setState(() {
+                    _isDragging = true;
+                  });
+                },
+                onVerticalDragUpdate: (details) {
+                  setState(() {
+                    _updateValueFromLocalPosition(details.localPosition.dy, sliderHeight);
+                  });
+                },
+                onVerticalDragEnd: (details) {
+                  setState(() {
+                    _isDragging = false;
+                  });
+                },
+                child: CustomPaint(
+                  painter: _VerticalSliderPainter(
+                    value: _currentValue,
+                    min: _min,
+                    max: _max,
+                    vibrateValue: widget.item.control.vibrateValue,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ],
-    );
+          ],
+        );
   }
 
   void _updateValueFromLocalPosition(double dy, double height) {
@@ -133,11 +139,15 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
 
     final vibrateVal = widget.item.control.vibrateValue;
     if (vibrateVal != null) {
-      final range = _max - _min;
-      final threshold = range > 0 ? range * 0.025 : 1.0;
-      final isNear = (newValue - vibrateVal).abs() <= threshold;
-      if (isNear && !_hasVibratedAtPoint) {
-        HapticFeedback.mediumImpact();
+      final prevDiff = _currentValue - vibrateVal;
+      final newDiff = newValue - vibrateVal;
+
+      final crossed = (prevDiff < 0 && newDiff >= 0) || (prevDiff > 0 && newDiff <= 0);
+      final isNear = newDiff.abs() <= ((_max - _min) * 0.03);
+
+      if ((crossed || isNear) && !_hasVibratedAtPoint) {
+        debugPrint('Haptic Vibrate triggered at newValue: $newValue (vibrateVal: $vibrateVal)');
+        ModernSliderHelper.triggerHaptic();
         _hasVibratedAtPoint = true;
       } else if (!isNear && _hasVibratedAtPoint) {
         _hasVibratedAtPoint = false;
@@ -174,42 +184,51 @@ class _VerticalSliderPainter extends CustomPainter {
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 
-    // Faint ticks - nearly invisible
-    final faintTickPaint = Paint()
-      ..color = const Color.fromARGB(20, 255, 255, 255)
-      ..strokeWidth = 1;
-
     final trackX = size.width / 2;
-    canvas.drawLine(Offset(trackX, 0), Offset(trackX, size.height), trackPaint);
+
+    // 1. Draw faint ticks across (behind red line so red line covers middle)
+    final faintTickPaint = Paint()
+      ..color = const Color.fromARGB(70, 255, 255, 255)
+      ..strokeWidth = 0.5;
 
     int numTicks = 11;
     for (int i = 0; i < numTicks; i++) {
       double tickY = size.height * (i / (numTicks - 1));
-      canvas.drawLine(Offset(trackX - 4, tickY), Offset(trackX + 4, tickY), faintTickPaint);
+      canvas.drawLine(Offset(trackX - 10, tickY), Offset(trackX + 10, tickY), faintTickPaint);
     }
 
-    // Draw vibrateValue tick longer and clearer
-    if (vibrateValue != null && max > min) {
-      final vibratePercent = ((vibrateValue! - min) / (max - min)).clamp(0.0, 1.0);
-      final vibrateY = size.height * (1.0 - vibratePercent);
+    // 2. Draw base track line (grey)
+    canvas.drawLine(Offset(trackX, 0), Offset(trackX, size.height), trackPaint);
 
-      final vibrateTickPaint = Paint()
-        ..color = Colors.white
-        ..strokeWidth = 2.5;
-
-      canvas.drawLine(Offset(trackX - 12, vibrateY), Offset(trackX + 12, vibrateY), vibrateTickPaint);
-    }
-
+    // Calculate positions
     double percent = 0.0;
     if (max > min) {
       percent = (value - min) / (max - min);
     }
     percent = percent.clamp(0.0, 1.0);
     double thumbY = size.height * (1.0 - percent);
-    double centerY = size.height / 2;
 
-    canvas.drawLine(Offset(trackX, centerY), Offset(trackX, thumbY), activeTrackPaint);
+    double startY;
+    if (vibrateValue != null && max > min) {
+      double vibPercent = ((vibrateValue! - min) / (max - min)).clamp(0.0, 1.0);
+      startY = size.height * (1.0 - vibPercent);
+    } else {
+      startY = size.height / 2;
+    }
 
+    // 3. Draw active track line (red) from vibrateY baseline to thumbY
+    canvas.drawLine(Offset(trackX, startY), Offset(trackX, thumbY), activeTrackPaint);
+
+    // 4. Draw vibrateValue tick (solid white horizontal line) at baseline
+    if (vibrateValue != null && max > min) {
+      final vibrateTickPaint = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 1.5;
+
+      canvas.drawLine(Offset(trackX - 14, startY), Offset(trackX + 14, startY), vibrateTickPaint);
+    }
+
+    // 5. Draw thumb circle (white)
     final thumbPaint = Paint()..color = Colors.white;
     canvas.drawCircle(Offset(trackX, thumbY), 10, thumbPaint);
   }

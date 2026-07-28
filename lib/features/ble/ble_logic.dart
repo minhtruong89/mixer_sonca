@@ -710,7 +710,7 @@ class BleViewModel extends ChangeNotifier {
   void init() {
     // Listen for incoming protocol frames
     _protocolHandler.incomingFrames.listen((frame) {
-      debugPrint('Protocol: Received frame - ${frame.header}');
+      //debugPrint('init Protocol: Received frame - ${frame.header}');
       // Handle incoming frames (ACK, responses, etc.)
       _handleProtocolFrame(frame);
     });
@@ -1418,8 +1418,8 @@ class BleViewModel extends ChangeNotifier {
       // Listen for incoming data and pass to protocol handler
       notifiableChar.lastValueStream.listen((value) {
         if (value.isEmpty) return; // Skip initial empty value
-        debugPrint('Protocol: Received ${value.length} bytes from BLE');
-        debugPrint('Protocol: Raw data = ${value.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
+        //debugPrint('Protocol: Received ${value.length} bytes from BLE');
+        //debugPrint('Protocol: Raw data = ${value.map((b) => '0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}').join(' ')}');
         
         // Pass to protocol handler for decoding
         _protocolHandler.handleIncomingFrame(value);

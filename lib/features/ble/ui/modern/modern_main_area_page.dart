@@ -8,7 +8,6 @@ import 'package:mixer_sonca/features/ble/ui/modern/widgets/modern_horizontal_sli
 import 'package:mixer_sonca/injection.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 import 'package:mixer_sonca/features/ble/protocol/dynamic_command_builder.dart';
-import 'package:mixer_sonca/features/ble/protocol/protocol_types.dart';
 import 'package:mixer_sonca/features/ble/protocol/protocol_constants.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/protocol_definition.dart';
 import 'package:mixer_sonca/features/ble/ui/modern/modern_settings_screen.dart';
@@ -184,20 +183,26 @@ class _ModernMainAreaPageState extends State<ModernMainAreaPage> {
             // Sliders area
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Column(
                   children: [
                     // Vertical Sliders
                     if (verticalSliders.isNotEmpty)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: verticalSliders.map((e) {
-                          return ModernVerticalSlider(
-                            item: e.value,
-                            label: e.key,
-                          );
-                        }).toList(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: verticalSliders.map((e) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: ModernVerticalSlider(
+                                item: e.value,
+                                label: e.key,
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     
                     const SizedBox(height: 48),
@@ -212,7 +217,7 @@ class _ModernMainAreaPageState extends State<ModernMainAreaPage> {
                             label: e.key,
                           ),
                         );
-                      }).toList(),
+                      }),
                   ],
                 ),
               ),

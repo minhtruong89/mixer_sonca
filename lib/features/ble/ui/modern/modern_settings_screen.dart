@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:mixer_sonca/features/ble/ui/theme_view_model.dart';
-import 'package:mixer_sonca/core/services/theme_service.dart';
 import 'package:mixer_sonca/features/ble/ui/modern/app_settings_screen.dart';
 
 class ModernSettingsScreen extends StatelessWidget {
