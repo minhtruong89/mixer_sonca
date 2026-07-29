@@ -12,6 +12,7 @@ class ModernScanPage extends StatefulWidget {
 
 class _ModernScanPageState extends State<ModernScanPage> {
   BleDevice? _focusedDevice;
+  static const bool flagDebugDetailsScan = false;
 
   @override
   void initState() {
@@ -22,6 +23,17 @@ class _ModernScanPageState extends State<ModernScanPage> {
     });
   }
 
+  String _formatManufacturerData(Map<int, List<int>> mData) {
+    if (mData.isEmpty) return "None";
+    final buffer = StringBuffer();
+    mData.forEach((key, bytes) {
+      final hexKey = "0x${key.toRadixString(16).padLeft(4, '0').toUpperCase()}";
+      final hexBytes = bytes.map((b) => "0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}").join(" ");
+      buffer.write("$hexKey: [$hexBytes] ");
+    });
+    return buffer.toString().trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<BleViewModel>();
@@ -30,22 +42,42 @@ class _ModernScanPageState extends State<ModernScanPage> {
     return SafeArea(
       child: Stack(
         children: [
-          // Top Right Action Icon
+          // Top Bar Actions (Refresh button & Settings)
           Positioned(
             top: 8,
+            left: 8,
             right: 8,
-            child: IconButton(
-              icon: const Icon(Icons.more_horiz, color: Colors.white, size: 28),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const ModernSettingsScreen(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ),
-                );
-              },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: viewModel.isScanning
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.refresh, color: Colors.white, size: 26),
+                  onPressed: viewModel.isScanning
+                      ? null
+                      : () {
+                          viewModel.scanDevices();
+                        },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.more_horiz, color: Colors.white, size: 28),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) => const ModernSettingsScreen(),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           
@@ -89,7 +121,7 @@ class _ModernScanPageState extends State<ModernScanPage> {
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                         itemCount: devices.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
+                        separatorBuilder: (context, index) => const SizedBox(height: 20),
                         itemBuilder: (context, index) {
                           final device = devices[index];
                           final isSelected = _focusedDevice?.id == device.id;
@@ -107,99 +139,132 @@ class _ModernScanPageState extends State<ModernScanPage> {
                             idSuffix = idSuffix.substring(idSuffix.length - 4);
                           }
 
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _focusedDevice = device;
-                              });
-                            },
-                            child: Container(
-                              height: 80,
-                              decoration: ShapeDecoration(
-                                color: Colors.grey[900], // Dark grey background
-                                shape: BeveledRectangleBorder(
-                                  side: BorderSide(color: Colors.grey[800]!, width: 1),
-                                  borderRadius: const BorderRadius.only(
-                                    topRight: Radius.circular(16),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _focusedDevice = device;
+                                  });
+                                },
+                                child: Container(
+                                  height: 80,
+                                  decoration: ShapeDecoration(
+                                    color: Colors.grey[900], // Dark grey background
+                                    shape: BeveledRectangleBorder(
+                                      side: BorderSide(color: Colors.grey[800]!, width: 1),
+                                      borderRadius: const BorderRadius.only(
+                                        topRight: Radius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Icon side
+                                      Container(
+                                        width: 60,
+                                        alignment: Alignment.center,
+                                        child: Icon(
+                                          Icons.speaker,
+                                          color: isSelected ? Colors.white : Colors.white54,
+                                          size: 32,
+                                        ),
+                                      ),
+                                      // Divider
+                                      Container(
+                                        width: 1,
+                                        height: double.infinity,
+                                        color: Colors.grey[800],
+                                      ),
+                                      const SizedBox(width: 16),
+                                      
+                                      // Name and underline
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              device.soncaName,
+                                              style: TextStyle(
+                                                color: isSelected ? Colors.white : Colors.white70,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            if (isSelected)
+                                              Container(
+                                                margin: const EdgeInsets.only(top: 4),
+                                                height: 2,
+                                                width: 40,
+                                                color: Colors.red,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      // ID suffix and model
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 16.0),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              idSuffix,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              device.soncaName, // Model is usually the name
+                                              style: const TextStyle(
+                                                color: Colors.white54,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              child: Row(
-                                children: [
-                                  // Icon side
-                                  Container(
-                                    width: 60,
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      Icons.speaker,
-                                      color: isSelected ? Colors.white : Colors.white54,
-                                      size: 32,
+                              
+                              // Debug Details Box
+                              if (flagDebugDetailsScan)
+                                Container(
+                                margin: const EdgeInsets.only(top: 4.0),
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[950],
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.grey[850]!, width: 1),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "DEBUG DETAILS:",
+                                      style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
                                     ),
-                                  ),
-                                  // Divider
-                                  Container(
-                                    width: 1,
-                                    height: double.infinity,
-                                    color: Colors.grey[800],
-                                  ),
-                                  const SizedBox(width: 16),
-                                  
-                                  // Name and underline
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          device.soncaName,
-                                          style: TextStyle(
-                                            color: isSelected ? Colors.white : Colors.white70,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        if (isSelected)
-                                          Container(
-                                            margin: const EdgeInsets.only(top: 4),
-                                            height: 2,
-                                            width: 40,
-                                            color: Colors.red,
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  
-                                  // ID suffix and model
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 16.0),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          idSuffix,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          device.soncaName, // Model is usually the name
-                                          style: const TextStyle(
-                                            color: Colors.white54,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 4),
+                                    Text("• ID / MAC: ${device.id}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                    Text("• Adv Name: ${device.name.isNotEmpty ? device.name : 'N/A'}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                    Text("• Sonca Model: ${device.soncaName}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                    Text("• RSSI: ${device.rssi} dBm | TxPower: ${device.txPower} | Connectable: ${device.isConnectable}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                    Text("• Service UUIDs: ${device.serviceUuids.isNotEmpty ? device.serviceUuids.join(', ') : 'None'}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                    Text("• Mfgr Data: ${_formatManufacturerData(device.manufacturerData)}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                           );
                         },
                       ),

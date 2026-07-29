@@ -165,7 +165,7 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
       final isNear = newDiff.abs() <= ((_max - _min) * 0.03);
 
       if ((crossed || isNear) && !_hasVibratedAtPoint) {
-        debugPrint('Haptic Vibrate triggered at newValue: $newValue (vibrateVal: $vibrateVal)');
+        //debugPrint('Haptic Vibrate triggered at newValue: $newValue (vibrateVal: $vibrateVal)');
         ModernSliderHelper.triggerHaptic();
         _hasVibratedAtPoint = true;
       } else if (!isNear && _hasVibratedAtPoint) {
