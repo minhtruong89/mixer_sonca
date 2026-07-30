@@ -29,6 +29,7 @@ class BleAdvIdentity extends Equatable {
   final String uiVersion;
   final String fwVersion;
   final int buildAt;
+  final int audioEffectCreatedAt;
   final int reserve;
 
   const BleAdvIdentity({
@@ -38,6 +39,7 @@ class BleAdvIdentity extends Equatable {
     required this.uiVersion,
     required this.fwVersion,
     required this.buildAt,
+    required this.audioEffectCreatedAt,
     required this.reserve,
   });
 
@@ -49,6 +51,7 @@ class BleAdvIdentity extends Equatable {
       final bytes = entry.value;
       if (bytes.length >= 20) {
         int readUint32(int offset) {
+          if (offset + 4 > bytes.length) return 0;
           return (bytes[offset] & 0xFF) |
                  ((bytes[offset + 1] & 0xFF) << 8) |
                  ((bytes[offset + 2] & 0xFF) << 16) |
@@ -56,6 +59,7 @@ class BleAdvIdentity extends Equatable {
         }
 
         String formatVersion(int offset) {
+          if (offset + 4 > bytes.length) return "0.0.0";
           final b0 = bytes[offset];
           final b1 = bytes[offset + 1];
           final b2 = bytes[offset + 2];
@@ -75,7 +79,8 @@ class BleAdvIdentity extends Equatable {
         final uiVersion = formatVersion(4);
         final fwVersion = formatVersion(8);
         final buildAt = readUint32(12);
-        final reserve = readUint32(16);
+        final audioEffectCreatedAt = readUint32(16);
+        final reserve = readUint32(20);
 
         return BleAdvIdentity(
           companyId: companyId,
@@ -84,6 +89,7 @@ class BleAdvIdentity extends Equatable {
           uiVersion: uiVersion,
           fwVersion: fwVersion,
           buildAt: buildAt,
+          audioEffectCreatedAt: audioEffectCreatedAt,
           reserve: reserve,
         );
       }
@@ -91,18 +97,29 @@ class BleAdvIdentity extends Equatable {
     return null;
   }
 
-  String get buildAtFormatted {
-    if (buildAt == 0) return "N/A";
+  String _formatLocalTimestamp(int timestamp) {
+    if (timestamp == 0) return "N/A";
     try {
-      final dt = DateTime.fromMillisecondsSinceEpoch(buildAt * 1000, isUtc: true);
-      return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')} UTC";
+      final dt = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: false).toLocal();
+      final offset = dt.timeZoneOffset;
+      final offsetSign = offset.isNegative ? "-" : "+";
+      final offsetHours = offset.inHours.abs().toString().padLeft(2, '0');
+      final offsetMinutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+      final tzStr = "UTC$offsetSign$offsetHours:$offsetMinutes";
+
+      return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} "
+             "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')} $tzStr";
     } catch (_) {
-      return "$buildAt";
+      return "$timestamp";
     }
   }
 
+  String get buildAtFormatted => _formatLocalTimestamp(buildAt);
+
+  String get audioEffectCreatedAtFormatted => _formatLocalTimestamp(audioEffectCreatedAt);
+
   @override
-  List<Object?> get props => [companyId, productionModel, productionName, uiVersion, fwVersion, buildAt, reserve];
+  List<Object?> get props => [companyId, productionModel, productionName, uiVersion, fwVersion, buildAt, audioEffectCreatedAt, reserve];
 }
 
 class BleDevice extends Equatable {
@@ -183,9 +200,9 @@ class BleRepositoryImpl implements BleRepository {
               if (!_loggedScanKeys.contains(scanKey)) {
                 _loggedScanKeys.add(scanKey);
                 debugPrint('BLE Scan Result -> Device: ${r.device.remoteId.str} | Name: "$soncaName" | ManufacturerData: {${mDataHex.isEmpty ? "None" : mDataHex}}');
-                /*if (identity != null) {
-                  debugPrint('BLE Identity Info -> CompanyID: ${identity.companyId} | ProductionModel: ${identity.productionModel} (Name: ${identity.productionName ?? 'N/A'}) | UI Version: ${identity.uiVersion} | FW Version: ${identity.fwVersion} | BuildAt: ${identity.buildAt} (${identity.buildAtFormatted})');
-                }*/
+                if (identity != null) {
+                  debugPrint('BLE Identity Info -> CompanyID: ${identity.companyId} | ProductionModel: ${identity.productionModel} (Name: ${identity.productionName ?? 'N/A'}) | UI Version: ${identity.uiVersion} | FW Version: ${identity.fwVersion} | BuildAt: ${identity.buildAt} (${identity.buildAtFormatted}) | AudioEffectCreatedAt: ${identity.audioEffectCreatedAt} (${identity.audioEffectCreatedAtFormatted})');
+                }
               }
 
               return BleDevice(

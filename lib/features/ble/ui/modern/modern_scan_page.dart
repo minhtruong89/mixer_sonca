@@ -274,6 +274,7 @@ class _ModernScanPageState extends State<ModernScanPage> {
                                         Text("• UI Version: ${device.identity!.uiVersion}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
                                         Text("• FW Version: ${device.identity!.fwVersion}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
                                         Text("• Build At: ${device.identity!.buildAtFormatted} (${device.identity!.buildAt})", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Audio Effect Created At: ${device.identity!.audioEffectCreatedAtFormatted} (${device.identity!.audioEffectCreatedAt})", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
                                       ],
                                     ],
                                   ),
