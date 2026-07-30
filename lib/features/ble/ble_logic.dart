@@ -183,9 +183,9 @@ class BleRepositoryImpl implements BleRepository {
               if (!_loggedScanKeys.contains(scanKey)) {
                 _loggedScanKeys.add(scanKey);
                 debugPrint('BLE Scan Result -> Device: ${r.device.remoteId.str} | Name: "$soncaName" | ManufacturerData: {${mDataHex.isEmpty ? "None" : mDataHex}}');
-                if (identity != null) {
+                /*if (identity != null) {
                   debugPrint('BLE Identity Info -> CompanyID: ${identity.companyId} | ProductionModel: ${identity.productionModel} (Name: ${identity.productionName ?? 'N/A'}) | UI Version: ${identity.uiVersion} | FW Version: ${identity.fwVersion} | BuildAt: ${identity.buildAt} (${identity.buildAtFormatted})');
-                }
+                }*/
               }
 
               return BleDevice(

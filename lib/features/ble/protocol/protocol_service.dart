@@ -40,6 +40,7 @@ class ProtocolService {
         _isLoaded = true;
 
         debugPrint('Protocol: Successfully loaded protocol definition');
+        _logModelEnum();
         debugPrint('Protocol: ${_definition!.categories.length} categories loaded');
         
         // Log categories
@@ -60,10 +61,19 @@ class ProtocolService {
         _definition = ProtocolDefinition.fromJson(jsonData);
         _isLoaded = true;
         debugPrint('Protocol: Successfully loaded protocol definition from local asset');
+        _logModelEnum();
       } catch (assetError) {
         debugPrint('Protocol: Error loading from local asset: $assetError');
         rethrow;
       }
+    }
+  }
+
+  void _logModelEnum() {
+    if (_definition == null) return;
+    debugPrint('Protocol: ModelEnum (${_definition!.modelEnum.length} items):');
+    for (final item in _definition!.modelEnum) {
+      debugPrint('  [modelEnum] idx: "${item.idx}" -> nameDisplay: "${item.nameDisplay}"');
     }
   }
 
