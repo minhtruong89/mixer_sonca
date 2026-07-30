@@ -1,10 +1,29 @@
 /// Protocol definition models for dynamic protocol loading
 library;
 
+/// Model Enum Item definition from protocol JSON
+class ModelEnumItem {
+  final String idx;
+  final String nameDisplay;
+
+  const ModelEnumItem({
+    required this.idx,
+    required this.nameDisplay,
+  });
+
+  factory ModelEnumItem.fromJson(Map<String, dynamic> json) {
+    return ModelEnumItem(
+      idx: json['idx']?.toString() ?? '',
+      nameDisplay: json['nameDisplay']?.toString() ?? '',
+    );
+  }
+}
+
 /// Root protocol definition
 class ProtocolDefinition {
   final String protocol;
   final FramingDefinition framing;
+  final List<ModelEnumItem> modelEnum;
   final Map<String, EqFilterType> eqFilterTypes;
   final Map<String, CategoryDefinition> categories;
   final ProtocolLimits limits;
@@ -12,12 +31,21 @@ class ProtocolDefinition {
   const ProtocolDefinition({
     required this.protocol,
     required this.framing,
+    required this.modelEnum,
     required this.eqFilterTypes,
     required this.categories,
     required this.limits,
   });
 
   factory ProtocolDefinition.fromJson(Map<String, dynamic> json) {
+    // Parse modelEnum
+    final modelEnumList = <ModelEnumItem>[];
+    if (json['modelEnum'] != null) {
+      for (final item in json['modelEnum']) {
+        modelEnumList.add(ModelEnumItem.fromJson(item));
+      }
+    }
+
     // Parse EQ filter types
     final eqFilterTypesMap = <String, EqFilterType>{};
     if (json['eqFilterTypes'] != null && json['eqFilterTypes']['values'] != null) {
@@ -38,6 +66,7 @@ class ProtocolDefinition {
     return ProtocolDefinition(
       protocol: json['protocol'] ?? '',
       framing: FramingDefinition.fromJson(json['framing'] ?? {}),
+      modelEnum: modelEnumList,
       eqFilterTypes: eqFilterTypesMap,
       categories: categoriesMap,
       limits: ProtocolLimits.fromJson(json['limits'] ?? {}),

@@ -176,4 +176,16 @@ class ProtocolService {
     
     return null;
   }
+
+  /// Get Production Name from modelEnum by productionModel index (e.g. 1234 -> "X500")
+  String? getProductionName(int? productionModel) {
+    if (productionModel == null || _definition == null) return null;
+    final modelStr = productionModel.toString();
+    for (final item in _definition!.modelEnum) {
+      if (item.idx == modelStr) {
+        return item.nameDisplay;
+      }
+    }
+    return null;
+  }
 }

@@ -126,18 +126,18 @@ class _ModernScanPageState extends State<ModernScanPage> {
                           final device = devices[index];
                           final isSelected = _focusedDevice?.id == device.id;
                           
-                          // Extract last 4 chars of ID for the suffix
+                          // Extract last 4 clean hex chars of MAC address for the suffix (e.g. F3D6)
+                          String cleanedId = device.id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
                           String idSuffix = "";
-                          if (device.id.length >= 4) {
-                            idSuffix = device.id.substring(device.id.length - 4).toUpperCase();
+                          if (cleanedId.length >= 4) {
+                            idSuffix = cleanedId.substring(cleanedId.length - 4).toUpperCase();
                           } else {
-                            idSuffix = device.id.toUpperCase();
+                            idSuffix = cleanedId.toUpperCase();
                           }
-                          // Remove colons if any
-                          idSuffix = idSuffix.replaceAll(':', '');
-                          if (idSuffix.length > 4) {
-                            idSuffix = idSuffix.substring(idSuffix.length - 4);
-                          }
+
+                          final modelDisplayName = device.identity?.productionName?.isNotEmpty == true
+                              ? device.identity!.productionName!
+                              : device.soncaName;
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,7 +145,11 @@ class _ModernScanPageState extends State<ModernScanPage> {
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    _focusedDevice = device;
+                                    if (_focusedDevice?.id == device.id) {
+                                      _focusedDevice = null;
+                                    } else {
+                                      _focusedDevice = device;
+                                    }
                                   });
                                 },
                                 child: Container(
@@ -206,7 +210,7 @@ class _ModernScanPageState extends State<ModernScanPage> {
                                         ),
                                       ),
                                       
-                                      // ID suffix and model
+                                      // ID suffix and Production Name
                                       Padding(
                                         padding: const EdgeInsets.only(right: 16.0),
                                         child: Column(
@@ -223,7 +227,7 @@ class _ModernScanPageState extends State<ModernScanPage> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              device.soncaName, // Model is usually the name
+                                              modelDisplayName,
                                               style: const TextStyle(
                                                 color: Colors.white54,
                                                 fontSize: 12,
@@ -237,33 +241,43 @@ class _ModernScanPageState extends State<ModernScanPage> {
                                 ),
                               ),
                               
-                              // Debug Details Box
-                              if (flagDebugDetailsScan)
+                              // Details Box (displayed when device is selected / focused)
+                              if (isSelected)
                                 Container(
-                                margin: const EdgeInsets.only(top: 4.0),
-                                padding: const EdgeInsets.all(10.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[950],
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.grey[850]!, width: 1),
+                                  margin: const EdgeInsets.only(top: 4.0),
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[950],
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.grey[850]!, width: 1),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "DETAILS:",
+                                        style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      if(flagDebugDetailsScan)...[
+                                        Text("• ID / MAC: ${device.id}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Adv Name: ${device.name.isNotEmpty ? device.name : 'N/A'}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Sonca Model: ${device.soncaName}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• RSSI: ${device.rssi} dBm | TxPower: ${device.txPower} | Connectable: ${device.isConnectable}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Service UUIDs: ${device.serviceUuids.isNotEmpty ? device.serviceUuids.join(', ') : 'None'}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Mfgr Data: ${_formatManufacturerData(device.manufacturerData)}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                                      ],
+                                      if (device.identity != null) ...[
+                                        Text("• Identity Company ID: ${device.identity!.companyId} (0x${device.identity!.companyId.toRadixString(16).toUpperCase()})", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Production Model: ${device.identity!.productionModel}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Production Name: ${device.identity!.productionName ?? 'N/A'}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• UI Version: ${device.identity!.uiVersion}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• FW Version: ${device.identity!.fwVersion}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        Text("• Build At: ${device.identity!.buildAtFormatted} (${device.identity!.buildAt})", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "DEBUG DETAILS:",
-                                      style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text("• ID / MAC: ${device.id}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
-                                    Text("• Adv Name: ${device.name.isNotEmpty ? device.name : 'N/A'}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
-                                    Text("• Sonca Model: ${device.soncaName}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
-                                    Text("• RSSI: ${device.rssi} dBm | TxPower: ${device.txPower} | Connectable: ${device.isConnectable}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
-                                    Text("• Service UUIDs: ${device.serviceUuids.isNotEmpty ? device.serviceUuids.join(', ') : 'None'}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
-                                    Text("• Mfgr Data: ${_formatManufacturerData(device.manufacturerData)}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
-                                  ],
-                                ),
-                              ),
                             ],
                           );
                         },

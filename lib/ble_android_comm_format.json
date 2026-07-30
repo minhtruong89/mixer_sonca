@@ -1,4 +1,9 @@
 {
+	"modelEnum": [
+        { "idx": "1234", "nameDisplay": "X500" },
+        { "idx": "1", "nameDisplay": "MISAM" }
+      ],
+	
   "protocol": "ble_android_comm",
   "name": "BLE Android Communication Application Protocol",
   "schemaVersion": 1,

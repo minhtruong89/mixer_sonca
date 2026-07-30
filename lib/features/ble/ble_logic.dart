@@ -22,6 +22,89 @@ import 'protocol/models/protocol_definition.dart';
 import 'package:mixer_sonca/core/services/mixer_service.dart';
 
 // --- Model ---
+class BleAdvIdentity extends Equatable {
+  final int companyId;
+  final int productionModel;
+  final String? productionName;
+  final String uiVersion;
+  final String fwVersion;
+  final int buildAt;
+  final int reserve;
+
+  const BleAdvIdentity({
+    required this.companyId,
+    required this.productionModel,
+    this.productionName,
+    required this.uiVersion,
+    required this.fwVersion,
+    required this.buildAt,
+    required this.reserve,
+  });
+
+  static BleAdvIdentity? parse(Map<int, List<int>> manufacturerData, {ProtocolService? protocolService}) {
+    if (manufacturerData.isEmpty) return null;
+
+    for (final entry in manufacturerData.entries) {
+      final companyId = entry.key;
+      final bytes = entry.value;
+      if (bytes.length >= 20) {
+        int readUint32(int offset) {
+          return (bytes[offset] & 0xFF) |
+                 ((bytes[offset + 1] & 0xFF) << 8) |
+                 ((bytes[offset + 2] & 0xFF) << 16) |
+                 ((bytes[offset + 3] & 0xFF) << 24);
+        }
+
+        String formatVersion(int offset) {
+          final b0 = bytes[offset];
+          final b1 = bytes[offset + 1];
+          final b2 = bytes[offset + 2];
+          final b3 = bytes[offset + 3];
+          if (b3 == 0) {
+            return "$b2.$b1.$b0";
+          }
+          return "$b3.$b2.$b1.$b0";
+        }
+
+        final rawModel = readUint32(0);
+        final modelHexStr = rawModel.toRadixString(16).toUpperCase();
+        final productionModel = int.tryParse(modelHexStr) ?? rawModel;
+
+        final productionName = protocolService?.getProductionName(productionModel);
+
+        final uiVersion = formatVersion(4);
+        final fwVersion = formatVersion(8);
+        final buildAt = readUint32(12);
+        final reserve = readUint32(16);
+
+        return BleAdvIdentity(
+          companyId: companyId,
+          productionModel: productionModel,
+          productionName: productionName,
+          uiVersion: uiVersion,
+          fwVersion: fwVersion,
+          buildAt: buildAt,
+          reserve: reserve,
+        );
+      }
+    }
+    return null;
+  }
+
+  String get buildAtFormatted {
+    if (buildAt == 0) return "N/A";
+    try {
+      final dt = DateTime.fromMillisecondsSinceEpoch(buildAt * 1000, isUtc: true);
+      return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')} UTC";
+    } catch (_) {
+      return "$buildAt";
+    }
+  }
+
+  @override
+  List<Object?> get props => [companyId, productionModel, productionName, uiVersion, fwVersion, buildAt, reserve];
+}
+
 class BleDevice extends Equatable {
   final String id;
   final String name;
@@ -31,6 +114,7 @@ class BleDevice extends Equatable {
   final List<String> serviceUuids;
   final bool isConnectable;
   final int txPower;
+  final BleAdvIdentity? identity;
 
   const BleDevice({
     required this.id,
@@ -41,14 +125,15 @@ class BleDevice extends Equatable {
     required this.serviceUuids,
     required this.isConnectable,
     required this.txPower,
+    this.identity,
   });
 
   @override
-  List<Object?> get props => [id, name, soncaName, rssi, manufacturerData, serviceUuids, isConnectable, txPower];
+  List<Object?> get props => [id, name, soncaName, rssi, manufacturerData, serviceUuids, isConnectable, txPower, identity];
 }
 
 
-const String SONCA_SERVICE = "5343";
+const String SONCA_SERVICE = "4353";
 
 // --- Repository ---
 abstract class BleRepository {
@@ -66,7 +151,7 @@ abstract class BleRepository {
 class BleRepositoryImpl implements BleRepository {
   BleRepositoryImpl();
 
-
+  final Set<String> _loggedScanKeys = {};
 
   @override
   Stream<List<BleDevice>> get scanResults => FlutterBluePlus.scanResults.map(
@@ -78,6 +163,31 @@ class BleRepositoryImpl implements BleRepository {
                   ? r.advertisementData.localName 
                   : (r.device.platformName.isNotEmpty ? r.device.platformName : "N/A");
               
+              final mData = r.advertisementData.manufacturerData;
+              final mDataHex = mData.entries.map((e) {
+                final hexKey = "0x${e.key.toRadixString(16).padLeft(4, '0').toUpperCase()}";
+                final hexBytes = e.value.map((b) => "0x${b.toRadixString(16).padLeft(2, '0').toUpperCase()}").join(" ");
+                return "$hexKey: [$hexBytes]";
+              }).join(", ");
+
+              ProtocolService? protocolService;
+              try {
+                if (getIt.isRegistered<ProtocolService>()) {
+                  protocolService = getIt<ProtocolService>();
+                }
+              } catch (_) {}
+
+              final identity = BleAdvIdentity.parse(mData, protocolService: protocolService);
+
+              final scanKey = "${r.device.remoteId.str}_$mDataHex";
+              if (!_loggedScanKeys.contains(scanKey)) {
+                _loggedScanKeys.add(scanKey);
+                debugPrint('BLE Scan Result -> Device: ${r.device.remoteId.str} | Name: "$soncaName" | ManufacturerData: {${mDataHex.isEmpty ? "None" : mDataHex}}');
+                if (identity != null) {
+                  debugPrint('BLE Identity Info -> CompanyID: ${identity.companyId} | ProductionModel: ${identity.productionModel} (Name: ${identity.productionName ?? 'N/A'}) | UI Version: ${identity.uiVersion} | FW Version: ${identity.fwVersion} | BuildAt: ${identity.buildAt} (${identity.buildAtFormatted})');
+                }
+              }
+
               return BleDevice(
                 id: r.device.remoteId.str,
                 name: r.device.platformName.isNotEmpty ? r.device.platformName : "N/A",
@@ -87,6 +197,7 @@ class BleRepositoryImpl implements BleRepository {
                 serviceUuids: r.advertisementData.serviceUuids.map((u) => u.toString()).toList(),
                 isConnectable: r.advertisementData.connectable,
                 txPower: r.advertisementData.txPowerLevel ?? 0,
+                identity: identity,
               );
             })
             .toList(),
@@ -115,6 +226,7 @@ class BleRepositoryImpl implements BleRepository {
 
   @override
   Future<void> startScan() async {
+    _loggedScanKeys.clear();
     // Stop any existing scan
     if (FlutterBluePlus.isScanningNow) {
       await FlutterBluePlus.stopScan();
