@@ -268,8 +268,10 @@ class _ModernScanPageState extends State<ModernScanPage> {
                                         Text("• Mfgr Data: ${_formatManufacturerData(device.manufacturerData)}", style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
                                       ],
                                       if (device.identity != null) ...[
-                                        Text("• Identity Company ID: ${device.identity!.companyId} (0x${device.identity!.companyId.toRadixString(16).toUpperCase()})", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
-                                        Text("• Production Model: ${device.identity!.productionModel}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        if(flagDebugDetailsScan)...[
+                                          Text("• Identity Company ID: ${device.identity!.companyId} (0x${device.identity!.companyId.toRadixString(16).toUpperCase()})", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                          Text("• Production Model: ${device.identity!.productionModel}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
+                                        ],
                                         Text("• Production Name: ${device.identity!.productionName ?? 'N/A'}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
                                         Text("• UI Version: ${device.identity!.uiVersion}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
                                         Text("• FW Version: ${device.identity!.fwVersion}", style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace')),
