@@ -1395,6 +1395,7 @@ class BleViewModel extends ChangeNotifier {
     final mixerService = getIt<MixerService>();
     final protocolService = getIt<ProtocolService>();
     final builder = getIt<DynamicCommandBuilder>();
+    final activeSchemaVersion = mixerService.getSchemaVersionForActiveModel();
     
     final section = mixerService.getItemsForSection(sectionName);
     if (section == null) return;
@@ -1405,20 +1406,28 @@ class BleViewModel extends ChangeNotifier {
     if (section.areaFormat == "EQ Area" && section.command != null) {
       final totalBands = section.totalEQBand ?? 10;
       final commandName = section.command!;
+
+      debugPrint('Protocol: Syncing parameters for command "$commandName"...');
       
       // Find command definition and category
       CommandDefinition? cmdDef;
       String categoryName = "";
-      for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
-        final d = cat.getCommandByName(commandName);
-        if (d != null) {
-          cmdDef = d;
-          categoryName = cat.name;
-          break;
+      if (protocolService.definition != null) {
+        for (var cat in protocolService.definition!.categories.values) {
+          final d = protocolService.getCommandByName(cat.name, commandName, schemaVersion: activeSchemaVersion);
+          if (d != null) {
+            cmdDef = d;
+            categoryName = cat.name;
+            break;
+          }
         }
       }
 
-      if (cmdDef != null && cmdDef.indexRule != null) {
+      if (cmdDef == null) {
+        debugPrint('Protocol Warning: Command "$commandName" NOT FOUND in protocol definition (schemaVersion: $activeSchemaVersion)!');
+      } else if (cmdDef.indexRule == null) {
+        debugPrint('Protocol Warning: Command "$commandName" found but HAS NO indexRule!');
+      } else {
         debugPrint('Protocol: EQ Area detected. Fetching $totalBands bands for $commandName (Batched)...');
         
         // Construct a single batched map for all parameters across all bands
@@ -1470,11 +1479,14 @@ class BleViewModel extends ChangeNotifier {
           // Find command definition to get the correct ID
           CommandDefinition? cmdDef;
           if (item.command.isNotEmpty) {
-            cmdDef = protocolService.getCommandByName(item.category, item.command);
+            cmdDef = protocolService.getCommandByName(item.category, item.command, schemaVersion: activeSchemaVersion);
           }
           cmdDef ??= protocolService.findCommand(item.category, paramName);
               
-          if (cmdDef == null) continue;
+          if (cmdDef == null) {
+            debugPrint('Protocol Warning: Could NOT find command definition for item "${item.label}" (${item.category}.${item.command} -> $paramName)!');
+            continue;
+          }
 
           // Organize by category and command ID
           batchedRequests[item.category] ??= {};

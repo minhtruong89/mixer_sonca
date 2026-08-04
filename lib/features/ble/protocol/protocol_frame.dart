@@ -132,7 +132,7 @@ class ProtocolFrame {
     // Step 4: Append CRC to the end of the frame
     // Final frame: [Header][Payload][CRC_LSB][CRC_MSB]
     final completeFrame = [...frameWithoutCrc, ...crcBytes];
-    debugPrint('Complete Frame: ${completeFrame.map((b) => '0x${b.toRadixString(16).toUpperCase().padLeft(2, '0')}').join(', ')}');
+    //debugPrint('Complete Frame: ${completeFrame.map((b) => '0x${b.toRadixString(16).toUpperCase().padLeft(2, '0')}').join(', ')}');
     return completeFrame;
   }
 

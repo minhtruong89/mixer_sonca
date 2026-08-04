@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mixer_sonca/injection.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
 
 class MixerService {
@@ -54,11 +56,39 @@ class MixerService {
     }
   }
 
+  static const String _lastModelIdxKey = 'last_connected_model_idx';
+
   String? _activeModelIdx;
   String? get activeModelIdx => _activeModelIdx;
 
+  void initLastModelIdx() {
+    try {
+      if (getIt.isRegistered<SharedPreferences>()) {
+        final prefs = getIt<SharedPreferences>();
+        _activeModelIdx = prefs.getString(_lastModelIdxKey);
+        if (_activeModelIdx != null && _activeModelIdx!.isNotEmpty) {
+          debugPrint('MixerService: Restored last connected model idx "$_activeModelIdx" from SharedPreferences');
+        }
+      }
+    } catch (e) {
+      debugPrint('MixerService: Error restoring last model idx: $e');
+    }
+  }
+
   void setActiveModelIdx(String? idx) {
     _activeModelIdx = idx;
+    try {
+      if (getIt.isRegistered<SharedPreferences>()) {
+        final prefs = getIt<SharedPreferences>();
+        if (idx != null && idx.isNotEmpty) {
+          prefs.setString(_lastModelIdxKey, idx);
+        } else {
+          prefs.remove(_lastModelIdxKey);
+        }
+      }
+    } catch (e) {
+      debugPrint('MixerService: Error saving last model idx: $e');
+    }
     debugPrint('MixerService: Active model idx set to "$idx" (schemaVersion: ${getSchemaVersionForActiveModel()})');
   }
 

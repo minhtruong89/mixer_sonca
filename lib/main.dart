@@ -41,8 +41,8 @@ void main() async {
 
   // Download display file on startup and mapping with protocol define
   MixerService.themeMode = savedMode == 'modern' ? AppThemeMode.modern.value : AppThemeMode.classic.value;
+  getIt<MixerService>().initLastModelIdx();
   await getIt<MixerService>().loadDisplayConfig();
 
-  
   runApp(const MyApp());
 }
