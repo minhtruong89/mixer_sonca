@@ -54,16 +54,59 @@ class MixerService {
     }
   }
 
-  /// Get items for a specific section (e.g., "Area 2")
-  DisplaySection? getItemsForSection(String sectionName) {
+  String? _activeModelIdx;
+  String? get activeModelIdx => _activeModelIdx;
+
+  void setActiveModelIdx(String? idx) {
+    _activeModelIdx = idx;
+    debugPrint('MixerService: Active model idx set to "$idx" (schemaVersion: ${getSchemaVersionForActiveModel()})');
+  }
+
+  /// Get the active schemaVersion based on connected model idx, or fallback to defaultDisplay schemaVersion (1)
+  int getSchemaVersionForActiveModel({String? modelIdx}) {
+    if (_displayConfig == null) return 1;
+
+    final targetIdx = modelIdx ?? _activeModelIdx;
+    if (targetIdx != null && targetIdx.isNotEmpty) {
+      final modelConfig = _displayConfig!.getModelDisplayByIdx(targetIdx);
+      if (modelConfig != null) {
+        return modelConfig.schemaVersion;
+      }
+    }
+
+    return _displayConfig!.defaultDisplay.schemaVersion;
+  }
+
+  /// Get items for a specific section (e.g., "Area 1", "Area 2") using active connected model if available
+  DisplaySection? getItemsForSection(String sectionName, {String? modelIdx}) {
     if (_displayConfig == null) return null;
+
+    final targetIdx = modelIdx ?? _activeModelIdx;
+    if (targetIdx != null && targetIdx.isNotEmpty) {
+      final modelConfig = _displayConfig!.getModelDisplayByIdx(targetIdx);
+      if (modelConfig != null && modelConfig.sections.containsKey(sectionName)) {
+        return modelConfig.sections[sectionName];
+      }
+    }
+
     return _displayConfig!.defaultDisplay.sections[sectionName];
   }
 
-  /// Get names of sections filtered by areaType
-  List<String> getSectionNamesByType(String type) {
+  /// Get names of sections filtered by areaType using active model if available
+  List<String> getSectionNamesByType(String type, {String? modelIdx}) {
     if (_displayConfig == null) return [];
-    return _displayConfig!.defaultDisplay.sections.entries
+    
+    final targetIdx = modelIdx ?? _activeModelIdx;
+    Map<String, DisplaySection> sections = _displayConfig!.defaultDisplay.sections;
+    
+    if (targetIdx != null && targetIdx.isNotEmpty) {
+      final modelConfig = _displayConfig!.getModelDisplayByIdx(targetIdx);
+      if (modelConfig != null && modelConfig.sections.isNotEmpty) {
+        sections = modelConfig.sections;
+      }
+    }
+
+    return sections.entries
         .where((e) => e.value.areaType == type)
         .map((e) => e.key)
         .toList();

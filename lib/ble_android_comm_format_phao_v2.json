@@ -1,0 +1,1181 @@
+{
+  "generated": [
+    "BUILD ARTIFACT -- do not edit by hand.",
+    "",
+    "tools/generate_sonca_param_tables.py fills the 'categories' block of this template",
+    "from sonca/param/sonca_param_fields.json and writes ble_android_comm_format.json.",
+    "Edit the model and regenerate; a hand edit is reverted on the next run and fails",
+    "the --check gate in the meantime.",
+    "",
+    "Everything above 'categories' lives in this template and is authored by hand."
+  ],
+  "protocol": "ble_android_comm",
+  "name": "BLE Android Communication Application Protocol",
+  "schemaVersion": 2,
+  "framing": {
+    "header": {
+      "magic": "0xAA",
+      "version": "0x01",
+      "type": {
+        "command": "0x01",
+        "data": "0x02"
+      },
+      "flags": {
+        "ackReq": "0x01",
+        "ackResp": "0x02",
+        "error": "0x04"
+      },
+      "length": "uint16_le",
+      "msgId": "uint8",
+      "seq": "uint8"
+    },
+    "crc16": {
+      "required": true,
+      "algorithm": "ISO-IEC-14443-3-A",
+      "coverage": "header+payload",
+      "order": "LSB_MSB"
+    },
+    "commandPayload": {
+      "fields": [
+        {
+          "name": "category",
+          "type": "uint8"
+        },
+        {
+          "name": "cmdId",
+          "type": "uint8"
+        },
+        {
+          "name": "op",
+          "type": "uint8",
+          "values": {
+            "GET": "0x00",
+            "SET": "0x01",
+            "EVENT": "0x02"
+          }
+        },
+        {
+          "name": "payloadLen",
+          "type": "uint8"
+        },
+        {
+          "name": "payload",
+          "type": "bytes"
+        }
+      ],
+      "indexValuePayload": {
+        "countType": "uint8",
+        "indexType": "uint8",
+        "valueType": "int16_le_or_uint16_le"
+      }
+    },
+    "dataPayload": {
+      "fields": [
+        {
+          "name": "totalLen",
+          "type": "uint16_le"
+        },
+        {
+          "name": "segmentCount",
+          "type": "uint8"
+        },
+        {
+          "name": "segmentIndex",
+          "type": "uint8"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        }
+      ]
+    }
+  },
+  "eqFilterTypes": {
+    "source": "middleware/audio/inc/eq.h",
+    "values": [
+      {
+        "name": "UNKNOWN",
+        "value": -1
+      },
+      {
+        "name": "FLAT",
+        "value": 0
+      },
+      {
+        "name": "LOW_SHELF",
+        "value": 1
+      },
+      {
+        "name": "PEAKING",
+        "value": 2
+      },
+      {
+        "name": "HIGH_SHELF",
+        "value": 3
+      },
+      {
+        "name": "LOW_PASS_LINKWITZ",
+        "value": 4
+      },
+      {
+        "name": "HIGH_PASS_LINKWITZ",
+        "value": 5
+      },
+      {
+        "name": "LOW_PASS_BUTTERWORTH",
+        "value": 6
+      },
+      {
+        "name": "HIGH_PASS_BUTTERWORTH",
+        "value": 7
+      },
+      {
+        "name": "LOW_PASS_BESSEL",
+        "value": 8
+      },
+      {
+        "name": "HIGH_PASS_BESSEL",
+        "value": 9
+      },
+      {
+        "name": "NOTCH",
+        "value": 10
+      }
+    ]
+  },
+  "limits": {
+    "maxPairCount": 50
+  },
+  "indexRuleSchema": {
+    "comment": [
+      "A command normally publishes every index under 'indices'. A command whose indices",
+      "are a repeating block -- a graphic EQ, ten identical bands of five parameters --",
+      "publishes 'indexRule' instead, which states the arithmetic once. The two forms are",
+      "equivalent: the generator expands its own rule and checks it against the",
+      "enumeration it replaced, so a rule can never describe fewer or different",
+      "parameters than the firmware holds.",
+      "",
+      "To address a parameter: indices below bandBaseIndex are listed verbatim in",
+      "bandBaseIndices. At bandBaseIndex and above, band and field are given by the two",
+      "formulas, the field name comes from fieldOrder, and its published attributes are",
+      "fieldTypes + fieldLimit + fieldMetadata, with anything in bandOverrides winning."
+    ],
+    "keys": {
+      "indexCount": "Total indices this command exposes, banded and unbanded together.",
+      "bandCount": "Number of repetitions of the block.",
+      "bandBaseIndex": "First index belonging to the repeating block.",
+      "indexRange": "Inclusive first-last index of the repeating block.",
+      "fieldsPerBand": "Indices consumed by one repetition.",
+      "band": "Expression giving the band number of an index, before bandNumberBase.",
+      "field": "Expression giving the position within fieldOrder.",
+      "bandNumberBase": "Number of the first band, for naming: 1 means bands are 1..bandCount.",
+      "nameTemplate": "How a parameter name is built from band number and field name.",
+      "bandBaseIndices": "Verbatim entries for the indices below bandBaseIndex.",
+      "fieldOrder": "Position within a band -> field name.",
+      "fieldTypes": "Field name -> wire type, identical across every band.",
+      "fieldLimit": "Field name -> {min,max} where the bound is the same in every band.",
+      "fieldMetadata": "Field name -> default/applied/readOnly/appFacing shared by every band.",
+      "bandOverrides": "Band number -> field name -> attributes that differ in that band. Absent when every band agrees. Expect it once a tuned EQ ships: per-band f0 and gain defaults differ by design."
+    }
+  },
+  "categories": {
+    "MIC": {
+      "id": "0x01",
+      "commands": {
+        "0x01": {
+          "name": "MIC_COMMON",
+          "indices": {
+            "0": {
+              "name": "mic_master_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "1": {
+              "name": "mic_master_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "2": {
+              "name": "mic_1_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 16,
+              "default": 12,
+              "applied": false
+            },
+            "3": {
+              "name": "mic_1_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            },
+            "4": {
+              "name": "mic_2_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 16,
+              "default": 12,
+              "applied": false
+            },
+            "5": {
+              "name": "mic_2_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            },
+            "6": {
+              "name": "mic_bass",
+              "type": "int16_le",
+              "min": -12,
+              "max": 12,
+              "default": 0,
+              "applied": true
+            },
+            "7": {
+              "name": "mic_middle",
+              "type": "int16_le",
+              "min": -12,
+              "max": 12,
+              "default": 0,
+              "applied": true
+            },
+            "8": {
+              "name": "mic_treb",
+              "type": "int16_le",
+              "min": -12,
+              "max": 12,
+              "default": 0,
+              "applied": true
+            },
+            "9": {
+              "name": "mic_effect_gain",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "10": {
+              "name": "mic_1_state",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            },
+            "11": {
+              "name": "mic_2_state",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            }
+          }
+        },
+        "0x02": {
+          "name": "MIC_GRAPH_EQ",
+          "indexRule": {
+            "indexCount": 52,
+            "bandCount": 10,
+            "bandBaseIndex": 2,
+            "indexRange": "2-51",
+            "fieldsPerBand": 5,
+            "band": "(index-2)/5",
+            "field": "(index-2)%5",
+            "bandNumberBase": 1,
+            "nameTemplate": "band{band}_{field}",
+            "bandBaseIndices": {
+              "0": {
+                "name": "pregain",
+                "type": "uint16_le",
+                "applied": false
+              },
+              "1": {
+                "name": "fixed_point_floating_point",
+                "type": "uint16_le",
+                "applied": false,
+                "readOnly": true
+              }
+            },
+            "fieldOrder": {
+              "0": "enable",
+              "1": "type",
+              "2": "f0",
+              "3": "q",
+              "4": "gain"
+            },
+            "fieldTypes": {
+              "enable": "uint16_le",
+              "type": "int16_le",
+              "f0": "uint16_le",
+              "q": "uint16_le",
+              "gain": "int16_le"
+            },
+            "fieldLimit": {
+              "enable": {
+                "min": 0,
+                "max": 1
+              },
+              "gain": {
+                "min": -1200,
+                "max": 1200
+              }
+            },
+            "fieldMetadata": {
+              "enable": {
+                "applied": false
+              },
+              "type": {
+                "applied": false
+              },
+              "f0": {
+                "applied": false
+              },
+              "q": {
+                "applied": false
+              },
+              "gain": {
+                "applied": false
+              }
+            }
+          }
+        },
+        "0x03": {
+          "name": "MIC_ECHO_EFFECT",
+          "indices": {
+            "0": {
+              "name": "cutoff_frequency",
+              "type": "uint16_le",
+              "default": 9000,
+              "applied": false
+            },
+            "1": {
+              "name": "attenuation",
+              "type": "int16_le",
+              "min": -100,
+              "max": -20,
+              "default": -45,
+              "applied": true
+            },
+            "2": {
+              "name": "delay",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 250,
+              "default": 200,
+              "applied": true
+            },
+            "3": {
+              "name": "max_delay",
+              "type": "uint16_le",
+              "default": 250,
+              "applied": false,
+              "readOnly": true,
+              "appFacing": false
+            },
+            "4": {
+              "name": "high_quality_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "applied": true
+            },
+            "5": {
+              "name": "dry",
+              "type": "int16_le",
+              "default": 50,
+              "applied": false
+            },
+            "6": {
+              "name": "wet",
+              "type": "int16_le",
+              "default": 80,
+              "applied": false
+            },
+            "7": {
+              "name": "echo_gain",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "8": {
+              "name": "echo_delay",
+              "type": "uint16_le",
+              "min": 150,
+              "max": 250,
+              "default": 200,
+              "applied": false
+            },
+            "9": {
+              "name": "echo_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "applied": true
+            }
+          }
+        },
+        "0x04": {
+          "name": "MIC_REVERB_EFFECT",
+          "indices": {
+            "0": {
+              "name": "high_cutoff_frequency",
+              "type": "uint16_le",
+              "default": 9000,
+              "applied": false
+            },
+            "1": {
+              "name": "modulation",
+              "type": "uint16_le",
+              "default": 1,
+              "applied": false
+            },
+            "2": {
+              "name": "predelay",
+              "type": "uint16_le",
+              "default": 1200,
+              "applied": false
+            },
+            "3": {
+              "name": "diffusion",
+              "type": "uint16_le",
+              "default": 80,
+              "applied": false
+            },
+            "4": {
+              "name": "decay",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 90,
+              "default": 65,
+              "applied": true
+            },
+            "5": {
+              "name": "damping",
+              "type": "uint16_le",
+              "default": 4000,
+              "applied": false
+            },
+            "6": {
+              "name": "wetdrymix",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 100,
+              "default": 65,
+              "applied": true
+            },
+            "7": {
+              "name": "max_predelay",
+              "type": "uint16_le",
+              "default": 1500,
+              "applied": false,
+              "readOnly": true,
+              "appFacing": false
+            },
+            "8": {
+              "name": "reverb_gain",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "9": {
+              "name": "reverb_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "applied": true
+            }
+          }
+        },
+        "0x05": {
+          "name": "MIC_FBC",
+          "indices": {
+            "0": {
+              "name": "fbc_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            }
+          }
+        }
+      }
+    },
+    "MUSIC": {
+      "id": "0x02",
+      "commands": {
+        "0x01": {
+          "name": "MUSIC_COMMON",
+          "indices": {
+            "0": {
+              "name": "music_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "1": {
+              "name": "music_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "2": {
+              "name": "music_bass",
+              "type": "int16_le",
+              "min": -12,
+              "max": 12,
+              "default": 0,
+              "applied": true
+            },
+            "3": {
+              "name": "music_middle",
+              "type": "int16_le",
+              "min": -12,
+              "max": 12,
+              "default": 0,
+              "applied": true
+            },
+            "4": {
+              "name": "music_treb",
+              "type": "int16_le",
+              "min": -12,
+              "max": 12,
+              "default": 0,
+              "applied": true
+            },
+            "5": {
+              "name": "music_boostbass_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "6": {
+              "name": "music_enhancer_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "7": {
+              "name": "music_surround_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "8": {
+              "name": "music_three_d_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "9": {
+              "name": "music_three_d_plus_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "10": {
+              "name": "music_widener_enable",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            }
+          }
+        },
+        "0x02": {
+          "name": "MUSIC_GRAPH_EQ",
+          "indexRule": {
+            "indexCount": 52,
+            "bandCount": 10,
+            "bandBaseIndex": 2,
+            "indexRange": "2-51",
+            "fieldsPerBand": 5,
+            "band": "(index-2)/5",
+            "field": "(index-2)%5",
+            "bandNumberBase": 1,
+            "nameTemplate": "band{band}_{field}",
+            "bandBaseIndices": {
+              "0": {
+                "name": "pregain",
+                "type": "uint16_le",
+                "applied": false
+              },
+              "1": {
+                "name": "fixed_point_floating_point",
+                "type": "uint16_le",
+                "applied": false,
+                "readOnly": true
+              }
+            },
+            "fieldOrder": {
+              "0": "enable",
+              "1": "type",
+              "2": "f0",
+              "3": "q",
+              "4": "gain"
+            },
+            "fieldTypes": {
+              "enable": "uint16_le",
+              "type": "int16_le",
+              "f0": "uint16_le",
+              "q": "uint16_le",
+              "gain": "int16_le"
+            },
+            "fieldLimit": {
+              "enable": {
+                "min": 0,
+                "max": 1
+              },
+              "gain": {
+                "min": -1200,
+                "max": 1200
+              }
+            },
+            "fieldMetadata": {
+              "enable": {
+                "applied": false
+              },
+              "type": {
+                "applied": false
+              },
+              "f0": {
+                "applied": false
+              },
+              "q": {
+                "applied": false
+              },
+              "gain": {
+                "applied": false
+              }
+            }
+          }
+        },
+        "0x03": {
+          "name": "MUSIC_BOOSTBASS_EFFECT",
+          "indices": {
+            "0": {
+              "name": "cutoff_frequency",
+              "type": "uint16_le",
+              "default": 75,
+              "applied": false
+            },
+            "1": {
+              "name": "intensity",
+              "type": "uint16_le",
+              "default": 10,
+              "applied": false
+            },
+            "2": {
+              "name": "enhanced",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "applied": true
+            }
+          }
+        },
+        "0x04": {
+          "name": "MUSIC_ENHANCER_EFFECT",
+          "indices": {
+            "0": {
+              "name": "cutoff_frequency",
+              "type": "uint16_le",
+              "default": 1000,
+              "applied": false
+            },
+            "1": {
+              "name": "dry",
+              "type": "int16_le",
+              "default": 100,
+              "applied": false
+            },
+            "2": {
+              "name": "wet",
+              "type": "int16_le",
+              "default": 100,
+              "applied": false
+            }
+          }
+        },
+        "0x05": {
+          "name": "MUSIC_SURROUND_EFFECT",
+          "indices": {}
+        },
+        "0x06": {
+          "name": "MUSIC_THREE_D_EFFECT",
+          "indices": {
+            "0": {
+              "name": "intensity",
+              "type": "uint16_le",
+              "default": 90,
+              "applied": false
+            }
+          }
+        },
+        "0x07": {
+          "name": "MUSIC_THREE_D_PLUS_EFFECT",
+          "indices": {
+            "0": {
+              "name": "intensity",
+              "type": "uint16_le",
+              "default": 90,
+              "applied": false
+            }
+          }
+        },
+        "0x08": {
+          "name": "MUSIC_WIDENER_EFFECT",
+          "indices": {
+            "0": {
+              "name": "shaping",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            }
+          }
+        }
+      }
+    },
+    "GUITAR": {
+      "id": "0x03",
+      "commands": {
+        "0x01": {
+          "name": "GUITAR_COMMON",
+          "indices": {
+            "0": {
+              "name": "guitar_gain",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "1": {
+              "name": "flanger_enable",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "autowah_enable",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "3": {
+              "name": "vibrato_enable",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "4": {
+              "name": "distortor_enable",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "5": {
+              "name": "gw_1_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "6": {
+              "name": "gw_2_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            }
+          }
+        },
+        "0x02": {
+          "name": "GUITAR_FLANGER_EFFECT",
+          "indices": {
+            "0": {
+              "name": "efflevel",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "1": {
+              "name": "feedback",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "osc_depth",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "3": {
+              "name": "osc_freq",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            }
+          }
+        },
+        "0x03": {
+          "name": "GUITAR_AUTOWAH_EFFECT",
+          "indices": {
+            "0": {
+              "name": "frequency_center",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "1": {
+              "name": "band_width",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "attack",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "3": {
+              "name": "release",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "4": {
+              "name": "range",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            }
+          }
+        },
+        "0x04": {
+          "name": "GUITAR_VIBRATO_EFFECT",
+          "indices": {
+            "0": {
+              "name": "freq",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "1": {
+              "name": "phase",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "depth",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            }
+          }
+        },
+        "0x05": {
+          "name": "GUITAR_DISTORTOR_EFFECT",
+          "indices": {
+            "0": {
+              "name": "threshold",
+              "type": "int16_le",
+              "default": 0,
+              "applied": false
+            },
+            "1": {
+              "name": "distorted",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false
+            }
+          }
+        }
+      }
+    },
+    "RECORDING": {
+      "id": "0x04",
+      "commands": {
+        "0x01": {
+          "name": "RECORDING_COMMON",
+          "indices": {
+            "0": {
+              "name": "rec_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            },
+            "1": {
+              "name": "rec_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "rec_mix_mic",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            },
+            "3": {
+              "name": "rec_mix_raw",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            },
+            "4": {
+              "name": "rec_mix_music",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            },
+            "5": {
+              "name": "rec_mix_effect_raw",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            },
+            "6": {
+              "name": "rec_mix_effect",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            }
+          }
+        }
+      }
+    },
+    "INPUT": {
+      "id": "0x05",
+      "commands": {
+        "0x01": {
+          "name": "INPUT_MIC_GUITAR_1",
+          "indices": {
+            "0": {
+              "name": "input_1_select",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            }
+          }
+        },
+        "0x02": {
+          "name": "INPUT_MIC_GUITAR_2",
+          "indices": {
+            "0": {
+              "name": "input_2_select",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            }
+          }
+        },
+        "0x03": {
+          "name": "INPUT_MUSIC_MODE",
+          "indices": {
+            "0": {
+              "name": "music_mode",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 4,
+              "default": 0,
+              "applied": false
+            }
+          }
+        }
+      }
+    },
+    "OUTPUT": {
+      "id": "0x06",
+      "commands": {}
+    },
+    "SYSTEM": {
+      "id": "0x07",
+      "commands": {
+        "0x01": {
+          "name": "SYSTEM_MASTER_VOLUME",
+          "indices": {
+            "0": {
+              "name": "master_volume",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": false
+            },
+            "1": {
+              "name": "master_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            }
+          }
+        },
+        "0x02": {
+          "name": "SYSTEM_STATUS",
+          "indices": {
+            "0": {
+              "name": "battery_percent",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 100,
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            },
+            "1": {
+              "name": "battery_mv",
+              "type": "uint16_le",
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            },
+            "2": {
+              "name": "charging",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            }
+          }
+        },
+        "0x80": {
+          "name": "SYSTEM_CONFIG",
+          "indices": {
+            "1": {
+              "name": "config_save",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "config_reset",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            }
+          }
+        }
+      }
+    },
+    "BLUETOOTH": {
+      "id": "0x08",
+      "commands": {
+        "0x01": {
+          "name": "BT_COMMON",
+          "indices": {
+            "0": {
+              "name": "bt_enabled",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "applied": false,
+              "readOnly": true
+            },
+            "1": {
+              "name": "bt_visible",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            },
+            "2": {
+              "name": "bt_pairing",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false
+            },
+            "3": {
+              "name": "bt_paired",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            },
+            "4": {
+              "name": "bt_tws",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": false,
+              "readOnly": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

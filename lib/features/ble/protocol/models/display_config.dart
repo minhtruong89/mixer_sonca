@@ -4,20 +4,75 @@ library;
 /// Root display configuration object
 class DisplayConfig {
   final DefaultDisplay defaultDisplay;
+  final List<ModelDisplayConfig> modelsDisplay;
 
-  const DisplayConfig({required this.defaultDisplay});
+  const DisplayConfig({
+    required this.defaultDisplay,
+    this.modelsDisplay = const [],
+  });
 
   factory DisplayConfig.fromJson(Map<String, dynamic> json) {
+    final modelsList = <ModelDisplayConfig>[];
+    if (json['modelsDisplay'] != null && json['modelsDisplay'] is List) {
+      for (var item in json['modelsDisplay']) {
+        modelsList.add(ModelDisplayConfig.fromJson(item));
+      }
+    }
+
     return DisplayConfig(
       defaultDisplay: DefaultDisplay.fromJson(json['defaultDisplay'] ?? {}),
+      modelsDisplay: modelsList,
+    );
+  }
+
+  /// Find model display config by device idx (e.g. "1234")
+  ModelDisplayConfig? getModelDisplayByIdx(String idx) {
+    for (final model in modelsDisplay) {
+      if (model.idx == idx) {
+        return model;
+      }
+    }
+    return null;
+  }
+}
+
+class ModelDisplayConfig {
+  final String idx;
+  final String nameDisplay;
+  final int schemaVersion;
+  final Map<String, DisplaySection> sections;
+
+  const ModelDisplayConfig({
+    required this.idx,
+    required this.nameDisplay,
+    required this.schemaVersion,
+    required this.sections,
+  });
+
+  factory ModelDisplayConfig.fromJson(Map<String, dynamic> json) {
+    final sectionsMap = <String, DisplaySection>{};
+    if (json['sections'] != null) {
+      (json['sections'] as Map<String, dynamic>).forEach((key, value) {
+        sectionsMap[key] = DisplaySection.fromJson(value);
+      });
+    }
+    return ModelDisplayConfig(
+      idx: json['idx']?.toString() ?? '',
+      nameDisplay: json['nameDisplay']?.toString() ?? '',
+      schemaVersion: int.tryParse(json['schemaVersion']?.toString() ?? '1') ?? 1,
+      sections: sectionsMap,
     );
   }
 }
 
 class DefaultDisplay {
+  final int schemaVersion;
   final Map<String, DisplaySection> sections;
 
-  const DefaultDisplay({required this.sections});
+  const DefaultDisplay({
+    this.schemaVersion = 1,
+    required this.sections,
+  });
 
   factory DefaultDisplay.fromJson(Map<String, dynamic> json) {
     final sectionsMap = <String, DisplaySection>{};
@@ -26,7 +81,10 @@ class DefaultDisplay {
         sectionsMap[key] = DisplaySection.fromJson(value);
       });
     }
-    return DefaultDisplay(sections: sectionsMap);
+    return DefaultDisplay(
+      schemaVersion: int.tryParse(json['schemaVersion']?.toString() ?? '1') ?? 1,
+      sections: sectionsMap,
+    );
   }
 }
 

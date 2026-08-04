@@ -852,6 +852,7 @@ class BleViewModel extends ChangeNotifier {
     _controlStates.clear();
     _connectingDeviceId = null;
     _isConnecting = false;
+    // Keep activeModelIdx in MixerService so UI retains the last connected model layout
     notifyListeners();
   }
 
@@ -974,6 +975,14 @@ class BleViewModel extends ChangeNotifier {
       }
       
       _selectedDevice = device;
+      
+      // Update MixerService active model idx based on device identity
+      final modelIdx = device.identity?.productionModel.toString();
+      try {
+        getIt<MixerService>().setActiveModelIdx(modelIdx);
+      } catch (e) {
+        debugPrint('BleViewModel: Error updating active model idx in MixerService: $e');
+      }
       
       // Initialize connection details (service discovery, fetching initial states) in background
       _initializeConnectionDetails();

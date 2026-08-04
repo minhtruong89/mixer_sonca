@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:mixer_sonca/core/services/mixer_service.dart';
+import 'package:mixer_sonca/injection.dart';
 import 'models/protocol_definition.dart';
 
 /// Service to load and manage protocol definitions from remote JSON
@@ -78,36 +80,52 @@ class ProtocolService {
   }
 
   /// Get category by name (e.g., "MIC", "MUSIC")
-  CategoryDefinition? getCategoryByName(String name) {
+  CategoryDefinition? getCategoryByName(String name, {int? schemaVersion}) {
     if (!_isLoaded || _definition == null) {
       throw Exception('Protocol not loaded. Call loadProtocolDefinition() first.');
     }
-    return _definition!.getCategoryByName(name);
+    int? version = schemaVersion;
+    if (version == null) {
+      try {
+        if (getIt.isRegistered<MixerService>()) {
+          version = getIt<MixerService>().getSchemaVersionForActiveModel();
+        }
+      } catch (_) {}
+    }
+    return _definition!.getCategoryByName(name, schemaVersion: version);
   }
 
   /// Get category by ID (e.g., 0x01, 0x02)
-  CategoryDefinition? getCategoryById(int id) {
+  CategoryDefinition? getCategoryById(int id, {int? schemaVersion}) {
     if (!_isLoaded || _definition == null) {
       throw Exception('Protocol not loaded. Call loadProtocolDefinition() first.');
     }
-    return _definition!.getCategoryById(id);
+    int? version = schemaVersion;
+    if (version == null) {
+      try {
+        if (getIt.isRegistered<MixerService>()) {
+          version = getIt<MixerService>().getSchemaVersionForActiveModel();
+        }
+      } catch (_) {}
+    }
+    return _definition!.getCategoryById(id, schemaVersion: version);
   }
 
   /// Get command by category name and command ID
-  CommandDefinition? getCommand(String categoryName, int cmdId) {
-    final category = getCategoryByName(categoryName);
+  CommandDefinition? getCommand(String categoryName, int cmdId, {int? schemaVersion}) {
+    final category = getCategoryByName(categoryName, schemaVersion: schemaVersion);
     return category?.getCommand(cmdId);
   }
 
   /// Get command by category name and command name
-  CommandDefinition? getCommandByName(String categoryName, String commandName) {
-    final category = getCategoryByName(categoryName);
+  CommandDefinition? getCommandByName(String categoryName, String commandName, {int? schemaVersion}) {
+    final category = getCategoryByName(categoryName, schemaVersion: schemaVersion);
     return category?.getCommandByName(commandName);
   }
 
   /// Get command by category ID and command ID
-  CommandDefinition? getCommandById(int categoryId, int cmdId) {
-    final category = getCategoryById(categoryId);
+  CommandDefinition? getCommandById(int categoryId, int cmdId, {int? schemaVersion}) {
+    final category = getCategoryById(categoryId, schemaVersion: schemaVersion);
     return category?.getCommand(cmdId);
   }
 

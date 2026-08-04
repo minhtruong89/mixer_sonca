@@ -19,33 +19,21 @@ class ModelEnumItem {
   }
 }
 
-/// Root protocol definition
-class ProtocolDefinition {
-  final String protocol;
+/// Schema Item definition from protocol JSON
+class ProtocolSchemaItem {
+  final int schemaVersion;
   final FramingDefinition framing;
-  final List<ModelEnumItem> modelEnum;
   final Map<String, EqFilterType> eqFilterTypes;
   final Map<String, CategoryDefinition> categories;
-  final ProtocolLimits limits;
 
-  const ProtocolDefinition({
-    required this.protocol,
+  const ProtocolSchemaItem({
+    required this.schemaVersion,
     required this.framing,
-    required this.modelEnum,
     required this.eqFilterTypes,
     required this.categories,
-    required this.limits,
   });
 
-  factory ProtocolDefinition.fromJson(Map<String, dynamic> json) {
-    // Parse modelEnum
-    final modelEnumList = <ModelEnumItem>[];
-    if (json['modelEnum'] != null) {
-      for (final item in json['modelEnum']) {
-        modelEnumList.add(ModelEnumItem.fromJson(item));
-      }
-    }
-
+  factory ProtocolSchemaItem.fromJson(Map<String, dynamic> json) {
     // Parse EQ filter types
     final eqFilterTypesMap = <String, EqFilterType>{};
     if (json['eqFilterTypes'] != null && json['eqFilterTypes']['values'] != null) {
@@ -63,24 +51,125 @@ class ProtocolDefinition {
       });
     }
 
+    return ProtocolSchemaItem(
+      schemaVersion: int.tryParse(json['schemaVersion']?.toString() ?? '1') ?? 1,
+      framing: FramingDefinition.fromJson(json['framing'] ?? {}),
+      eqFilterTypes: eqFilterTypesMap,
+      categories: categoriesMap,
+    );
+  }
+}
+
+/// Root protocol definition
+class ProtocolDefinition {
+  final String protocol;
+  final FramingDefinition framing;
+  final List<ModelEnumItem> modelEnum;
+  final Map<String, EqFilterType> eqFilterTypes;
+  final Map<String, CategoryDefinition> categories;
+  final List<ProtocolSchemaItem> schemas;
+  final ProtocolLimits limits;
+
+  const ProtocolDefinition({
+    required this.protocol,
+    required this.framing,
+    required this.modelEnum,
+    required this.eqFilterTypes,
+    required this.categories,
+    this.schemas = const [],
+    required this.limits,
+  });
+
+  factory ProtocolDefinition.fromJson(Map<String, dynamic> json) {
+    // Parse modelEnum
+    final modelEnumList = <ModelEnumItem>[];
+    if (json['modelEnum'] != null) {
+      for (final item in json['modelEnum']) {
+        modelEnumList.add(ModelEnumItem.fromJson(item));
+      }
+    }
+
+    // Parse schemas
+    final schemasList = <ProtocolSchemaItem>[];
+    if (json['schemas'] != null && json['schemas'] is List) {
+      for (final item in json['schemas']) {
+        schemasList.add(ProtocolSchemaItem.fromJson(item));
+      }
+    }
+
+    // Parse EQ filter types (from top level or from first schema)
+    final eqFilterTypesMap = <String, EqFilterType>{};
+    if (json['eqFilterTypes'] != null && json['eqFilterTypes']['values'] != null) {
+      for (final item in json['eqFilterTypes']['values']) {
+        final filterType = EqFilterType.fromJson(item);
+        eqFilterTypesMap[filterType.name] = filterType;
+      }
+    } else if (schemasList.isNotEmpty) {
+      eqFilterTypesMap.addAll(schemasList.first.eqFilterTypes);
+    }
+
+    // Parse categories (from top level or from first schema)
+    final categoriesMap = <String, CategoryDefinition>{};
+    if (json['categories'] != null) {
+      (json['categories'] as Map<String, dynamic>).forEach((key, value) {
+        categoriesMap[key] = CategoryDefinition.fromJson(key, value);
+      });
+    } else if (schemasList.isNotEmpty) {
+      categoriesMap.addAll(schemasList.first.categories);
+    }
+
+    final defaultFraming = json['framing'] != null
+        ? FramingDefinition.fromJson(json['framing'])
+        : (schemasList.isNotEmpty ? schemasList.first.framing : const FramingDefinition(header: {}, crc16: {}, commandPayload: {}, dataPayload: {}));
+
     return ProtocolDefinition(
       protocol: json['protocol'] ?? '',
-      framing: FramingDefinition.fromJson(json['framing'] ?? {}),
+      framing: defaultFraming,
       modelEnum: modelEnumList,
       eqFilterTypes: eqFilterTypesMap,
       categories: categoriesMap,
+      schemas: schemasList,
       limits: ProtocolLimits.fromJson(json['limits'] ?? {}),
     );
   }
 
-  /// Get category by name
-  CategoryDefinition? getCategoryByName(String name) {
+  /// Get specific schema by schemaVersion (fallback to version 1 or default schema)
+  ProtocolSchemaItem? getSchemaByVersion(int version) {
+    for (final schema in schemas) {
+      if (schema.schemaVersion == version) {
+        return schema;
+      }
+    }
+    // Fallback to version 1 if available
+    for (final schema in schemas) {
+      if (schema.schemaVersion == 1) {
+        return schema;
+      }
+    }
+    return schemas.isNotEmpty ? schemas.first : null;
+  }
+
+  /// Get category by name, optionally for a specific schemaVersion
+  CategoryDefinition? getCategoryByName(String name, {int? schemaVersion}) {
+    if (schemaVersion != null && schemas.isNotEmpty) {
+      final schema = getSchemaByVersion(schemaVersion);
+      if (schema != null && schema.categories.containsKey(name)) {
+        return schema.categories[name];
+      }
+    }
     return categories[name];
   }
 
-  /// Get category by ID
-  CategoryDefinition? getCategoryById(int id) {
-    return categories.values.firstWhere(
+  /// Get category by ID, optionally for a specific schemaVersion
+  CategoryDefinition? getCategoryById(int id, {int? schemaVersion}) {
+    Map<String, CategoryDefinition> targetCategories = categories;
+    if (schemaVersion != null && schemas.isNotEmpty) {
+      final schema = getSchemaByVersion(schemaVersion);
+      if (schema != null && schema.categories.isNotEmpty) {
+        targetCategories = schema.categories;
+      }
+    }
+    return targetCategories.values.firstWhere(
       (cat) => cat.id == id,
       orElse: () => throw Exception('Category not found for ID: 0x${id.toRadixString(16)}'),
     );
@@ -282,11 +371,17 @@ class IndexDefinition {
   final int index;
   final String name;
   final String type;
+  final num? min;
+  final num? max;
+  final num? defaultValue;
 
   const IndexDefinition({
     required this.index,
     required this.name,
     required this.type,
+    this.min,
+    this.max,
+    this.defaultValue,
   });
 
   factory IndexDefinition.fromJson(int index, Map<String, dynamic> json) {
@@ -294,6 +389,9 @@ class IndexDefinition {
       index: index,
       name: json['name'] ?? '',
       type: json['type'] ?? 'uint16_le',
+      min: json['min'] != null ? (json['min'] as num) : null,
+      max: json['max'] != null ? (json['max'] as num) : null,
+      defaultValue: json['default'] != null ? (json['default'] as num) : null,
     );
   }
 }
