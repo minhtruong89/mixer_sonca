@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
 import 'package:mixer_sonca/injection.dart';
@@ -52,6 +53,11 @@ class ModernSliderHelper {
     final paramType = protocolService.getParameterType(item.category, cmdDef.id, paramName);
     if (paramType?.toLowerCase() == 'q8_8_le' && finalValue is! double) {
       finalValue = double.tryParse(finalValue.toString()) ?? 0.0;
+    } else {
+      final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+      if (activeSchemaVersion == 2 && finalValue is num) {
+        finalValue = finalValue.round();
+      }
     }
 
     if (finalValue is num) {

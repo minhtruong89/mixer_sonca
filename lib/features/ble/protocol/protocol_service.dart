@@ -129,6 +129,15 @@ class ProtocolService {
     return category?.getCommand(cmdId);
   }
 
+  /// Get IndexDefinition by category name, command name, and parameter name
+  IndexDefinition? getIndexDefinitionByParamName(String categoryName, String commandName, String paramName, {int? schemaVersion}) {
+    final command = getCommandByName(categoryName, commandName, schemaVersion: schemaVersion);
+    if (command == null) return null;
+    final idx = command.getIndexByName(paramName);
+    if (idx == null) return null;
+    return command.getIndex(idx);
+  }
+
   /// Get index definition by category name, command ID, and index
   IndexDefinition? getIndex(String categoryName, int cmdId, int index) {
     final command = getCommand(categoryName, cmdId);

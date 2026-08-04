@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/features/ble/ble_logic.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
+import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
+import 'package:mixer_sonca/injection.dart';
 import 'modern_slider_helper.dart';
 
 class ModernVerticalSlider extends StatefulWidget {
@@ -27,9 +30,6 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
   @override
   void initState() {
     super.initState();
-    _min = widget.item.control.minValue.toDouble();
-    _max = widget.item.control.maxValue.toDouble();
-
     if (widget.item.indexList.isNotEmpty) {
       for (final p in widget.item.indexList) {
         if (p.endsWith('_mute')) {
@@ -43,6 +43,25 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
       );
     } else {
       _volumeParam = widget.item.paramName;
+    }
+
+    _min = widget.item.control.minValue ?? 0;
+    _max = widget.item.control.maxValue ?? 100;
+    if (widget.item.control.minValue == null || widget.item.control.maxValue == null) {
+      try {
+        final protocolService = getIt<ProtocolService>();
+        if (protocolService.isLoaded && _volumeParam != null) {
+          final indexDef = protocolService.getIndexDefinitionByParamName(widget.item.category, widget.item.command, _volumeParam!);
+          if (indexDef != null) {
+            if (widget.item.control.minValue == null && indexDef.min != null) {
+              _min = indexDef.min!.toDouble();
+            }
+            if (widget.item.control.maxValue == null && indexDef.max != null) {
+              _max = indexDef.max!.toDouble();
+            }
+          }
+        }
+      } catch (_) {}
     }
   }
 
@@ -143,6 +162,13 @@ class _ModernVerticalSliderState extends State<ModernVerticalSlider> {
     double percent = 1.0 - (dy / height);
     percent = percent.clamp(0.0, 1.0);
     double newValue = _min + percent * (_max - _min);
+
+    try {
+      final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+      if (activeSchemaVersion == 2) {
+        newValue = newValue.roundToDouble();
+      }
+    } catch (_) {}
 
     final vibrateVal = widget.item.control.vibrateValue;
     if (vibrateVal != null) {

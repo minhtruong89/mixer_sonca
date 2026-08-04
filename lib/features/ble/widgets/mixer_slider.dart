@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mixer_sonca/core/services/mixer_service.dart';
+import 'package:mixer_sonca/injection.dart';
 
 class MixerSlider extends StatelessWidget {
   final String label;
@@ -118,12 +120,22 @@ class MixerSlider extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onVerticalDragUpdate: (details) {
                     final dy = details.localPosition.dy;
-                    final newValue = (1 - (dy / height)) * (max - min) + min;
+                    var newValue = (1 - (dy / height)) * (max - min) + min;
+                    try {
+                      if (getIt.isRegistered<MixerService>() && getIt<MixerService>().getSchemaVersionForActiveModel() == 2) {
+                        newValue = newValue.roundToDouble();
+                      }
+                    } catch (_) {}
                     onChanged(newValue.clamp(min, max));
                   },
                   onTapDown: (details) {
                     final dy = details.localPosition.dy;
-                    final newValue = (1 - (dy / height)) * (max - min) + min;
+                    var newValue = (1 - (dy / height)) * (max - min) + min;
+                    try {
+                      if (getIt.isRegistered<MixerService>() && getIt<MixerService>().getSchemaVersionForActiveModel() == 2) {
+                        newValue = newValue.roundToDouble();
+                      }
+                    } catch (_) {}
                     onChanged(newValue.clamp(min, max));
                   },
                   onDoubleTap: () {

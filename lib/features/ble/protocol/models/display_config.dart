@@ -246,8 +246,8 @@ class DisplayControl {
   final String typeDisplay; // "group radio button", "swicht button", "vertical slider"
   final String valueType; // "uint16"
   final List<DisplayOption> options;
-  final double minValue;
-  final double maxValue;
+  final double? minValue;
+  final double? maxValue;
   final double displayDivide;
   final double displayOffset;
   final String displayText;
@@ -258,8 +258,8 @@ class DisplayControl {
     required this.typeDisplay,
     required this.valueType,
     this.options = const [],
-    this.minValue = 0,
-    this.maxValue = 100,
+    this.minValue,
+    this.maxValue,
     this.displayDivide = 1,
     this.displayOffset = 0,
     this.displayText = '',
@@ -278,8 +278,8 @@ class DisplayControl {
       typeDisplay: json['typeDisplay'] ?? '',
       valueType: json['valueType'] ?? '',
       options: optionsList,
-      minValue: double.tryParse(json['minValue']?.toString() ?? '0') ?? 0,
-      maxValue: double.tryParse(json['maxValue']?.toString() ?? '100') ?? 100,
+      minValue: json['minValue'] != null ? double.tryParse(json['minValue'].toString()) : null,
+      maxValue: json['maxValue'] != null ? double.tryParse(json['maxValue'].toString()) : null,
       displayDivide: double.tryParse(json['displayDivide']?.toString() ?? json['displayDevide']?.toString() ?? '1') ?? 1,
       displayOffset: double.tryParse(json['displayOffset']?.toString() ?? '0') ?? 0,
       displayText: json['displayText']?.toString() ?? '',

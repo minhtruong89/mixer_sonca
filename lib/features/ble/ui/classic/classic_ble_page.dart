@@ -998,12 +998,31 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
         volumeParam = item.paramName;
       }
 
+      double minVal = item.control.minValue ?? 0;
+      double maxVal = item.control.maxValue ?? 100;
+      if (item.control.minValue == null || item.control.maxValue == null) {
+        try {
+          final protocolService = getIt<ProtocolService>();
+          if (protocolService.isLoaded && volumeParam != null) {
+            final indexDef = protocolService.getIndexDefinitionByParamName(item.category, item.command, volumeParam);
+            if (indexDef != null) {
+              if (item.control.minValue == null && indexDef.min != null) {
+                minVal = indexDef.min!.toDouble();
+              }
+              if (item.control.maxValue == null && indexDef.max != null) {
+                maxVal = indexDef.max!.toDouble();
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       final volumeStateKey = "${item.command}_${volumeParam ?? ''}";
       final muteStateKey = muteParam != null ? "${item.command}_$muteParam" : null;
 
       final volumeValue = (volumeParam != null) 
-          ? viewModel.getControlValue(volumeStateKey, defaultValue: (item.control.minValue + item.control.maxValue) / 2).toDouble() 
-          : (item.control.minValue + item.control.maxValue) / 2;
+          ? viewModel.getControlValue(volumeStateKey, defaultValue: (minVal + maxVal) / 2).toDouble() 
+          : (minVal + maxVal) / 2;
       final isMuted = (muteParam != null) 
           ? viewModel.getControlValue(muteStateKey!, defaultValue: 0) == 1 
           : false;
@@ -1013,8 +1032,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
         value: volumeValue,
         isMuted: isMuted,
         showMute: muteParam != null,
-        min: item.control.minValue,
-        max: item.control.maxValue,
+        min: minVal,
+        max: maxVal,
         displayDivide: item.control.displayDivide,
         displayOffset: item.control.displayOffset,
         displayText: item.control.displayText,
@@ -1553,6 +1572,11 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
       final paramType = protocolService.getParameterType(item.category, cmdId, paramName);
       if (paramType?.toLowerCase() == 'q8_8_le' && finalValue is! double) {
         finalValue = double.tryParse(finalValue.toString()) ?? 0.0;
+      } else {
+        final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+        if (activeSchemaVersion == 2 && finalValue is num) {
+          finalValue = finalValue.round();
+        }
       }
       
       // Special handling for Radio/Dropdown options that might need value mapping (String -> ID)

@@ -979,23 +979,17 @@
             "EFFECT": {
               "category": "MIC",
               "command": "MIC_COMMON",
-              "index": "effects_gain",
+              "index": "mic_effect_gain",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "ECHO": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "feedback",
+              "index": "echo_gain",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "800",
-                "displayDivide": "10",
-                "displayText": "%"
+                "typeDisplay": "vertical slider"
               },
               "event": {
                 "click": "Area MIC ECHO"
@@ -1004,14 +998,9 @@
             "REVERB": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "inGain",
+              "index": "reverb_gain",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "600",
-                "displayDivide": "10",
-                "displayText": "db",
-                "displayOffset": "600"
+                "typeDisplay": "vertical slider"
               },
               "event": {
                 "click": "Area MIC REVERB"
@@ -1021,13 +1010,11 @@
               "category": "MUSIC",
               "command": "MUSIC_COMMON",
               "indexList": [
-                "volume_mute",
-                "volume_gain"
+                "music_mute",
+                "music_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               },
               "event": {
                 "click": "Area MUSIC MAIN"
@@ -1035,28 +1022,24 @@
             },
             "MASTER": {
               "category": "SYSTEM",
-              "command": "SYSTEM_VOLUME",
+              "command": "SYSTEM_MASTER_VOLUME",
               "indexList": [
-                "volume_mute",
-                "volume_gain"
+                "master_mute",
+                "master_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "LIVE": {
               "category": "RECORDING",
               "command": "RECORDING_COMMON",
               "indexList": [
-                "volume_mute",
-                "volume_gain"
+                "rec_mute",
+                "rec_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               },
               "event": {
                 "click": "Area RECORD EQ"
@@ -1071,7 +1054,7 @@
             "Ngõ vào MUSIC": {
               "category": "INPUT",
               "command": "INPUT_MUSIC_MODE",
-              "index": "mode",
+              "index": "music_mode",
               "control": {
                 "typeDisplay": "drop down list",
                 "valueType": "uint16",
@@ -1081,20 +1064,20 @@
                     "value": "Bluetooth"
                   },
                   {
-                    "label": "Line In",
-                    "value": "LineIn"
-                  },
-                  {
-                    "label": "SPDIF In",
-                    "value": "SpdifIn"
+                    "label": "USB",
+                    "value": "USB"
                   },
                   {
                     "label": "HDMI",
                     "value": "HDMI"
                   },
                   {
-                    "label": "USB",
-                    "value": "USB"
+                    "label": "Line In",
+                    "value": "LineIn"
+                  },
+                  {
+                    "label": "SPDIF In",
+                    "value": "SpdifIn"
                   }
                 ]
               }
@@ -1110,8 +1093,8 @@
             },
             "BASS BOOT": {
               "category": "MUSIC",
-              "command": "MUSIC_BASSBOOST_EFFECT",
-              "index": "enable",
+              "command": "MUSIC_COMMON",
+              "index": "music_boostbass_enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -1119,8 +1102,8 @@
             },
             "ENHANCER": {
               "category": "MUSIC",
-              "command": "MUSIC_ENHANCER_EFFECT",
-              "index": "enable",
+              "command": "MUSIC_COMMON",
+              "index": "music_enhancer_enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -1136,12 +1119,12 @@
               "controlList": {
                 "1": {
                   "label": "SAVE",
-                  "name": "save_config",
+                  "name": "config_save",
                   "type": "uint16"
                 },
                 "2": {
                   "label": "RESET",
-                  "name": "reset_config",
+                  "name": "config_reset",
                   "type": "uint16"
                 }
               }

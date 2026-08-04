@@ -434,7 +434,9 @@ class BleViewModel extends ChangeNotifier {
               values[key] = 0;
             } else if (item.control.isVerticalSlider) {
               // Usually the default in UI is midpoint or 0
-              values[key] = (item.control.minValue + item.control.maxValue) / 2;
+              final minV = item.control.minValue ?? 0;
+              final maxV = item.control.maxValue ?? 100;
+              values[key] = (minV + maxV) / 2;
             } else if (item.control.isRadio || item.control.isDropdown) {
               // Default to first option or 0
               values[key] = 0;
@@ -1274,7 +1276,7 @@ class BleViewModel extends ChangeNotifier {
                   final stateKey = eqBand != null 
                       ? "${command.name}_band${eqBand}_$fieldName"
                       : "${command.name}_$fieldName";
-                  debugPrint('Protocol: Updating state - $stateKey = $value');
+                  debugPrint('Place 1 Protocol: Updating state - $stateKey = $value');
                   updateControlValue(stateKey, value);
                 }
               }
@@ -1344,7 +1346,7 @@ class BleViewModel extends ChangeNotifier {
                   final stateKey = eqBand != null 
                       ? "${command.name}_band${eqBand}_$fieldName"
                       : "${command.name}_$fieldName";
-                  debugPrint('Protocol: Updating state - $stateKey = $value');
+                  debugPrint('Place 2 Protocol: Updating state - $stateKey = $value');
                   updateControlValue(stateKey, value);
                 }
               }
