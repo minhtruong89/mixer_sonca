@@ -10,13 +10,13 @@
           "areaType": "Overlay Area",
           "areaFormat": "EQ Area",
           "backArea": "Area MIC MAIN",
-          "command": "MIC_EQ_EFFECT",
+          "command": "MIC_GRAPH_EQ",
           "totalEQBand": 10,
           "control": {
             "typeDisplay": "eq slider",
             "type": "PEAKING",
             "f0": "125",
-            "Q": "179",
+            "q": "179",
             "gain": "0"
           },
           "bandF0": [
@@ -40,92 +40,65 @@
               "category": "MIC",
               "command": "MIC_COMMON",
               "indexList": [
-                "master_mute",
-                "master_gain"
+                "mic_master_mute",
+                "mic_master_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "MIC 1": {
               "category": "MIC",
               "command": "MIC_COMMON",
               "indexList": [
-                "mic1_mute",
-                "mic1_volume"
+                "mic_1_mute",
+                "mic_1_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "MIC 2": {
               "category": "MIC",
               "command": "MIC_COMMON",
               "indexList": [
-                "mic2_mute",
-                "mic2_volume"
+                "mic_2_mute",
+                "mic_2_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "MIC 3": {
-              "category": "MIC",
-              "command": "MIC_COMMON",
-              "indexList": [
-                "mic3_mute",
-                "mic3_volume"
-              ],
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "BASS": {
               "category": "MIC",
               "command": "MIC_COMMON",
-              "index": "bass_gain",
+              "index": "mic_bass",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "MID": {
               "category": "MIC",
               "command": "MIC_COMMON",
-              "index": "middle_gain",
+              "index": "mic_middle",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "TREBLE": {
               "category": "MIC",
               "command": "MIC_COMMON",
-              "index": "treb_gain",
+              "index": "mic_treb",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "EFFECT": {
               "category": "MIC",
               "command": "MIC_COMMON",
-              "index": "effects_gain",
+              "index": "mic_effect_gain",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             }
           },
@@ -144,155 +117,88 @@
             "ECHO": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "feedback",
+              "index": "echo_gain",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "800",
-                "displayDivide": "10",
-                "displayText": "%"
+                "typeDisplay": "vertical slider"
               }
             },
-            "drylevel": {
+			"Cutoff Freq": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "drylevel",
+              "index": "cutoff_frequency",
               "control": {
                 "typeDisplay": "vertical slider",
                 "minValue": "0",
+                "maxValue": "18000"
+              }
+            },
+			"Attenuation": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "attenuation",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Delay": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "delay",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Max Delay": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "max_delay",
+              "control": {
+                "typeDisplay": "vertical slider",
+				"minValue": "0",
+                "maxValue": "500"
+              }
+            },
+			"Echo Delay": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "echo_delay",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Dry": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "dry",
+              "control": {
+                "typeDisplay": "vertical slider",
+				"minValue": "0",
                 "maxValue": "100"
               }
             },
-            "delaytime": {
+			"Wet": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "delaytime",
+              "index": "wet",
               "control": {
                 "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "2000",
-                "displayDivide": "10",
-                "displayText": "ms"
+				"minValue": "0",
+                "maxValue": "160"
               }
             },
-            "delaylevel": {
+            "High Quality": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "delaylevel",
+              "index": "high_quality_enable",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "switch button",
+                "valueType": "uint16"
               }
             },
-            "delayPan": {
+			"Echo Enable": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "delayPan",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100",
-                "displayOffset": "50"
-              }
-            },
-            "tap1_time": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap1_time",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "tap1_level": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap1_level",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "tap1_pan": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap1_pan",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100",
-                "displayOffset": "50"
-              }
-            },
-            "tap2_time": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap2_time",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "tap2_level": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap2_level",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "tap2_pan": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap2_pan",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100",
-                "displayOffset": "50"
-              }
-            },
-            "tap3_time": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap3_time",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "tap3_level": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap3_level",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "tap3_pan": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "tap3_pan",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100",
-                "displayOffset": "50"
-              }
-            },
-            "ECHO ENABLE": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "enable",
+              "index": "echo_enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -307,174 +213,81 @@
             "REVERB": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "inGain",
+              "index": "reverb_gain",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "High Cutoff_Freq": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "high_cutoff_frequency",
               "control": {
                 "typeDisplay": "vertical slider",
                 "minValue": "0",
-                "maxValue": "600",
-                "displayDivide": "10",
-                "displayText": "db",
-                "displayOffset": "600"
+                "maxValue": "18000"
               }
             },
-            "BandWidth": {
+			"Pre Delay": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "BandWidth",
+              "index": "predelay",
               "control": {
                 "typeDisplay": "vertical slider",
                 "minValue": "0",
-                "maxValue": "100"
+                "maxValue": "2400"
               }
             },
-            "earlyRef": {
+			"Max Pre Delay": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "earlyRef",
+              "index": "max_predelay",
               "control": {
                 "typeDisplay": "vertical slider",
                 "minValue": "0",
-                "maxValue": "100"
+                "maxValue": "3000"
               }
             },
-            "RevbEff": {
+			"Diffusion": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "RevbEff",
+              "index": "diffusion",
               "control": {
                 "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "minValue": "80",
+                "maxValue": "160"
               }
             },
-            "DryPercent": {
+			"Decay": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "DryPercent",
+              "index": "decay",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Damping": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "damping",
               "control": {
                 "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+				"minValue": "0",
+                "maxValue": "8000"
               }
             },
-            "Damping": {
+			"Wet Dry Mix": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "Damping",
+              "index": "wetdrymix",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
-            "Diffusion": {
+			"Modulation": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "Diffusion",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "90"
-              }
-            },
-            "DecayTime": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "DecayTime",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "6000",
-                "displayText": "ms"
-              }
-            },
-            "PreDelay": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "PreDelay",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "outGain": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "outGain",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "600",
-                "displayDivide": "10",
-                "displayText": "db",
-                "displayOffset": "300"
-              }
-            },
-            "EnvelopeTap1": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "EnvelopeTap1",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "EnvelopeTap2": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "EnvelopeTap2",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "EnvelopeTap3": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "EnvelopeTap3",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "EnvelopeTap4": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "EnvelopeTap4",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "EnvelopeTap5": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "EnvelopeTap5",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "EnvelopeTap6": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "EnvelopeTap6",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "scale": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "scale",
+              "index": "modulation",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -483,7 +296,7 @@
             "REVERB ENABLE": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "enable",
+              "index": "reverb_enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -496,13 +309,13 @@
           "areaType": "Overlay Area",
           "areaFormat": "EQ Area",
           "backArea": "Area MUSIC MAIN",
-          "command": "MUSIC_EQ_EFFECT",
+          "command": "MUSIC_GRAPH_EQ",
           "totalEQBand": 10,
           "control": {
             "typeDisplay": "eq slider",
             "type": "PEAKING",
             "f0": "125",
-            "Q": "179",
+            "q": "179",
             "gain": "0"
           },
           "bandF0": [
@@ -520,61 +333,61 @@
           "valueFilterJAZZ": [
             {
               "f0": "125",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "250",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "500",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "1000",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "1500",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "2000",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "3000",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "4000",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "8000",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "16000",
-              "gain": "-3.0",
+              "gain": "3",
               "Q": "179",
               "type": "PEAKING"
             }
@@ -582,19 +395,19 @@
           "valueFilterPOP": [
             {
               "f0": "125",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "250",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "500",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
@@ -606,37 +419,37 @@
             },
             {
               "f0": "1500",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "2000",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "3000",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "4000",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "8000",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             },
             {
               "f0": "16000",
-              "gain": "3.0",
+              "gain": "9",
               "Q": "179",
               "type": "PEAKING"
             }
@@ -650,45 +463,82 @@
               "category": "MUSIC",
               "command": "MUSIC_COMMON",
               "indexList": [
-                "volume_mute",
-                "volume_gain"
+                "music_mute",
+                "music_volume"
               ],
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "BASS": {
               "category": "MUSIC",
               "command": "MUSIC_COMMON",
-              "index": "bass_gain",
+              "index": "music_bass",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "MIDDLE": {
               "category": "MUSIC",
               "command": "MUSIC_COMMON",
-              "index": "middle_gain",
+              "index": "music_middle",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
             "TREBLE": {
               "category": "MUSIC",
               "command": "MUSIC_COMMON",
-              "index": "treb_gain",
+              "index": "music_treb",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
-            }
+            },
+			  "BootBass": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "music_boostbass_enable",
+				  "control": {
+					"typeDisplay": "switch button",
+					"valueType": "uint16"
+				  }
+			  },
+			  "Surround": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "music_surround_enable",
+				  "control": {
+					"typeDisplay": "switch button",
+					"valueType": "uint16"
+				  }
+			  },
+			  "Three D": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "music_three_d_enable",
+				  "control": {
+					"typeDisplay": "switch button",
+					"valueType": "uint16"
+				  }
+			  },
+			  "Three D Plus": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "music_three_d_plus_enable",
+				  "control": {
+					"typeDisplay": "switch button",
+					"valueType": "uint16"
+				  }
+			  },
+			  "Widener": {
+				  "category": "MUSIC",
+				  "command": "MUSIC_COMMON",
+				  "index": "music_widener_enable",
+				  "control": {
+					"typeDisplay": "switch button",
+					"valueType": "uint16"
+				  }
+			  }
           },
           "buttons": {
             "MUSIC": {
@@ -697,251 +547,19 @@
               }
             }
           }
-        },
-        "Area GUITAR MAIN": {
-          "desc": "Area for GUITAR click main screen",
-          "areaType": "Overlay Area",
-          "items": {
-            "GUITAR": {
-              "category": "GUITAR",
-              "command": "GUITAR_COMMON",
-              "indexList": [
-                "volume_gain"
-              ],
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "FLANGER": {
-              "category": "GUITAR",
-              "command": "GUITAR_COMMON",
-              "index": "flanger_enable",
-              "control": {
-                "typeDisplay": "switch button",
-                "valueType": "uint16"
-              }
-            },
-            "AUTOWAH": {
-              "category": "GUITAR",
-              "command": "GUITAR_COMMON",
-              "index": "autowah_enable",
-              "control": {
-                "typeDisplay": "switch button",
-                "valueType": "uint16"
-              }
-            },
-            "VIBRATO": {
-              "category": "GUITAR",
-              "command": "GUITAR_COMMON",
-              "index": "vibrato_enable",
-              "control": {
-                "typeDisplay": "switch button",
-                "valueType": "uint16"
-              }
-            },
-            "DISTORTOR": {
-              "category": "GUITAR",
-              "command": "GUITAR_COMMON",
-              "index": "distortor_enable",
-              "control": {
-                "typeDisplay": "switch button",
-                "valueType": "uint16"
-              }
-            },
-            "FLANGER efflevel": {
-              "category": "GUITAR",
-              "command": "GUITAR_FLANGER_EFFECT",
-              "index": "efflevel",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "FLANGER feedback": {
-              "category": "GUITAR",
-              "command": "GUITAR_FLANGER_EFFECT",
-              "index": "feedback",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "FLANGER osc_depth": {
-              "category": "GUITAR",
-              "command": "GUITAR_FLANGER_EFFECT",
-              "index": "osc_depth",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "FLANGER osc_freq": {
-              "category": "GUITAR",
-              "command": "GUITAR_FLANGER_EFFECT",
-              "index": "osc_freq",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "AUTOWAH frequency_center": {
-              "category": "GUITAR",
-              "command": "GUITAR_AUTOWAH_EFFECT",
-              "index": "frequency_center",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "AUTOWAH band_width": {
-              "category": "GUITAR",
-              "command": "GUITAR_AUTOWAH_EFFECT",
-              "index": "band_width",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "AUTOWAH attack": {
-              "category": "GUITAR",
-              "command": "GUITAR_AUTOWAH_EFFECT",
-              "index": "attack",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "AUTOWAH release": {
-              "category": "GUITAR",
-              "command": "GUITAR_AUTOWAH_EFFECT",
-              "index": "release",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "AUTOWAH range": {
-              "category": "GUITAR",
-              "command": "GUITAR_AUTOWAH_EFFECT",
-              "index": "range",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "VIBRATO freq": {
-              "category": "GUITAR",
-              "command": "GUITAR_VIBRATO_EFFECT",
-              "index": "freq",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "VIBRATO phase": {
-              "category": "GUITAR",
-              "command": "GUITAR_VIBRATO_EFFECT",
-              "index": "phase",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "VIBRATO depth": {
-              "category": "GUITAR",
-              "command": "GUITAR_VIBRATO_EFFECT",
-              "index": "depth",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "DISTORTOR threshold": {
-              "category": "GUITAR",
-              "command": "GUITAR_DISTORTOR_EFFECT",
-              "index": "threshold",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "DISTORTOR distorted": {
-              "category": "GUITAR",
-              "command": "GUITAR_DISTORTOR_EFFECT",
-              "index": "distorted",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "100"
-              }
-            },
-            "Ngõ vào MIC GUITAR 1": {
-              "category": "INPUT",
-              "command": "INPUT_MIC_GUITAR_1",
-              "index": "select",
-              "control": {
-                "typeDisplay": "drop down list",
-                "valueType": "uint16",
-                "options": [
-                  {
-                    "label": "Mic",
-                    "value": "mic"
-                  },
-                  {
-                    "label": "Guitar",
-                    "value": "guitar"
-                  }
-                ]
-              }
-            },
-            "Ngõ vào MIC GUITAR 2": {
-              "category": "INPUT",
-              "command": "INPUT_MIC_GUITAR_2",
-              "index": "select",
-              "control": {
-                "typeDisplay": "drop down list",
-                "valueType": "uint16",
-                "options": [
-                  {
-                    "label": "Mic",
-                    "value": "mic"
-                  },
-                  {
-                    "label": "Guitar",
-                    "value": "guitar"
-                  }
-                ]
-              }
-            }
-          }
-        },
+        },     
         "Area RECORD EQ": {
           "desc": "LIVE Equalizer",
           "areaType": "Overlay Area",
           "areaFormat": "EQ Area",
           "backArea": "Area MAIN",
-          "command": "RECORDING_EQ_EFFECT",
+          "command": "RECORDING_GRAPH_EQ",
           "totalEQBand": 10,
           "control": {
             "typeDisplay": "eq slider",
             "type": "PEAKING",
             "f0": "125",
-            "Q": "179",
+            "q": "179",
             "gain": "0"
           },
           "bandF0": [
