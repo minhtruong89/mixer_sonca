@@ -1590,11 +1590,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
         return;
       }
 
-      // Update Local State in ViewModel immediately for visual feedback
       final stateKey = "${item.command}_$paramName";
-      viewModel.updateControlValue(stateKey, value);
-      
-      final cmdId = cmdDef.id; // Resolve ID early
+      final cmdId = cmdDef.id;
 
       // 2. Build parameter map & Resolve Value
       dynamic finalValue = value;
@@ -1622,6 +1619,15 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
          }
       }
       
+      // Stop execution early if finalValue is identical to current state
+      final currentControlState = viewModel.getControlValue(stateKey);
+      if (currentControlState == finalValue) {
+        return;
+      }
+
+      // Update Local State in ViewModel immediately for visual feedback
+      viewModel.updateControlValue(stateKey, value);
+
       debugPrint('\nUI Change: ${item.label} ($paramName) -> $finalValue (Cmd: ${item.category}.${cmdDef.name})');
 
       if (viewModel.selectedDevice == null) {

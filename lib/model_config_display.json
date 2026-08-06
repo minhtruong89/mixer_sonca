@@ -200,7 +200,7 @@
                 "typeDisplay": "vertical slider"
               }
             },
-            "High Cutoff_Freq": {
+            "High Cutoff Freq": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "high_cutoff_frequency",
