@@ -51,14 +51,15 @@ class _ModernHorizontalSliderState extends State<ModernHorizontalSlider> {
       try {
         final protocolService = getIt<ProtocolService>();
         if (protocolService.isLoaded && _volumeParam != null) {
-          final indexDef = protocolService.getIndexDefinitionByParamName(widget.item.category, widget.item.command, _volumeParam!);
-          if (indexDef != null) {
-            if (widget.item.control.minValue == null && indexDef.min != null) {
-              _min = indexDef.min!.toDouble();
-            }
-            if (widget.item.control.maxValue == null && indexDef.max != null) {
-              _max = indexDef.max!.toDouble();
-            }
+          final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+          final viewModel = Provider.of<BleViewModel>(context, listen: false);
+          if (widget.item.control.minValue == null) {
+            final resolvedMin = protocolService.resolveMin(widget.item.category, widget.item.command, _volumeParam!, schemaVersion: activeSchemaVersion, controlStates: viewModel.controlStates);
+            if (resolvedMin != null) _min = resolvedMin;
+          }
+          if (widget.item.control.maxValue == null) {
+            final resolvedMax = protocolService.resolveMax(widget.item.category, widget.item.command, _volumeParam!, schemaVersion: activeSchemaVersion, controlStates: viewModel.controlStates);
+            if (resolvedMax != null) _max = resolvedMax;
           }
         }
       } catch (_) {}

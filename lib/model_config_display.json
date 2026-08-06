@@ -125,17 +125,15 @@
                 "typeDisplay": "vertical slider"
               }
             },
-			"Cutoff Freq": {
+            "Cutoff Freq": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
               "index": "cutoff_frequency",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "18000"
+                "typeDisplay": "vertical slider"
               }
             },
-			"Attenuation": {
+            "Attenuation": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
               "index": "attenuation",
@@ -151,24 +149,20 @@
                 "typeDisplay": "vertical slider"
               }
             },
-			"Dry": {
+            "Dry": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
               "index": "dry",
               "control": {
-                "typeDisplay": "vertical slider",
-				"minValue": "0",
-                "maxValue": "100"
+                "typeDisplay": "vertical slider"
               }
             },
-			"Wet": {
+            "Wet": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
               "index": "wet",
               "control": {
-                "typeDisplay": "vertical slider",
-				"minValue": "0",
-                "maxValue": "160"
+                "typeDisplay": "vertical slider"
               }
             },
             "High Quality": {
@@ -180,7 +174,7 @@
                 "valueType": "uint16"
               }
             },
-			"Echo Enable": {
+            "Echo Enable": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
               "index": "enable",
@@ -211,32 +205,26 @@
               "command": "MIC_REVERB_EFFECT",
               "index": "high_cutoff_frequency",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "18000"
+                "typeDisplay": "vertical slider"
               }
             },
-			"Pre Delay": {
+            "Pre Delay": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "predelay",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "2400"
+                "typeDisplay": "vertical slider"
               }
             },
-			"Diffusion": {
+            "Diffusion": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "diffusion",
               "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "80",
-                "maxValue": "160"
+                "typeDisplay": "vertical slider"
               }
             },
-			"Decay": {
+            "Decay": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "decay",
@@ -244,17 +232,15 @@
                 "typeDisplay": "vertical slider"
               }
             },
-			"Damping": {
+            "Damping": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "damping",
               "control": {
-                "typeDisplay": "vertical slider",
-				"minValue": "0",
-                "maxValue": "8000"
+                "typeDisplay": "vertical slider"
               }
             },
-			"Wet Dry Mix": {
+            "Wet Dry Mix": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "wetdrymix",
@@ -262,7 +248,7 @@
                 "typeDisplay": "vertical slider"
               }
             },
-			"Modulation": {
+            "Modulation": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "modulation",
@@ -309,129 +295,129 @@
             "16000"
           ],
           "valueFilterJAZZ": [
-          {
-            "f0": "125",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "250",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "500",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "1000",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "1500",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "2000",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "3000",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "4000",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "8000",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "16000",
-            "gain": "-3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          }
-        ],
-        "valueFilterPOP": [
-          {
-            "f0": "125",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "250",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "500",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "1000",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "1500",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "2000",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "3000",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "4000",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "8000",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          },
-          {
-            "f0": "16000",
-            "gain": "3.0",
-            "Q": "179",
-            "type": "PEAKING"
-          }
-        ]
+            {
+              "f0": "125",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "250",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "500",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "1000",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "1500",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "2000",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "3000",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "4000",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "8000",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "16000",
+              "gain": "-3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            }
+          ],
+          "valueFilterPOP": [
+            {
+              "f0": "125",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "250",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "500",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "1000",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "1500",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "2000",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "3000",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "4000",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "8000",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            },
+            {
+              "f0": "16000",
+              "gain": "3.0",
+              "Q": "179",
+              "type": "PEAKING"
+            }
+          ]
         },
         "Area MUSIC MAIN": {
           "desc": "Area for MUSIC click main screen",
@@ -472,51 +458,51 @@
                 "typeDisplay": "vertical slider"
               }
             },
-			  "BootBass": {
-				  "category": "MUSIC",
-				  "command": "MUSIC_COMMON",
-				  "index": "music_boostbass_enable",
-				  "control": {
-					"typeDisplay": "switch button",
-					"valueType": "uint16"
-				  }
-			  },
-			  "Surround": {
-				  "category": "MUSIC",
-				  "command": "MUSIC_COMMON",
-				  "index": "music_surround_enable",
-				  "control": {
-					"typeDisplay": "switch button",
-					"valueType": "uint16"
-				  }
-			  },
-			  "Three D": {
-				  "category": "MUSIC",
-				  "command": "MUSIC_COMMON",
-				  "index": "music_three_d_enable",
-				  "control": {
-					"typeDisplay": "switch button",
-					"valueType": "uint16"
-				  }
-			  },
-			  "Three D Plus": {
-				  "category": "MUSIC",
-				  "command": "MUSIC_COMMON",
-				  "index": "music_three_d_plus_enable",
-				  "control": {
-					"typeDisplay": "switch button",
-					"valueType": "uint16"
-				  }
-			  },
-			  "Widener": {
-				  "category": "MUSIC",
-				  "command": "MUSIC_COMMON",
-				  "index": "music_widener_enable",
-				  "control": {
-					"typeDisplay": "switch button",
-					"valueType": "uint16"
-				  }
-			  }
+            "BootBass": {
+              "category": "MUSIC",
+              "command": "MUSIC_COMMON",
+              "index": "music_boostbass_enable",
+              "control": {
+                "typeDisplay": "switch button",
+                "valueType": "uint16"
+              }
+            },
+            "Surround": {
+              "category": "MUSIC",
+              "command": "MUSIC_COMMON",
+              "index": "music_surround_enable",
+              "control": {
+                "typeDisplay": "switch button",
+                "valueType": "uint16"
+              }
+            },
+            "Three D": {
+              "category": "MUSIC",
+              "command": "MUSIC_COMMON",
+              "index": "music_three_d_enable",
+              "control": {
+                "typeDisplay": "switch button",
+                "valueType": "uint16"
+              }
+            },
+            "Three D Plus": {
+              "category": "MUSIC",
+              "command": "MUSIC_COMMON",
+              "index": "music_three_d_plus_enable",
+              "control": {
+                "typeDisplay": "switch button",
+                "valueType": "uint16"
+              }
+            },
+            "Widener": {
+              "category": "MUSIC",
+              "command": "MUSIC_COMMON",
+              "index": "music_widener_enable",
+              "control": {
+                "typeDisplay": "switch button",
+                "valueType": "uint16"
+              }
+            }
           },
           "buttons": {
             "MUSIC": {
@@ -525,7 +511,7 @@
               }
             }
           }
-        },     
+        },
         "Area RECORD EQ": {
           "desc": "LIVE Equalizer",
           "areaType": "Overlay Area",
@@ -553,8 +539,7 @@
             "16000"
           ]
         },
-        
-		"Area 1": {
+        "Area 1": {
           "desc": "Area left side",
           "areaType": "Main Area",
           "items": {
@@ -1708,8 +1693,7 @@
           "16000"
         ]
       },
-      
-	  "Area 1": {
+      "Area 1": {
         "desc": "Area left side",
         "areaType": "Main Area",
         "items": {

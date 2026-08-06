@@ -149,6 +149,17 @@ class ProtocolDefinition {
     return schemas.isNotEmpty ? schemas.first : null;
   }
 
+  /// Get eqFilterTypes for a specific schemaVersion (fallback to global eqFilterTypes)
+  Map<String, EqFilterType> getEqFilterTypes({int? schemaVersion}) {
+    if (schemaVersion != null && schemas.isNotEmpty) {
+      final schema = getSchemaByVersion(schemaVersion);
+      if (schema != null && schema.eqFilterTypes.isNotEmpty) {
+        return schema.eqFilterTypes;
+      }
+    }
+    return eqFilterTypes;
+  }
+
   /// Get category by name, optionally for a specific schemaVersion
   CategoryDefinition? getCategoryByName(String name, {int? schemaVersion}) {
     if (schemaVersion != null && schemas.isNotEmpty) {
@@ -374,6 +385,8 @@ class IndexDefinition {
   final num? min;
   final num? max;
   final num? defaultValue;
+  final dynamic rawMin;
+  final dynamic rawMax;
 
   const IndexDefinition({
     required this.index,
@@ -382,16 +395,34 @@ class IndexDefinition {
     this.min,
     this.max,
     this.defaultValue,
+    this.rawMin,
+    this.rawMax,
   });
 
   factory IndexDefinition.fromJson(int index, Map<String, dynamic> json) {
+    num? parsedMin;
+    if (json['min'] is num) {
+      parsedMin = json['min'] as num;
+    } else if (json['min'] != null && num.tryParse(json['min'].toString()) != null) {
+      parsedMin = num.tryParse(json['min'].toString());
+    }
+
+    num? parsedMax;
+    if (json['max'] is num) {
+      parsedMax = json['max'] as num;
+    } else if (json['max'] != null && num.tryParse(json['max'].toString()) != null) {
+      parsedMax = num.tryParse(json['max'].toString());
+    }
+
     return IndexDefinition(
       index: index,
       name: json['name'] ?? '',
       type: json['type'] ?? 'uint16_le',
-      min: json['min'] != null ? (json['min'] as num) : null,
-      max: json['max'] != null ? (json['max'] as num) : null,
+      min: parsedMin,
+      max: parsedMax,
       defaultValue: json['default'] != null ? (json['default'] as num) : null,
+      rawMin: json['min'],
+      rawMax: json['max'],
     );
   }
 }

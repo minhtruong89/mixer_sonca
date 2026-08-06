@@ -98,7 +98,7 @@
         "value": -1
       },
       {
-        "name": "FLAT",
+        "name": "PEAKING",
         "value": 0
       },
       {
@@ -106,40 +106,32 @@
         "value": 1
       },
       {
-        "name": "PEAKING",
+        "name": "HIGH_SHELF",
         "value": 2
       },
       {
-        "name": "HIGH_SHELF",
+        "name": "LOW_PASS",
         "value": 3
       },
       {
-        "name": "LOW_PASS_LINKWITZ",
+        "name": "HIGH_PASS",
         "value": 4
       },
       {
-        "name": "HIGH_PASS_LINKWITZ",
+        "name": "BAND_PASS",
         "value": 5
       },
       {
-        "name": "LOW_PASS_BUTTERWORTH",
+        "name": "NOTCH",
         "value": 6
       },
       {
-        "name": "HIGH_PASS_BUTTERWORTH",
+        "name": "LOW_PASS_ORDER1",
         "value": 7
       },
       {
-        "name": "LOW_PASS_BESSEL",
+        "name": "HIGH_PASS_ORDER1",
         "value": 8
-      },
-      {
-        "name": "HIGH_PASS_BESSEL",
-        "value": 9
-      },
-      {
-        "name": "NOTCH",
-        "value": 10
       }
     ]
   },

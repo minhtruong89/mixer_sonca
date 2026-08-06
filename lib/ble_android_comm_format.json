@@ -1070,7 +1070,7 @@
             "value": -1
           },
           {
-            "name": "FLAT",
+            "name": "PEAKING",
             "value": 0
           },
           {
@@ -1078,40 +1078,32 @@
             "value": 1
           },
           {
-            "name": "PEAKING",
+            "name": "HIGH_SHELF",
             "value": 2
           },
           {
-            "name": "HIGH_SHELF",
+            "name": "LOW_PASS",
             "value": 3
           },
           {
-            "name": "LOW_PASS_LINKWITZ",
+            "name": "HIGH_PASS",
             "value": 4
           },
           {
-            "name": "HIGH_PASS_LINKWITZ",
+            "name": "BAND_PASS",
             "value": 5
           },
           {
-            "name": "LOW_PASS_BUTTERWORTH",
+            "name": "NOTCH",
             "value": 6
           },
           {
-            "name": "HIGH_PASS_BUTTERWORTH",
+            "name": "LOW_PASS_ORDER1",
             "value": 7
           },
           {
-            "name": "LOW_PASS_BESSEL",
+            "name": "HIGH_PASS_ORDER1",
             "value": 8
-          },
-          {
-            "name": "HIGH_PASS_BESSEL",
-            "value": 9
-          },
-          {
-            "name": "NOTCH",
-            "value": 10
           }
         ]
       },
@@ -1326,6 +1318,8 @@
                 "0": {
                   "name": "cutoff_frequency",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 24000,
                   "default": 9000,
                   "applied": false
                 },
@@ -1341,7 +1335,7 @@
                   "name": "delay",
                   "type": "uint16_le",
                   "min": 150,
-                  "max": 250,
+                  "max": "max_delay",
                   "default": 200,
                   "applied": true
                 },
@@ -1364,12 +1358,16 @@
                 "5": {
                   "name": "dry",
                   "type": "int16_le",
+                  "min": "0",
+                  "max": "100",
                   "default": 50,
                   "applied": false
                 },
                 "6": {
                   "name": "wet",
                   "type": "int16_le",
+                  "min": "0",
+                  "max": "100",
                   "default": 80,
                   "applied": false
                 },
@@ -1389,6 +1387,8 @@
                 "0": {
                   "name": "high_cutoff_frequency",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 24000,
                   "default": 9000,
                   "applied": false
                 },
@@ -1401,12 +1401,16 @@
                 "2": {
                   "name": "predelay",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": "max_predelay",
                   "default": 1200,
                   "applied": false
                 },
                 "3": {
                   "name": "diffusion",
                   "type": "uint16_le",
+                  "min": "0",
+                  "max": "100",
                   "default": 80,
                   "applied": false
                 },
@@ -1421,6 +1425,8 @@
                 "5": {
                   "name": "damping",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 10000,
                   "default": 4000,
                   "applied": false
                 },
@@ -1579,8 +1585,8 @@
                   }
                 },
                 "fieldsPerBand": 5,
-                "band": "(index-1)/5",
-                "field": "(index-1)%5",
+                "band": "(index-2)/5",
+                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
@@ -1592,8 +1598,8 @@
                   "enable": "uint16_le",
                   "type": "uint16_le",
                   "f0": "uint16_le",
-                  "Q": "uint16_le",
-                  "gain": "uint16_le"
+                  "q": "q8_8_le",
+                  "gain": "q8_8_le"
                 },
                 "fieldLimit": {
                   "enable": {
@@ -1604,13 +1610,13 @@
                     "min": "20",
                     "max": "20000"
                   },
-                  "Q": {
+                  "q": {
                     "min": "0.1",
                     "max": "128"
                   },
                   "gain": {
-                    "min": "-1200",
-                    "max": "1200"
+                    "min": "-12.0",
+                    "max": "12.0"
                   }
                 }
               }
@@ -1944,8 +1950,8 @@
                   }
                 },
                 "fieldsPerBand": 5,
-                "band": "(index-1)/5",
-                "field": "(index-1)%5",
+                "band": "(index-2)/5",
+                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
@@ -1957,8 +1963,8 @@
                   "enable": "uint16_le",
                   "type": "uint16_le",
                   "f0": "uint16_le",
-                  "Q": "uint16_le",
-                  "gain": "uint16_le"
+                  "q": "q8_8_le",
+                  "gain": "q8_8_le"
                 },
                 "fieldLimit": {
                   "enable": {
@@ -1969,13 +1975,13 @@
                     "min": "20",
                     "max": "20000"
                   },
-                  "Q": {
+                  "q": {
                     "min": "0.1",
                     "max": "128"
                   },
                   "gain": {
-                    "min": "-1200",
-                    "max": "1200"
+                    "min": "-12.0",
+                    "max": "12.0"
                   }
                 }
               }

@@ -1004,14 +1004,14 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
         try {
           final protocolService = getIt<ProtocolService>();
           if (protocolService.isLoaded && volumeParam != null) {
-            final indexDef = protocolService.getIndexDefinitionByParamName(item.category, item.command, volumeParam);
-            if (indexDef != null) {
-              if (item.control.minValue == null && indexDef.min != null) {
-                minVal = indexDef.min!.toDouble();
-              }
-              if (item.control.maxValue == null && indexDef.max != null) {
-                maxVal = indexDef.max!.toDouble();
-              }
+            final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+            if (item.control.minValue == null) {
+              final resolvedMin = protocolService.resolveMin(item.category, item.command, volumeParam, schemaVersion: activeSchemaVersion, controlStates: viewModel.controlStates);
+              if (resolvedMin != null) minVal = resolvedMin;
+            }
+            if (item.control.maxValue == null) {
+              final resolvedMax = protocolService.resolveMax(item.category, item.command, volumeParam, schemaVersion: activeSchemaVersion, controlStates: viewModel.controlStates);
+              if (resolvedMax != null) maxVal = resolvedMax;
             }
           }
         } catch (_) {}
@@ -1851,7 +1851,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                     // Prepare filter types array for the dialog
                     Map<String, int> filterTypes = {};
                     if (protocolService.isLoaded && protocolService.definition != null) {
-                       for (var entry in protocolService.definition!.eqFilterTypes.entries) {
+                       final activeFilterTypes = protocolService.definition!.getEqFilterTypes(schemaVersion: activeSchemaVersion);
+                       for (var entry in activeFilterTypes.entries) {
                           filterTypes[entry.key] = entry.value.value;
                        }
                     }

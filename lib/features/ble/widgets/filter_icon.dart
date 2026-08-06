@@ -59,19 +59,7 @@ class _FilterIconPainter extends CustomPainter {
     final h = size.height;
 
     switch (typeIndex) {
-      case 0: // FLAT
-        path.moveTo(0, midY);
-        path.lineTo(w, midY);
-        break;
-
-      case 1: // LOW_SHELF / LSF
-        path.moveTo(0, h * 0.7);
-        path.lineTo(w * 0.4, h * 0.7);
-        path.lineTo(w * 0.6, h * 0.3);
-        path.lineTo(w, h * 0.3);
-        break;
-
-      case 2: // PEAKING / Peak
+      case 0: // PEAKING / Peak
         path.moveTo(0, midY);
         path.lineTo(w * 0.3, midY);
         path.lineTo(w * 0.5, h * 0.2);
@@ -84,38 +72,43 @@ class _FilterIconPainter extends CustomPainter {
         path.lineTo(w * 0.7, midY);
         break;
 
-      case 3: // HIGH_SHELF / HSF
+      case 1: // LOW_SHELF / LSF
+        path.moveTo(0, h * 0.7);
+        path.lineTo(w * 0.4, h * 0.7);
+        path.lineTo(w * 0.6, h * 0.3);
+        path.lineTo(w, h * 0.3);
+        break;
+
+      case 2: // HIGH_SHELF / HSF
         path.moveTo(0, h * 0.3);
         path.lineTo(w * 0.4, h * 0.3);
         path.lineTo(w * 0.6, h * 0.7);
         path.lineTo(w, h * 0.7);
         break;
 
-      case 4: // LOW_PASS_LINKWITZ (Steeper)
-      case 6: // LOW_PASS_BUTTERWORTH
-      case 8: // LOW_PASS_BESSEL
+      case 3: // LOW_PASS / LPF
+      case 7: // LOW_PASS_ORDER1
         path.moveTo(0, h * 0.3);
         path.lineTo(w * 0.5, h * 0.3);
-        if (typeIndex == 4) { // Steeper for Linkwitz
-           path.quadraticBezierTo(w * 0.7, h * 0.3, w, h);
-        } else {
-           path.quadraticBezierTo(w * 0.8, h * 0.3, w, h * 0.8);
-        }
+        path.quadraticBezierTo(w * 0.8, h * 0.3, w, h * 0.8);
         break;
 
-      case 5: // HIGH_PASS_LINKWITZ (Steeper)
-      case 7: // HIGH_PASS_BUTTERWORTH
-      case 9: // HIGH_PASS_BESSEL
+      case 4: // HIGH_PASS / HPF
+      case 8: // HIGH_PASS_ORDER1
         path.moveTo(0, h);
-        if (typeIndex == 5) { // Steeper for Linkwitz
-           path.quadraticBezierTo(w * 0.3, h * 0.3, w * 0.5, h * 0.3);
-        } else {
-           path.quadraticBezierTo(w * 0.2, h * 0.8, w * 0.5, h * 0.3);
-        }
+        path.quadraticBezierTo(w * 0.2, h * 0.8, w * 0.5, h * 0.3);
         path.lineTo(w, h * 0.3);
         break;
 
-      case 10: // NOTCH / Notch
+      case 5: // BAND_PASS
+        path.moveTo(0, h * 0.8);
+        path.lineTo(w * 0.3, h * 0.8);
+        path.lineTo(w * 0.5, h * 0.2);
+        path.lineTo(w * 0.7, h * 0.8);
+        path.lineTo(w, h * 0.8);
+        break;
+
+      case 6: // NOTCH
         path.moveTo(0, h * 0.3);
         path.lineTo(w * 0.4, h * 0.3);
         path.lineTo(w * 0.5, h * 0.8);

@@ -138,6 +138,54 @@ class ProtocolService {
     return command.getIndex(idx);
   }
 
+  /// Resolve numerical min for an IndexDefinition (resolves dynamic parameter references like "min_predelay")
+  double? resolveMin(String categoryName, String commandName, String paramName, {int? schemaVersion, Map<String, dynamic>? controlStates}) {
+    final indexDef = getIndexDefinitionByParamName(categoryName, commandName, paramName, schemaVersion: schemaVersion);
+    if (indexDef == null) return null;
+    if (indexDef.min != null) return indexDef.min!.toDouble();
+
+    if (indexDef.rawMin is String) {
+      final refParamName = indexDef.rawMin as String;
+      // Try to get current value from controlStates first if available
+      if (controlStates != null) {
+        final stateKey = "${commandName}_$refParamName";
+        if (controlStates.containsKey(stateKey) && controlStates[stateKey] is num) {
+          return (controlStates[stateKey] as num).toDouble();
+        }
+      }
+      // Fallback to default of the referenced parameter in the same command
+      final refDef = getIndexDefinitionByParamName(categoryName, commandName, refParamName, schemaVersion: schemaVersion);
+      if (refDef?.defaultValue != null) {
+        return refDef!.defaultValue!.toDouble();
+      }
+    }
+    return null;
+  }
+
+  /// Resolve numerical max for an IndexDefinition (resolves dynamic parameter references like "max_predelay")
+  double? resolveMax(String categoryName, String commandName, String paramName, {int? schemaVersion, Map<String, dynamic>? controlStates}) {
+    final indexDef = getIndexDefinitionByParamName(categoryName, commandName, paramName, schemaVersion: schemaVersion);
+    if (indexDef == null) return null;
+    if (indexDef.max != null) return indexDef.max!.toDouble();
+
+    if (indexDef.rawMax is String) {
+      final refParamName = indexDef.rawMax as String;
+      // Try to get current value from controlStates first if available
+      if (controlStates != null) {
+        final stateKey = "${commandName}_$refParamName";
+        if (controlStates.containsKey(stateKey) && controlStates[stateKey] is num) {
+          return (controlStates[stateKey] as num).toDouble();
+        }
+      }
+      // Fallback to default of the referenced parameter in the same command
+      final refDef = getIndexDefinitionByParamName(categoryName, commandName, refParamName, schemaVersion: schemaVersion);
+      if (refDef?.defaultValue != null) {
+        return refDef!.defaultValue!.toDouble();
+      }
+    }
+    return null;
+  }
+
   /// Get index definition by category name, command ID, and index
   IndexDefinition? getIndex(String categoryName, int cmdId, int index) {
     final command = getCommand(categoryName, cmdId);
