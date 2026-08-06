@@ -1826,16 +1826,25 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                     final rawF0 = viewModel.getControlValue("${commandName}_band${index}_f0", defaultValue: baseF0);
                     int currentF0 = (rawF0 is int) ? rawF0 : (rawF0 is double ? rawF0.toInt() : baseF0);
 
+                    final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+                    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
+
                     final rawQ = viewModel.getControlValue("${commandName}_band${index}_q") ?? viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
-                    double currentQ = (rawQ is int) ? (rawQ / 256.0) : (rawQ is double ? rawQ : qValue);
+                    final qType = cmdDef?.indexRule?.fieldTypes['q'] ?? cmdDef?.indexRule?.fieldTypes['Q'];
+                    double currentQ;
+                    if (rawQ is double) {
+                      currentQ = rawQ;
+                    } else if (rawQ is int) {
+                      currentQ = (qType?.toLowerCase() == 'q6_10_le') ? (rawQ / 1024.0) : (rawQ / 256.0);
+                    } else {
+                      currentQ = qValue;
+                    }
 
                     final rawType = viewModel.getControlValue("${commandName}_band${index}_type", defaultValue: defaultTypeEnum);
                     int currentType = (rawType is int) ? rawType : (rawType is double ? rawType.toInt() : defaultTypeEnum);
 
                     // Check if command has "enable" field in indexRule
                     bool hasEnableField = false;
-                    final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
-                    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
                     if (cmdDef?.indexRule?.fieldOrder.values.contains('enable') == true) {
                       hasEnableField = true;
                     }
@@ -1916,8 +1925,10 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      try {
         final builder = getIt<DynamicCommandBuilder>();
         final protocolService = getIt<ProtocolService>();
-        final cmdDef = protocolService.getCommandByName(categoryName, commandName);
+        final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+        final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
         if (cmdDef == null) return;
+        final qType = cmdDef.indexRule?.fieldTypes['q'] ?? cmdDef.indexRule?.fieldTypes['Q'];
 
         // Process and format all values for state and payload
         Map<int, Map<String, dynamic>> rawBands = {};
@@ -1929,9 +1940,10 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
               if (fieldParam == 'gain') {
                  double val = (value is String) ? (double.tryParse(value) ?? 0.0) : (value as num).toDouble();
                  rawValue = (val * 256.0).round();
-              } else if (fieldParam == 'Q') {
+              } else if (fieldParam == 'Q' || fieldParam == 'q') {
                  double val = (value is String) ? (double.tryParse(value) ?? 0.0) : (value as num).toDouble();
-                 rawValue = (val * 256.0).round();
+                 final multiplier = (qType?.toLowerCase() == 'q6_10_le') ? 1024.0 : 256.0;
+                 rawValue = (val * multiplier).round();
               } else if (fieldParam == 'f0' || fieldParam == 'type') {
                  rawValue = (value is String) ? (int.tryParse(value) ?? 0) : (value is double ? value.toInt() : value as int);
               } else {
@@ -1969,8 +1981,16 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
     final stateKey = "${commandName}_band${band}_$fieldParam";
     
     int rawValue = 0;
-    if (fieldParam == 'gain' || fieldParam == 'Q' || fieldParam == 'q') {
+    final protocolService = getIt<ProtocolService>();
+    final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
+    final qType = cmdDef?.indexRule?.fieldTypes['q'] ?? cmdDef?.indexRule?.fieldTypes['Q'];
+
+    if (fieldParam == 'gain') {
        rawValue = (value * 256.0).round();
+    } else if (fieldParam == 'Q' || fieldParam == 'q') {
+       final multiplier = (qType?.toLowerCase() == 'q6_10_le') ? 1024.0 : 256.0;
+       rawValue = (value * multiplier).round();
     } else {
        rawValue = value.toInt();
     }
@@ -1984,18 +2004,13 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
       return; 
     }
 
-    // Debounce the BLE command sending
-    _debouncers[stateKey]?.cancel();
-    
-    final protocolService = getIt<ProtocolService>();
-    final cmdDef = protocolService.getCommandByName(categoryName, commandName);
     if (cmdDef == null) return;
     
+    _debouncers[stateKey]?.cancel();
     final cmdId = cmdDef.id; // Capture for closure safety
     _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
       try {
          final builder = getIt<DynamicCommandBuilder>();
-         final protocolService = getIt<ProtocolService>();
          // Re-verify definition inside timer or use captured ID
          final commands = builder.buildEqCommand(
            categoryName: categoryName,
