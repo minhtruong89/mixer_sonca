@@ -655,16 +655,16 @@
                     "value": "USB"
                   },
                   {
-                    "label": "HDMI",
-                    "value": "HDMI"
-                  },
-                  {
                     "label": "Line In",
                     "value": "LineIn"
                   },
                   {
                     "label": "SPDIF In",
                     "value": "SpdifIn"
+                  },
+                  {
+                    "label": "HDMI",
+                    "value": "HDMI"
                   }
                 ]
               }

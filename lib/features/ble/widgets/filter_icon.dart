@@ -59,61 +59,74 @@ class _FilterIconPainter extends CustomPainter {
     final h = size.height;
 
     switch (typeIndex) {
-      case 0: // PEAKING / Peak
+      case 0: // PEAKING / PK (Rhombus / Peak shape in middle)
         path.moveTo(0, midY);
-        path.lineTo(w * 0.3, midY);
-        path.lineTo(w * 0.5, h * 0.2);
-        path.lineTo(w * 0.7, midY);
-        path.lineTo(w * 0.5, h * 0.8);
-        path.lineTo(w * 0.3, midY);
-        path.moveTo(w * 0.7, midY);
+        path.lineTo(w * 0.25, midY);
+        path.lineTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.75, midY);
         path.lineTo(w, midY);
-        path.moveTo(w * 0.3, midY);
-        path.lineTo(w * 0.7, midY);
+        path.moveTo(w * 0.25, midY);
+        path.lineTo(w * 0.5, h * 0.85);
+        path.lineTo(w * 0.75, midY);
         break;
 
-      case 1: // LOW_SHELF / LSF
-        path.moveTo(0, h * 0.7);
-        path.lineTo(w * 0.4, h * 0.7);
-        path.lineTo(w * 0.6, h * 0.3);
-        path.lineTo(w, h * 0.3);
+      case 1: // LOW_SHELF / LS (Branching up/down on left, joining to flat right midY)
+        path.moveTo(0, h * 0.15);
+        path.lineTo(w * 0.35, h * 0.15);
+        path.lineTo(w * 0.65, midY);
+        path.lineTo(w, midY);
+        path.moveTo(0, h * 0.85);
+        path.lineTo(w * 0.35, h * 0.85);
+        path.lineTo(w * 0.65, midY);
         break;
 
-      case 2: // HIGH_SHELF / HSF
-        path.moveTo(0, h * 0.3);
-        path.lineTo(w * 0.4, h * 0.3);
-        path.lineTo(w * 0.6, h * 0.7);
-        path.lineTo(w, h * 0.7);
+      case 2: // HIGH_SHELF / HS (Flat on left midY, branching up/down on right)
+        path.moveTo(0, midY);
+        path.lineTo(w * 0.35, midY);
+        path.lineTo(w * 0.65, h * 0.15);
+        path.lineTo(w, h * 0.15);
+        path.moveTo(w * 0.35, midY);
+        path.lineTo(w * 0.65, h * 0.85);
+        path.lineTo(w, h * 0.85);
         break;
 
-      case 3: // LOW_PASS / LPF
-      case 7: // LOW_PASS_ORDER1
-        path.moveTo(0, h * 0.3);
-        path.lineTo(w * 0.5, h * 0.3);
-        path.quadraticBezierTo(w * 0.8, h * 0.3, w, h * 0.8);
-        break;
-
-      case 4: // HIGH_PASS / HPF
-      case 8: // HIGH_PASS_ORDER1
-        path.moveTo(0, h);
-        path.quadraticBezierTo(w * 0.2, h * 0.8, w * 0.5, h * 0.3);
-        path.lineTo(w, h * 0.3);
-        break;
-
-      case 5: // BAND_PASS
-        path.moveTo(0, h * 0.8);
-        path.lineTo(w * 0.3, h * 0.8);
+      case 3: // LOW_PASS / LP_2nd / LP (Flat top left, steep slope down right)
+        path.moveTo(0, h * 0.2);
         path.lineTo(w * 0.5, h * 0.2);
-        path.lineTo(w * 0.7, h * 0.8);
-        path.lineTo(w, h * 0.8);
+        path.lineTo(w * 0.95, h * 0.95);
         break;
 
-      case 6: // NOTCH
-        path.moveTo(0, h * 0.3);
-        path.lineTo(w * 0.4, h * 0.3);
-        path.lineTo(w * 0.5, h * 0.8);
-        path.lineTo(w * 0.6, h * 0.3);
-        path.lineTo(w, h * 0.3);
+      case 4: // HIGH_PASS / HP_2nd / HP (Slope up from bottom left, flat top right)
+        path.moveTo(0, h * 0.95);
+        path.lineTo(w * 0.5, h * 0.2);
+        path.lineTo(w, h * 0.2);
+        break;
+
+      case 5: // BAND_PASS / BP (Trapezoid / hill shape)
+        path.moveTo(0, h * 0.9);
+        path.lineTo(w * 0.3, h * 0.2);
+        path.lineTo(w * 0.7, h * 0.2);
+        path.lineTo(w, h * 0.9);
+        break;
+
+      case 6: // NOTCH / NH / NOTCH (V dip in middle)
+        path.moveTo(0, h * 0.2);
+        path.lineTo(w * 0.35, h * 0.2);
+        path.lineTo(w * 0.5, h * 0.85);
+        path.lineTo(w * 0.65, h * 0.2);
+        path.lineTo(w, h * 0.2);
+        break;
+
+      case 7: // LOW_PASS_ORDER1 / LP_1st / LO (Gentle curve down right)
+        path.moveTo(0, h * 0.2);
+        path.lineTo(w * 0.4, h * 0.2);
+        path.quadraticBezierTo(w * 0.75, h * 0.3, w, h * 0.85);
+        break;
+
+      case 8: // HIGH_PASS_ORDER1 / HP_1st / HO (Gentle curve up left to flat right)
+        path.moveTo(0, h * 0.85);
+        path.quadraticBezierTo(w * 0.25, h * 0.7, w * 0.6, h * 0.2);
+        path.lineTo(w, h * 0.2);
         break;
 
       default:

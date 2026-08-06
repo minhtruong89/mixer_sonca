@@ -267,11 +267,23 @@ class _EqBandDialogState extends State<EqBandDialog> {
                   // Map display names according to requirements
                   final upper = entry.key.toUpperCase();
                   if (upper == 'PEAKING') {
-                    displayName = 'PEAK';
+                    displayName = 'PK';
                   } else if (upper == 'LOW_SHELF') {
-                    displayName = 'LSF';
+                    displayName = 'LS';
                   } else if (upper == 'HIGH_SHELF') {
-                    displayName = 'HSF';
+                    displayName = 'HS';
+                  } else if (upper == 'LOW_PASS') {
+                    displayName = 'LP_2nd';
+                  } else if (upper == 'HIGH_PASS') {
+                    displayName = 'HP_2nd';
+                  } else if (upper == 'BAND_PASS') {
+                    displayName = 'BP';
+                  } else if (upper == 'NOTCH') {
+                    displayName = 'NOTCH';
+                  } else if (upper == 'LOW_PASS_ORDER1') {
+                    displayName = 'LP_1st';
+                  } else if (upper == 'HIGH_PASS_ORDER1') {
+                    displayName = 'HP_1st';
                   } else if (upper == 'LOW_PASS_LINKWITZ') {
                     displayName = 'LLwz';
                   } else if (upper == 'HIGH_PASS_LINKWITZ') {
@@ -284,8 +296,6 @@ class _EqBandDialogState extends State<EqBandDialog> {
                     displayName = 'LBsl';
                   } else if (upper == 'HIGH_PASS_BESSEL') {
                     displayName = 'HBsl';
-                  } else if (upper == 'NOTCH') {
-                    displayName = 'NOTCH';
                   } else if (upper == 'FLAT') {
                     displayName = 'FLAT';
                   }

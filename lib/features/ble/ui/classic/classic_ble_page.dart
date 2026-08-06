@@ -865,14 +865,45 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                 child: DropdownButton<String>(
                   value: currentValue,
                   isExpanded: true,
-                  dropdownColor: Colors.grey[900],
+                  dropdownColor: const Color(0xFF212121),
                   icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                  selectedItemBuilder: (BuildContext context) {
+                    return item.control.options.map((option) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          option.label,
+                          style: const TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      );
+                    }).toList();
+                  },
                   items: item.control.options.map((option) {
+                    final isSelected = (currentValue == option.value);
                     return DropdownMenuItem<String>(
                       value: option.value,
-                      child: Text(
-                        option.label,
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.greenAccent.withOpacity(0.15) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              option.label,
+                              style: TextStyle(
+                                color: isSelected ? Colors.greenAccent : Colors.white,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(Icons.check, color: Colors.greenAccent, size: 18),
+                          ],
+                        ),
                       ),
                     );
                   }).toList(),
