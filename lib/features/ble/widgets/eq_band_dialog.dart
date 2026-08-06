@@ -7,6 +7,8 @@ class EqBandDialog extends StatefulWidget {
   final int initialFreq;
   final double initialQ;
   final int initialType;
+  final bool initialEnable;
+  final bool hasEnableField;
   final Map<String, int> filterTypes; // e.g. {'Peak': 0, 'LowShelf': 1, ...}
   final Map<String, dynamic>? fieldLimits;
 
@@ -17,6 +19,8 @@ class EqBandDialog extends StatefulWidget {
     required this.initialFreq,
     required this.initialQ,
     required this.initialType,
+    this.initialEnable = true,
+    this.hasEnableField = false,
     required this.filterTypes,
     this.fieldLimits,
   });
@@ -30,6 +34,7 @@ class _EqBandDialogState extends State<EqBandDialog> {
   late TextEditingController _freqController;
   late TextEditingController _qController;
   late int _selectedType;
+  late bool _isEnable;
 
   @override
   void initState() {
@@ -38,6 +43,7 @@ class _EqBandDialogState extends State<EqBandDialog> {
     _freqController = TextEditingController(text: widget.initialFreq.toString());
     _qController = TextEditingController(text: widget.initialQ.toStringAsFixed(1));
     _selectedType = widget.initialType;
+    _isEnable = widget.initialEnable;
   }
 
   @override
@@ -87,6 +93,31 @@ class _EqBandDialogState extends State<EqBandDialog> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (widget.hasEnableField) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Enable',
+                              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                            ),
+                            Switch(
+                              value: _isEnable,
+                              activeColor: Colors.white,
+                              activeTrackColor: Colors.greenAccent,
+                              inactiveThumbColor: Colors.white,
+                              inactiveTrackColor: Colors.grey,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onChanged: (val) {
+                                setState(() {
+                                  _isEnable = val;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                      ],
                       _buildInputField('Gain (dB)', _gainController),
                       const SizedBox(height: 4),
                       _buildInputField('Freq (Hz)', _freqController),
@@ -142,12 +173,17 @@ class _EqBandDialogState extends State<EqBandDialog> {
                           }
                         }
 
-                        Navigator.of(context).pop({
+                        final result = <String, dynamic>{
                           'gain': gainValue,
                           'f0': freqValue.toInt(),
                           'Q': qValue,
                           'type': _selectedType,
-                        });
+                        };
+                        if (widget.hasEnableField) {
+                          result['enable'] = _isEnable ? 1 : 0;
+                        }
+
+                        Navigator.of(context).pop(result);
                       }),
                       _buildButton('Hủy', () {
                         Navigator.of(context).pop(null);

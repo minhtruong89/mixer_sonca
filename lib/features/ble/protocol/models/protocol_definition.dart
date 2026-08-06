@@ -467,15 +467,23 @@ class IndexRuleDefinition {
 
   /// Get field type from field name
   String? getFieldType(String fieldName) {
-    return fieldTypes[fieldName];
+    if (fieldTypes.containsKey(fieldName)) {
+      return fieldTypes[fieldName];
+    }
+    for (final entry in fieldTypes.entries) {
+      if (entry.key.toLowerCase() == fieldName.toLowerCase()) {
+        return entry.value;
+      }
+    }
+    return null;
   }
 
   /// Calculate index from band and field name
   int? calculateIndex(int band, String fieldName) {
-    // Find field number
+    // Find field number (case-insensitive check)
     int? fieldNum;
     for (final entry in fieldOrder.entries) {
-      if (entry.value == fieldName) {
+      if (entry.value.toLowerCase() == fieldName.toLowerCase()) {
         fieldNum = entry.key;
         break;
       }

@@ -10,8 +10,11 @@ class EqBandSlider extends StatelessWidget {
   final double minGain;
   final double maxGain;
   final int filterType;
+  final bool isEnable;
+  final bool hasEnableField;
   final VoidCallback onHeaderTapped;
   final ValueChanged<double> onGainChanged;
+  final ValueChanged<bool>? onEnableChanged;
 
   const EqBandSlider({
     super.key,
@@ -23,8 +26,11 @@ class EqBandSlider extends StatelessWidget {
     this.minGain = -6.0,
     this.maxGain = 6.0,
     required this.filterType,
+    this.isEnable = true,
+    this.hasEnableField = false,
     required this.onHeaderTapped,
     required this.onGainChanged,
+    this.onEnableChanged,
   });
 
   @override
@@ -37,48 +43,77 @@ class EqBandSlider extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header Texts
-          InkWell(
-            onTap: onHeaderTapped,
-            child: Column(
-              children: [
-                Text(
-                  f0Text,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+          // Optional Enable Switch/Button
+          if (hasEnableField) ...[
+            GestureDetector(
+              onTap: () => onEnableChanged?.call(!isEnable),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isEnable ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: isEnable ? Colors.greenAccent : Colors.redAccent,
+                    width: 1,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      qText,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    FilterIcon(
-                      typeIndex: filterType,
-                      width: 24,
-                      height: 12,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  gainText,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
+                child: Text(
+                  isEnable ? "ON" : "OFF",
+                  style: TextStyle(
+                    color: isEnable ? Colors.greenAccent : Colors.redAccent,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
-              ],
+              ),
+            ),
+            const SizedBox(height: 4),
+          ],
+          // Header Texts
+          InkWell(
+            onTap: onHeaderTapped,
+            child: Opacity(
+              opacity: (hasEnableField && !isEnable) ? 0.4 : 1.0,
+              child: Column(
+                children: [
+                  Text(
+                    f0Text,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        qText,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      FilterIcon(
+                        typeIndex: filterType,
+                        width: 24,
+                        height: 12,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    gainText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
           

@@ -282,6 +282,46 @@
               "default": 0,
               "applied": false,
               "readOnly": true
+            },
+            "12": {
+              "name": "echo_gain",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "13": {
+              "name": "echo_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
+            },
+            "14": {
+              "name": "echo_delay",
+              "type": "uint16_le",
+              "min": 150,
+              "max": 250,
+              "default": 200,
+              "applied": false
+            },
+            "15": {
+              "name": "reverb_gain",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 24,
+              "default": 12,
+              "applied": true
+            },
+            "16": {
+              "name": "reverb_mute",
+              "type": "uint16_le",
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "applied": true
             }
           }
         },
@@ -407,23 +447,7 @@
               "applied": false
             },
             "7": {
-              "name": "echo_gain",
-              "type": "uint16_le",
-              "min": 0,
-              "max": 24,
-              "default": 12,
-              "applied": true
-            },
-            "8": {
-              "name": "echo_delay",
-              "type": "uint16_le",
-              "min": 150,
-              "max": 250,
-              "default": 200,
-              "applied": false
-            },
-            "9": {
-              "name": "echo_enable",
+              "name": "enable",
               "type": "uint16_le",
               "min": 0,
               "max": 1,
@@ -490,15 +514,7 @@
               "appFacing": false
             },
             "8": {
-              "name": "reverb_gain",
-              "type": "uint16_le",
-              "min": 0,
-              "max": 24,
-              "default": 12,
-              "applied": true
-            },
-            "9": {
-              "name": "reverb_enable",
+              "name": "enable",
               "type": "uint16_le",
               "min": 0,
               "max": 1,

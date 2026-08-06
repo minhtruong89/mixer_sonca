@@ -1765,8 +1765,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      String categoryName = '';
      Map<String, dynamic>? fieldLimits;
      
+     final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
      for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
-       final cmd = cat.getCommandByName(commandName);
+       final cmd = protocolService.getCommandByName(cat.name, commandName, schemaVersion: activeSchemaVersion);
        if (cmd != null) {
           categoryName = cat.name;
           // Get field limits from command index rule
@@ -1825,11 +1826,22 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                     final rawF0 = viewModel.getControlValue("${commandName}_band${index}_f0", defaultValue: baseF0);
                     int currentF0 = (rawF0 is int) ? rawF0 : (rawF0 is double ? rawF0.toInt() : baseF0);
 
-                    final rawQ = viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
+                    final rawQ = viewModel.getControlValue("${commandName}_band${index}_q") ?? viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
                     double currentQ = (rawQ is int) ? (rawQ / 256.0) : (rawQ is double ? rawQ : qValue);
 
                     final rawType = viewModel.getControlValue("${commandName}_band${index}_type", defaultValue: defaultTypeEnum);
                     int currentType = (rawType is int) ? rawType : (rawType is double ? rawType.toInt() : defaultTypeEnum);
+
+                    // Check if command has "enable" field in indexRule
+                    bool hasEnableField = false;
+                    final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
+                    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
+                    if (cmdDef?.indexRule?.fieldOrder.values.contains('enable') == true) {
+                      hasEnableField = true;
+                    }
+
+                    final rawEnable = viewModel.getControlValue("${commandName}_band${index}_enable", defaultValue: 1);
+                    bool isEnable = (rawEnable is int) ? (rawEnable != 0) : (rawEnable is double ? rawEnable != 0 : (rawEnable is bool ? rawEnable : true));
 
                     String displayF0Text = "${currentF0}Hz";
                     if (currentF0 >= 1000 && currentF0 % 1000 == 0) {
@@ -1847,34 +1859,41 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                     return EqBandSlider(
                       bandIndex: index,
                       f0Text: displayF0Text,
-                  qText: currentQ.toStringAsFixed(1),
-                  gainText: "${currentGain > 0 ? '+' : ''}${currentGain.toStringAsFixed(1)}dB",
-                  gain: currentGain,
-                  minGain: minGain,
-                  maxGain: maxGain,
-                  filterType: currentType,
-                  onHeaderTapped: () async {
-                    final result = await showDialog<Map<String, dynamic>>(
-                      context: context,
-                      builder: (ctx) => EqBandDialog(
-                        bandIndex: index,
-                        initialGain: currentGain,
-                        initialFreq: currentF0,
-                        initialQ: currentQ,
-                        initialType: currentType,
-                        filterTypes: filterTypes,
-                        fieldLimits: fieldLimits,
-                      ),
-                    );
+                      qText: currentQ.toStringAsFixed(1),
+                      gainText: "${currentGain > 0 ? '+' : ''}${currentGain.toStringAsFixed(1)}dB",
+                      gain: currentGain,
+                      minGain: minGain,
+                      maxGain: maxGain,
+                      filterType: currentType,
+                      isEnable: isEnable,
+                      hasEnableField: hasEnableField,
+                      onHeaderTapped: () async {
+                        final result = await showDialog<Map<String, dynamic>>(
+                          context: context,
+                          builder: (ctx) => EqBandDialog(
+                            bandIndex: index,
+                            initialGain: currentGain,
+                            initialFreq: currentF0,
+                            initialQ: currentQ,
+                            initialType: currentType,
+                            initialEnable: isEnable,
+                            hasEnableField: hasEnableField,
+                            filterTypes: filterTypes,
+                            fieldLimits: fieldLimits,
+                          ),
+                        );
 
-                    if (result != null) {
-                      _handleEqBandMultipleChange(categoryName, commandName, index, result, viewModel);
-                    }
-                  },
-                  onGainChanged: (val) {
-                     _handleEqBandChange(categoryName, commandName, index, 'gain', val, viewModel);
-                  },
-                );
+                        if (result != null) {
+                          _handleEqBandMultipleChange(categoryName, commandName, index, result, viewModel);
+                        }
+                      },
+                      onGainChanged: (val) {
+                         _handleEqBandChange(categoryName, commandName, index, 'gain', val, viewModel);
+                      },
+                      onEnableChanged: (val) {
+                         _handleEqBandChange(categoryName, commandName, index, 'enable', val ? 1.0 : 0.0, viewModel);
+                      },
+                    );
                   },
                 ),
               );
@@ -1949,8 +1968,10 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
     final stateKey = "${commandName}_band${band}_$fieldParam";
     
     int rawValue = 0;
-    if (fieldParam == 'gain') {
+    if (fieldParam == 'gain' || fieldParam == 'Q' || fieldParam == 'q') {
        rawValue = (value * 256.0).round();
+    } else {
+       rawValue = value.toInt();
     }
     
     viewModel.updateControlValue(stateKey, rawValue);

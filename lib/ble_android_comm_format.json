@@ -982,9 +982,6 @@
         }
       }
     },
-	
-	
-	
     {
       "schemaVersion": 2,
       "framing": {
@@ -1225,6 +1222,46 @@
                   "default": 0,
                   "applied": false,
                   "readOnly": true
+                },
+                "12": {
+                  "name": "echo_gain",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 24,
+                  "default": 12,
+                  "applied": true
+                },
+                "13": {
+                  "name": "echo_mute",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": true
+                },
+                "14": {
+                  "name": "echo_delay",
+                  "type": "uint16_le",
+                  "min": 150,
+                  "max": 250,
+                  "default": 200,
+                  "applied": false
+                },
+                "15": {
+                  "name": "reverb_gain",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 24,
+                  "default": 12,
+                  "applied": true
+                },
+                "16": {
+                  "name": "reverb_mute",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": true
                 }
               }
             },
@@ -1232,7 +1269,7 @@
               "name": "MIC_GRAPH_EQ",
               "paramType": "EQParam",
               "indexRule": {
-				"indexCount": 52,
+                "indexCount": 52,
                 "indexRange": "2-52",
                 "bandCount": 10,
                 "bandBaseIndex": 2,
@@ -1260,8 +1297,8 @@
                   "enable": "uint16_le",
                   "type": "uint16_le",
                   "f0": "uint16_le",
-                  "q": "uint16_le",
-                  "gain": "uint16_le"
+                  "q": "q8_8_le",
+                  "gain": "q8_8_le"
                 },
                 "fieldLimit": {
                   "enable": {
@@ -1273,12 +1310,12 @@
                     "max": "20000"
                   },
                   "q": {
-                    "min": "0",
-                    "max": "255"
+                    "min": "0.1",
+                    "max": "128"
                   },
                   "gain": {
-                    "min": "-1200",
-                    "max": "1200"
+                    "min": "-12.0",
+                    "max": "12.0"
                   }
                 }
               }
@@ -1303,7 +1340,7 @@
                 "2": {
                   "name": "delay",
                   "type": "uint16_le",
-                  "min": 0,
+                  "min": 150,
                   "max": 250,
                   "default": 200,
                   "applied": true
@@ -1337,23 +1374,7 @@
                   "applied": false
                 },
                 "7": {
-                  "name": "echo_gain",
-                  "type": "uint16_le",
-                  "min": 0,
-                  "max": 24,
-                  "default": 12,
-                  "applied": true
-                },
-                "8": {
-                  "name": "echo_delay",
-                  "type": "uint16_le",
-                  "min": 150,
-                  "max": 250,
-                  "default": 200,
-                  "applied": false
-                },
-                "9": {
-                  "name": "echo_enable",
+                  "name": "enable",
                   "type": "uint16_le",
                   "min": 0,
                   "max": 1,
@@ -1420,15 +1441,7 @@
                   "appFacing": false
                 },
                 "8": {
-                  "name": "reverb_gain",
-                  "type": "uint16_le",
-                  "min": 0,
-                  "max": 24,
-                  "default": 12,
-                  "applied": true
-                },
-                "9": {
-                  "name": "reverb_enable",
+                  "name": "enable",
                   "type": "uint16_le",
                   "min": 0,
                   "max": 1,
@@ -2164,7 +2177,5 @@
         }
       }
     }
-	
-	
   ]
 }

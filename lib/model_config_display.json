@@ -36,17 +36,6 @@
           "desc": "Area for MIC click main screen",
           "areaType": "Overlay Area",
           "items": {
-            "MIC": {
-              "category": "MIC",
-              "command": "MIC_COMMON",
-              "indexList": [
-                "mic_master_mute",
-                "mic_master_volume"
-              ],
-              "control": {
-                "typeDisplay": "vertical slider"
-              }
-            },
             "MIC 1": {
               "category": "MIC",
               "command": "MIC_COMMON",
@@ -64,6 +53,17 @@
               "indexList": [
                 "mic_2_mute",
                 "mic_2_volume"
+              ],
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "MIC": {
+              "category": "MIC",
+              "command": "MIC_COMMON",
+              "indexList": [
+                "mic_master_mute",
+                "mic_master_volume"
               ],
               "control": {
                 "typeDisplay": "vertical slider"
@@ -114,10 +114,13 @@
           "desc": "Area for ECHO click main screen",
           "areaType": "Overlay Area",
           "items": {
-            "ECHO": {
+            "Echo Gain": {
               "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "echo_gain",
+              "command": "MIC_COMMON",
+              "indexList": [
+                "echo_mute",
+                "echo_gain"
+              ],
               "control": {
                 "typeDisplay": "vertical slider"
               }
@@ -144,24 +147,6 @@
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
               "index": "delay",
-              "control": {
-                "typeDisplay": "vertical slider"
-              }
-            },
-			"Max Delay": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "max_delay",
-              "control": {
-                "typeDisplay": "vertical slider",
-				"minValue": "0",
-                "maxValue": "500"
-              }
-            },
-			"Echo Delay": {
-              "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "echo_delay",
               "control": {
                 "typeDisplay": "vertical slider"
               }
@@ -198,7 +183,7 @@
 			"Echo Enable": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
-              "index": "echo_enable",
+              "index": "enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -210,10 +195,13 @@
           "desc": "Area for REVERB click main screen",
           "areaType": "Overlay Area",
           "items": {
-            "REVERB": {
+            "Reverb Gain": {
               "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "reverb_gain",
+              "command": "MIC_COMMON",
+              "indexList": [
+                "reverb_mute",
+                "reverb_gain"
+              ],
               "control": {
                 "typeDisplay": "vertical slider"
               }
@@ -236,16 +224,6 @@
                 "typeDisplay": "vertical slider",
                 "minValue": "0",
                 "maxValue": "2400"
-              }
-            },
-			"Max Pre Delay": {
-              "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "max_predelay",
-              "control": {
-                "typeDisplay": "vertical slider",
-                "minValue": "0",
-                "maxValue": "3000"
               }
             },
 			"Diffusion": {
@@ -296,7 +274,7 @@
             "REVERB ENABLE": {
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
-              "index": "reverb_enable",
+              "index": "enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
@@ -331,129 +309,129 @@
             "16000"
           ],
           "valueFilterJAZZ": [
-            {
-              "f0": "125",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "250",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "500",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "1000",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "1500",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "2000",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "3000",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "4000",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "8000",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "16000",
-              "gain": "3",
-              "Q": "179",
-              "type": "PEAKING"
-            }
-          ],
-          "valueFilterPOP": [
-            {
-              "f0": "125",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "250",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "500",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "1000",
-              "gain": "3.0",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "1500",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "2000",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "3000",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "4000",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "8000",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            },
-            {
-              "f0": "16000",
-              "gain": "9",
-              "Q": "179",
-              "type": "PEAKING"
-            }
-          ]
+          {
+            "f0": "125",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "250",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "500",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "1000",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "1500",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "2000",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "3000",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "4000",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "8000",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "16000",
+            "gain": "-3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          }
+        ],
+        "valueFilterPOP": [
+          {
+            "f0": "125",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "250",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "500",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "1000",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "1500",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "2000",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "3000",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "4000",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "8000",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          },
+          {
+            "f0": "16000",
+            "gain": "3.0",
+            "Q": "179",
+            "type": "PEAKING"
+          }
+        ]
         },
         "Area MUSIC MAIN": {
           "desc": "Area for MUSIC click main screen",
@@ -604,8 +582,11 @@
             },
             "ECHO": {
               "category": "MIC",
-              "command": "MIC_ECHO_EFFECT",
-              "index": "echo_gain",
+              "command": "MIC_COMMON",
+              "indexList": [
+                "echo_mute",
+                "echo_gain"
+              ],
               "control": {
                 "typeDisplay": "vertical slider"
               },
@@ -615,8 +596,11 @@
             },
             "REVERB": {
               "category": "MIC",
-              "command": "MIC_REVERB_EFFECT",
-              "index": "reverb_gain",
+              "command": "MIC_COMMON",
+              "indexList": [
+                "reverb_mute",
+                "reverb_gain"
+              ],
               "control": {
                 "typeDisplay": "vertical slider"
               },
