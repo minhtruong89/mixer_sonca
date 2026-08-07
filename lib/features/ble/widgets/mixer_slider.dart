@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mixer_sonca/core/services/mixer_service.dart';
 import 'package:mixer_sonca/injection.dart';
 
-class MixerSlider extends StatelessWidget {
+class MixerSlider extends StatefulWidget {
   final String label;
   final double value;
   final bool isMuted;
@@ -33,7 +33,17 @@ class MixerSlider extends StatelessWidget {
   });
 
   @override
+  State<MixerSlider> createState() => _MixerSliderState();
+}
+
+class _MixerSliderState extends State<MixerSlider> {
+  bool _isDragging = false;
+  double _localValue = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final effectiveValue = _isDragging ? _localValue : widget.value;
+
     return Container(
       width: 110,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -46,14 +56,14 @@ class MixerSlider extends StatelessWidget {
           // Label
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: onLabelTap,
+            onTap: widget.onLabelTap,
             child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Flexible(
                   child: Text(
-                    label,
+                    widget.label,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -62,7 +72,7 @@ class MixerSlider extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (onLabelTap != null) ...[
+                if (widget.onLabelTap != null) ...[
                   const SizedBox(width: 4),
                   const Icon(
                     Icons.open_in_new,
@@ -81,9 +91,9 @@ class MixerSlider extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Value Text (Centered when no icon, shifted left if icon exists to prevent overlap)
+                // Value Text
                 Text(
-                  '${((value - displayOffset) / displayDivide).toStringAsFixed(((value - displayOffset) / displayDivide) % 1 == 0 ? 0 : 1)}$displayText',
+                  '${((effectiveValue - widget.displayOffset) / widget.displayDivide).toStringAsFixed(((effectiveValue - widget.displayOffset) / widget.displayDivide) % 1 == 0 ? 0 : 1)}${widget.displayText}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -91,18 +101,18 @@ class MixerSlider extends StatelessWidget {
                   ),
                 ),
                 // Mute Icon
-                if (showMute) ...[
+                if (widget.showMute) ...[
                    const SizedBox(width: 4),
                    IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     icon: Icon(
-                      isMuted ? Icons.volume_off : Icons.volume_up,
-                      color: isMuted ? Colors.redAccent : Colors.white,
+                      widget.isMuted ? Icons.volume_off : Icons.volume_up,
+                      color: widget.isMuted ? Colors.redAccent : Colors.white,
                       size: 24,
                     ),
-                    onPressed: () => onMuteChanged(!isMuted),
+                    onPressed: () => widget.onMuteChanged(!widget.isMuted),
                   ),
                 ],
               ],
@@ -118,28 +128,57 @@ class MixerSlider extends StatelessWidget {
                 final height = constraints.maxHeight;
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onVerticalDragUpdate: (details) {
+                  onVerticalDragStart: (details) {
                     final dy = details.localPosition.dy;
-                    var newValue = (1 - (dy / height)) * (max - min) + min;
+                    var newValue = (1 - (dy / height)) * (widget.max - widget.min) + widget.min;
                     try {
                       if (getIt.isRegistered<MixerService>() && getIt<MixerService>().getSchemaVersionForActiveModel() == 2) {
                         newValue = newValue.roundToDouble();
                       }
                     } catch (_) {}
-                    onChanged(newValue.clamp(min, max));
+                    final clamped = newValue.clamp(widget.min, widget.max);
+                    setState(() {
+                      _isDragging = true;
+                      _localValue = clamped;
+                    });
+                    widget.onChanged(clamped);
+                  },
+                  onVerticalDragUpdate: (details) {
+                    final dy = details.localPosition.dy;
+                    var newValue = (1 - (dy / height)) * (widget.max - widget.min) + widget.min;
+                    try {
+                      if (getIt.isRegistered<MixerService>() && getIt<MixerService>().getSchemaVersionForActiveModel() == 2) {
+                        newValue = newValue.roundToDouble();
+                      }
+                    } catch (_) {}
+                    final clamped = newValue.clamp(widget.min, widget.max);
+                    setState(() {
+                      _localValue = clamped;
+                    });
+                    widget.onChanged(clamped);
+                  },
+                  onVerticalDragEnd: (_) {
+                    setState(() {
+                      _isDragging = false;
+                    });
+                  },
+                  onVerticalDragCancel: () {
+                    setState(() {
+                      _isDragging = false;
+                    });
                   },
                   onTapDown: (details) {
                     final dy = details.localPosition.dy;
-                    var newValue = (1 - (dy / height)) * (max - min) + min;
+                    var newValue = (1 - (dy / height)) * (widget.max - widget.min) + widget.min;
                     try {
                       if (getIt.isRegistered<MixerService>() && getIt<MixerService>().getSchemaVersionForActiveModel() == 2) {
                         newValue = newValue.roundToDouble();
                       }
                     } catch (_) {}
-                    onChanged(newValue.clamp(min, max));
+                    widget.onChanged(newValue.clamp(widget.min, widget.max));
                   },
                   onDoubleTap: () {
-                    onChanged((min + max) / 2);
+                    widget.onChanged((widget.min + widget.max) / 2);
                   },
                   child: Row(
                     children: [
@@ -154,9 +193,9 @@ class MixerSlider extends StatelessWidget {
                       // Vertical Slider
                       Expanded(
                         child: _VerticalSlider(
-                          value: value,
-                          min: min,
-                          max: max,
+                          value: effectiveValue,
+                          min: widget.min,
+                          max: widget.max,
                         ),
                       ),
                     ],
@@ -175,8 +214,8 @@ class MixerSlider extends StatelessWidget {
       builder: (context, constraints) {
         final h = constraints.maxHeight;
         
-        final scaledMin = (min - displayOffset) / displayDivide;
-        final scaledMax = (max - displayOffset) / displayDivide;
+        final scaledMin = (widget.min - widget.displayOffset) / widget.displayDivide;
+        final scaledMax = (widget.max - widget.displayOffset) / widget.displayDivide;
         final range = scaledMax - scaledMin;
         
         // Helper to format scale labels

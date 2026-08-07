@@ -1294,7 +1294,7 @@ class BleViewModel extends ChangeNotifier {
                       ? "${command.name}_band${eqBand}_$fieldName"
                       : "${command.name}_$fieldName";
                   debugPrint('Place 1 Protocol: Updating state - $stateKey = $value');
-                  updateControlValue(stateKey, value);
+                  updateControlValue(stateKey, value, fromBleResponse: true);
                 }
               }
             }
