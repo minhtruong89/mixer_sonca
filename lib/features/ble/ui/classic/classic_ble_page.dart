@@ -1619,6 +1619,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
          }
       }
       
+      // Mark active user interaction to lock out stale BLE responses temporarily
+      viewModel.markUserInteraction(stateKey);
+
       // Stop execution early if finalValue is identical to current state
       final currentControlState = viewModel.getControlValue(stateKey);
       if (currentControlState == finalValue) {
@@ -1987,7 +1990,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                  rawValue = (value is double) ? value.toInt() : (value as int);
               }
               
-              viewModel.updateControlValue("${commandName}_band${band}_$fieldParam", rawValue, notify: false);
+              final key = "${commandName}_band${band}_$fieldParam";
+              viewModel.markUserInteraction(key);
+              viewModel.updateControlValue(key, rawValue, notify: false);
               rawFields[fieldParam] = rawValue;
            });
            rawBands[band] = rawFields;
@@ -2032,6 +2037,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
        rawValue = value.toInt();
     }
     
+    viewModel.markUserInteraction(stateKey);
     viewModel.updateControlValue(stateKey, rawValue);
 
     debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');

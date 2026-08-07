@@ -333,11 +333,28 @@ class BleViewModel extends ChangeNotifier {
   final Map<String, dynamic> _controlStates = {};
   Map<String, dynamic> get controlStates => _controlStates;
 
+  /// Track recent user interaction timestamp per control key to prevent delayed BLE responses from causing jitter/reversion
+  final Map<String, DateTime> _userInteractionTimestamps = {};
+
+  void markUserInteraction(String key) {
+    _userInteractionTimestamps[key] = DateTime.now();
+  }
+
+  bool isUserInteracting(String key, {Duration lockDuration = const Duration(milliseconds: 600)}) {
+    final lastTime = _userInteractionTimestamps[key];
+    if (lastTime == null) return false;
+    return DateTime.now().difference(lastTime) < lockDuration;
+  }
+
   dynamic getControlValue(String key, {dynamic defaultValue}) {
     return _controlStates[key] ?? defaultValue;
   }
 
-  void updateControlValue(String key, dynamic value, {bool notify = true}) {
+  void updateControlValue(String key, dynamic value, {bool notify = true, bool fromBleResponse = false}) {
+    if (fromBleResponse && isUserInteracting(key)) {
+      // Ignore stale / delayed BLE response while user is dragging / interacting
+      return;
+    }
     if (_controlStates[key] == value) return;
     _controlStates[key] = value;
     if (notify) notifyListeners();
@@ -1347,7 +1364,7 @@ class BleViewModel extends ChangeNotifier {
                       ? "${command.name}_band${eqBand}_$fieldName"
                       : "${command.name}_$fieldName";
                   debugPrint('Place 2 Protocol: Updating state - $stateKey = $value');
-                  updateControlValue(stateKey, value);
+                  updateControlValue(stateKey, value, fromBleResponse: true);
                 }
               }
             }
