@@ -32,6 +32,7 @@ enum DrawerContent { none, area2, settings }
 class _ClassicBlePageState extends State<ClassicBlePage> {
   bool _isDropdownOpen = false;
   String? _currentOverlayArea;
+  bool _wasConnected = false;
   
   // Debouncers for slider updates to reduce BLE traffic
   final Map<String, Timer?> _debouncers = {};
@@ -227,8 +228,10 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<BleViewModel>();
 
-    // If device disconnected while overlay is open, clear it and return to main area
-    if (viewModel.selectedDevice == null && _currentOverlayArea != null) {
+    final isConnected = (viewModel.selectedDevice != null);
+
+    // Only return to main area if device WAS connected and THEN lost connection while overlay is open
+    if (_wasConnected && !isConnected && _currentOverlayArea != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _currentOverlayArea != null) {
           setState(() {
@@ -237,6 +240,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
         }
       });
     }
+
+    _wasConnected = isConnected;
 
     return AppScaffold(
       title: '',
@@ -562,8 +567,13 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                                       }
                                       
                                       // Connect to new device
-                                      viewModel.connectToDevice(device).then((_) {
-                                        setState(() => _isDropdownOpen = false);
+                                      viewModel.connectToDevice(device).then((_) async {
+                                        if (viewModel.selectedDevice != null) {
+                                          await Future.delayed(const Duration(seconds: 1));
+                                        }
+                                        if (mounted) {
+                                          setState(() => _isDropdownOpen = false);
+                                        }
                                       }).catchError((e) {
                                         _showCenterSnackBar('Kết nối thất bại');
                                       });
