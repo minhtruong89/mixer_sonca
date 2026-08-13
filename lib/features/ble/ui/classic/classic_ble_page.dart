@@ -227,18 +227,16 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<BleViewModel>();
 
-    /*
-    // If device disconnected while overlay is open, clear it
+    // If device disconnected while overlay is open, clear it and return to main area
     if (viewModel.selectedDevice == null && _currentOverlayArea != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
+        if (mounted && _currentOverlayArea != null) {
           setState(() {
             _currentOverlayArea = null;
           });
         }
       });
     }
-    */
 
     return AppScaffold(
       title: '',
@@ -1926,6 +1924,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                        }
                     }
 
+                    final bool hasValue = (rawGain != null);
+
                     return EqBandSlider(
                       bandIndex: index,
                       f0Text: displayF0Text,
@@ -1937,6 +1937,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                       filterType: currentType,
                       isEnable: isEnable,
                       hasEnableField: hasEnableField,
+                      hasValue: hasValue,
                       onHeaderTapped: () async {
                         final result = await showDialog<Map<String, dynamic>>(
                           context: context,

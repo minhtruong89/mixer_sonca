@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mixer_sonca/features/ble/widgets/filter_icon.dart';
 
-class EqBandSlider extends StatelessWidget {
+class EqBandSlider extends StatefulWidget {
   final int bandIndex;
   final String f0Text;
   final String qText;
@@ -12,6 +12,7 @@ class EqBandSlider extends StatelessWidget {
   final int filterType;
   final bool isEnable;
   final bool hasEnableField;
+  final bool hasValue;
   final VoidCallback onHeaderTapped;
   final ValueChanged<double> onGainChanged;
   final ValueChanged<bool>? onEnableChanged;
@@ -28,13 +29,25 @@ class EqBandSlider extends StatelessWidget {
     required this.filterType,
     this.isEnable = true,
     this.hasEnableField = false,
+    this.hasValue = true,
     required this.onHeaderTapped,
     required this.onGainChanged,
     this.onEnableChanged,
   });
 
   @override
+  State<EqBandSlider> createState() => _EqBandSliderState();
+}
+
+class _EqBandSliderState extends State<EqBandSlider> {
+  bool _isDragging = false;
+  double _localGain = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final effectiveGain = _isDragging ? _localGain : widget.gain;
+    final displayGainText = "${effectiveGain > 0 ? '+' : ''}${effectiveGain.toStringAsFixed(1)}dB";
+
     return Container(
       width: 80,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -44,23 +57,23 @@ class EqBandSlider extends StatelessWidget {
       child: Column(
         children: [
           // Optional Enable Switch/Button
-          if (hasEnableField) ...[
+          if (widget.hasEnableField) ...[
             GestureDetector(
-              onTap: () => onEnableChanged?.call(!isEnable),
+              onTap: () => widget.onEnableChanged?.call(!widget.isEnable),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isEnable ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                  color: widget.isEnable ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
-                    color: isEnable ? Colors.greenAccent : Colors.redAccent,
+                    color: widget.isEnable ? Colors.greenAccent : Colors.redAccent,
                     width: 1,
                   ),
                 ),
                 child: Text(
-                  isEnable ? "ON" : "OFF",
+                  widget.isEnable ? "ON" : "OFF",
                   style: TextStyle(
-                    color: isEnable ? Colors.greenAccent : Colors.redAccent,
+                    color: widget.isEnable ? Colors.greenAccent : Colors.redAccent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -71,13 +84,13 @@ class EqBandSlider extends StatelessWidget {
           ],
           // Header Texts
           InkWell(
-            onTap: onHeaderTapped,
+            onTap: widget.onHeaderTapped,
             child: Opacity(
-              opacity: (hasEnableField && !isEnable) ? 0.4 : 1.0,
+              opacity: (widget.hasEnableField && !widget.isEnable) ? 0.4 : 1.0,
               child: Column(
                 children: [
                   Text(
-                    f0Text,
+                    widget.f0Text,
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -88,7 +101,7 @@ class EqBandSlider extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        qText,
+                        widget.qText,
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -96,7 +109,7 @@ class EqBandSlider extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       FilterIcon(
-                        typeIndex: filterType,
+                        typeIndex: widget.filterType,
                         width: 24,
                         height: 12,
                       ),
@@ -104,7 +117,7 @@ class EqBandSlider extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    gainText,
+                    widget.hasValue ? displayGainText : "",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -126,21 +139,42 @@ class EqBandSlider extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onVerticalDragStart: (details) {
                     final dy = details.localPosition.dy;
-                    final newValue = (1 - (dy / height)) * (maxGain - minGain) + minGain;
-                    onGainChanged(newValue.clamp(minGain, maxGain));
+                    final newValue = ((1 - (dy / height)) * (widget.maxGain - widget.minGain) + widget.minGain).clamp(widget.minGain, widget.maxGain);
+                    setState(() {
+                      _isDragging = true;
+                      _localGain = newValue;
+                    });
+                    widget.onGainChanged(newValue);
                   },
                   onVerticalDragUpdate: (details) {
                     final dy = details.localPosition.dy;
-                    final newValue = (1 - (dy / height)) * (maxGain - minGain) + minGain;
-                    onGainChanged(newValue.clamp(minGain, maxGain));
+                    final newValue = ((1 - (dy / height)) * (widget.maxGain - widget.minGain) + widget.minGain).clamp(widget.minGain, widget.maxGain);
+                    setState(() {
+                      _localGain = newValue;
+                    });
+                    widget.onGainChanged(newValue);
+                  },
+                  onVerticalDragEnd: (_) {
+                    setState(() {
+                      _isDragging = false;
+                    });
+                  },
+                  onVerticalDragCancel: () {
+                    setState(() {
+                      _isDragging = false;
+                    });
                   },
                   onTapUp: (details) {
                     final dy = details.localPosition.dy;
-                    final newValue = (1 - (dy / height)) * (maxGain - minGain) + minGain;
-                    onGainChanged(newValue.clamp(minGain, maxGain));
+                    final newValue = ((1 - (dy / height)) * (widget.maxGain - widget.minGain) + widget.minGain).clamp(widget.minGain, widget.maxGain);
+                    widget.onGainChanged(newValue);
                   },
                   onDoubleTap: () {
-                    onGainChanged((minGain + maxGain) / 2);
+                    final centerVal = (widget.minGain + widget.maxGain) / 2;
+                    setState(() {
+                      _localGain = centerVal;
+                    });
+                    widget.onGainChanged(centerVal);
                   },
                   child: Row(
                     children: [
@@ -155,9 +189,10 @@ class EqBandSlider extends StatelessWidget {
                       // Vertical Slider
                       Expanded(
                         child: _VerticalEqSlider(
-                          value: gain,
-                          min: minGain,
-                          max: maxGain,
+                          value: effectiveGain,
+                          min: widget.minGain,
+                          max: widget.maxGain,
+                          hasValue: widget.hasValue,
                         ),
                       ),
                     ],
@@ -176,10 +211,10 @@ class EqBandSlider extends StatelessWidget {
       builder: (context, constraints) {
         final h = constraints.maxHeight;
         final ticks = [
-          '+${maxGain.toInt()}', '', '', '', '', '', 
+          '+${widget.maxGain.toInt()}', '', '', '', '', '', 
           '0', 
           '', '', '', '', '', 
-          minGain.toInt().toString()
+          widget.minGain.toInt().toString()
         ];
         
         return Stack(
@@ -230,11 +265,13 @@ class _VerticalEqSlider extends StatelessWidget {
   final double value;
   final double min;
   final double max;
+  final bool hasValue;
 
   const _VerticalEqSlider({
     required this.value,
     required this.min,
     required this.max,
+    this.hasValue = true,
   });
 
   @override
@@ -255,40 +292,41 @@ class _VerticalEqSlider extends StatelessWidget {
                 ),
               ),
               
-              // Thumb
-              Positioned(
-                bottom: (value - min) / (max - min) * (height - 40), 
-                child: Container(
-                  width: 30,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                    gradient: const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFFF5F5F5),
-                        Color(0xFFBDBDBD),
+              // Thumb (only visible if hasValue is true)
+              if (hasValue)
+                Positioned(
+                  bottom: (value - min) / (max - min) * (height - 40), 
+                  child: Container(
+                    width: 30,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFFF5F5F5),
+                          Color(0xFFBDBDBD),
+                        ],
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 20,
-                      height: 2,
-                      color: Colors.black26,
+                    child: Center(
+                      child: Container(
+                        width: 20,
+                        height: 2,
+                        color: Colors.black26,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           );
       },
