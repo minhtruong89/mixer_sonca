@@ -167,7 +167,7 @@ class _MixerSliderState extends State<MixerSlider> {
                       _isDragging = false;
                     });
                   },
-                  onTapDown: (details) {
+                  onTapUp: (details) {
                     final dy = details.localPosition.dy;
                     var newValue = (1 - (dy / height)) * (widget.max - widget.min) + widget.min;
                     try {

@@ -1,6 +1,6 @@
 name: mixer_sonca
 description: "A new Flutter project for Sonca Mixer application"
-version: 1.0.1+421014
+version: 1.0.2+421020
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

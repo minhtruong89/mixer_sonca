@@ -124,12 +124,17 @@ class EqBandSlider extends StatelessWidget {
                 final height = constraints.maxHeight;
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
+                  onVerticalDragStart: (details) {
+                    final dy = details.localPosition.dy;
+                    final newValue = (1 - (dy / height)) * (maxGain - minGain) + minGain;
+                    onGainChanged(newValue.clamp(minGain, maxGain));
+                  },
                   onVerticalDragUpdate: (details) {
                     final dy = details.localPosition.dy;
                     final newValue = (1 - (dy / height)) * (maxGain - minGain) + minGain;
                     onGainChanged(newValue.clamp(minGain, maxGain));
                   },
-                  onTapDown: (details) {
+                  onTapUp: (details) {
                     final dy = details.localPosition.dy;
                     final newValue = (1 - (dy / height)) * (maxGain - minGain) + minGain;
                     onGainChanged(newValue.clamp(minGain, maxGain));
