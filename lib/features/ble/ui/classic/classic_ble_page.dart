@@ -1629,7 +1629,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
       }
 
       // Update Local State in ViewModel immediately for visual feedback
-      viewModel.updateControlValue(stateKey, value);
+      viewModel.updateControlValue(stateKey, finalValue);
 
       debugPrint('\nUI Change: ${item.label} ($paramName) -> $finalValue (Cmd: ${item.category}.${cmdDef.name})');
 
@@ -1738,10 +1738,21 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
   /// Also handles default values (e.g., Bluetooth if 0).
   String? _getMappedDisplayValue(DisplayItem item, dynamic rawValue) {
     if (item.control.isRadio || item.control.isDropdown) {
+      if (rawValue == null) return item.control.options.firstOrNull?.value;
+
+      final rawStr = rawValue.toString();
+
+      // 1. Direct match with option.value or option.label
+      for (var option in item.control.options) {
+        if (option.value == rawStr || option.label == rawStr) {
+          return option.value;
+        }
+      }
+
+      // 2. Find Command Definition to get the valueMap
       final protocolService = getIt<ProtocolService>();
       final paramName = item.paramName ?? '';
       
-      // 1. Find Command Definition to get the valueMap
       CommandDefinition? cmdDef;
       if (item.command.isNotEmpty) {
         cmdDef = protocolService.getCommandByName(item.category, item.command);
@@ -1749,15 +1760,26 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
       cmdDef ??= protocolService.findCommand(item.category, paramName);
 
       if (cmdDef != null && cmdDef.valueMap != null) {
-        // Find string value in map: { "1": "Bluetooth", "2": "LineIn" ... }
-        final mappedValue = cmdDef.valueMap![rawValue?.toString()];
-        if (mappedValue != null) return mappedValue;
+        final mappedValue = cmdDef.valueMap![rawStr];
+        if (mappedValue != null) {
+          for (var option in item.control.options) {
+            if (option.value.toLowerCase() == mappedValue.toLowerCase() ||
+                option.label.toLowerCase() == mappedValue.toLowerCase()) {
+              return option.value;
+            }
+          }
+          return mappedValue;
+        }
       }
 
-      // 2. Defaulting Logic
-      // If rawValue is 0, null, or not in map, try to default to 'Bluetooth' 
-      // if it exists in the radio options for this item.
-      if (rawValue == 0 || rawValue == null || (rawValue is String && rawValue.isEmpty)) {
+      // 3. Fallback to index if rawValue is numeric (e.g. 2 -> options[2].value)
+      final numVal = (rawValue is num) ? rawValue.toInt() : int.tryParse(rawStr);
+      if (numVal != null && numVal >= 0 && numVal < item.control.options.length) {
+        return item.control.options[numVal].value;
+      }
+
+      // 4. Defaulting Logic (Bluetooth or first option)
+      if (rawValue == 0 || (rawValue is String && rawValue.isEmpty)) {
          for (var option in item.control.options) {
             if (option.value.toLowerCase() == 'bluetooth') {
                return option.value;
@@ -1765,11 +1787,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
          }
       }
 
-      // 3. Fallback to first option if still not determined
       return item.control.options.firstOrNull?.value;
     }
     
-    // For other controls, return as is (stringified)
     return rawValue?.toString();
   }
 
