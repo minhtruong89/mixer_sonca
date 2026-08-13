@@ -2073,35 +2073,68 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
 
     debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
 
-    if (viewModel.selectedDevice == null) {
-      _showCenterSnackBar("Vui lòng kết nối thiết bị");
-      return; 
+    if (viewModel.selectedDevice == null || cmdDef == null) return;
+    
+    final now = DateTime.now();
+    final state = _throttleStates[stateKey];
+    bool shouldSendNow = false;
+    double numValue = rawValue.toDouble();
+    int currentDirection = 0;
+
+    if (state != null) {
+      if (numValue > state.lastValue) {
+        currentDirection = 1;
+      } else if (numValue < state.lastValue) {
+        currentDirection = -1;
+      }
+
+      if (currentDirection != 0 && currentDirection == state.lastDirection) {
+        if (now.difference(state.lastSentTime).inMilliseconds >= 70) {
+          shouldSendNow = true;
+        }
+      } else {
+        shouldSendNow = false;
+      }
+
+      state.lastValue = numValue;
+      if (currentDirection != 0) {
+        state.lastDirection = currentDirection;
+      }
+    } else {
+      _throttleStates[stateKey] = _ThrottleState(numValue, now, 0);
+      shouldSendNow = true;
     }
 
-    if (cmdDef == null) return;
-    
-    _debouncers[stateKey]?.cancel();
-    final cmdId = cmdDef.id; // Capture for closure safety
-    _debouncers[stateKey] = Timer(const Duration(milliseconds: 50), () async {
-      try {
-         final builder = getIt<DynamicCommandBuilder>();
-         // Re-verify definition inside timer or use captured ID
-         final commands = builder.buildEqCommand(
-           categoryName: categoryName,
-           cmdId: cmdId,
-           band: band,
-           fields: {
-              fieldParam: rawValue,
-           },
-         );
+    final currentState = _throttleStates[stateKey]!;
+    currentState.debounceTimer?.cancel();
 
-         for (final command in commands) {
-             await viewModel.sendProtocolCommand(command);
-          }
+    final cmdId = cmdDef.id;
+    Future<void> sendCmd() async {
+      currentState.lastSentTime = DateTime.now();
+      try {
+        final builder = getIt<DynamicCommandBuilder>();
+        final commands = builder.buildEqCommand(
+          categoryName: categoryName,
+          cmdId: cmdId,
+          band: band,
+          fields: {
+             fieldParam: rawValue,
+          },
+        );
+
+        for (final command in commands) {
+          await viewModel.sendProtocolCommand(command);
+        }
       } catch (e) {
-         debugPrint('Error sending EQ band command: $e');
+        debugPrint('Error sending EQ band command: $e');
       }
-    });
+    }
+
+    if (shouldSendNow) {
+      sendCmd();
+    } else {
+      currentState.debounceTimer = Timer(const Duration(milliseconds: 70), sendCmd);
+    }
   }
 
   Future<void> _handleEqBandMultipleChange(String categoryName, String commandName, int band, Map<String, dynamic> changes, BleViewModel viewModel) async {

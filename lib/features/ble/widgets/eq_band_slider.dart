@@ -167,6 +167,9 @@ class _EqBandSliderState extends State<EqBandSlider> {
                   onTapUp: (details) {
                     final dy = details.localPosition.dy;
                     final newValue = ((1 - (dy / height)) * (widget.maxGain - widget.minGain) + widget.minGain).clamp(widget.minGain, widget.maxGain);
+                    setState(() {
+                      _localGain = newValue;
+                    });
                     widget.onGainChanged(newValue);
                   },
                   onDoubleTap: () {
