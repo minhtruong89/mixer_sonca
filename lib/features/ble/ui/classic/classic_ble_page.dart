@@ -2014,6 +2014,11 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
               final key = "${commandName}_band${band}_$fieldParam";
               viewModel.markUserInteraction(key);
               viewModel.updateControlValue(key, rawValue, notify: false);
+              if (fieldParam == 'Q') {
+                viewModel.updateControlValue("${commandName}_band${band}_q", rawValue, notify: false);
+              } else if (fieldParam == 'q') {
+                viewModel.updateControlValue("${commandName}_band${band}_Q", rawValue, notify: false);
+              }
               rawFields[fieldParam] = rawValue;
            });
            rawBands[band] = rawFields;
@@ -2060,6 +2065,11 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
     
     viewModel.markUserInteraction(stateKey);
     viewModel.updateControlValue(stateKey, rawValue);
+    if (fieldParam == 'Q') {
+      viewModel.updateControlValue("${commandName}_band${band}_q", rawValue, notify: false);
+    } else if (fieldParam == 'q') {
+      viewModel.updateControlValue("${commandName}_band${band}_Q", rawValue, notify: false);
+    }
 
     debugPrint('\nEQ Change: Band $band - $fieldParam -> $rawValue (Cmd: $categoryName.$commandName)');
 

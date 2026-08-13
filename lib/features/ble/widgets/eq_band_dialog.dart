@@ -162,10 +162,10 @@ class _EqBandDialogState extends State<EqBandDialog> {
                              }
                           }
 
-                          final qLimit = widget.fieldLimits!['Q'];
+                          final qLimit = widget.fieldLimits?['Q'] ?? widget.fieldLimits?['q'];
                           if (qLimit != null) {
                              final min = double.tryParse(qLimit['min'].toString()) ?? 0.0;
-                             final max = double.tryParse(qLimit['max'].toString()) ?? 100.0;
+                             final max = double.tryParse(qLimit['max'].toString()) ?? 32.0;
                              if (qValue < min || qValue > max) {
                                _showError(context, 'Q phải nằm trong khoảng $min đến $max');
                                return;
