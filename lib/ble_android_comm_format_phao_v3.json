@@ -1672,14 +1672,14 @@
         }
       },
       "eqFilterTypes": {
-        "source": "middleware/audio/inc/eq.h",
+        "source": "descriptors/IIR_Turbo filterModes",
         "values": [
           {
             "name": "UNKNOWN",
             "value": -1
           },
           {
-            "name": "PEAKING",
+            "name": "FLAT",
             "value": 0
           },
           {
@@ -1687,32 +1687,40 @@
             "value": 1
           },
           {
-            "name": "HIGH_SHELF",
+            "name": "PEAKING",
             "value": 2
           },
           {
-            "name": "LOW_PASS",
+            "name": "HIGH_SHELF",
             "value": 3
           },
           {
-            "name": "HIGH_PASS",
+            "name": "LOW_PASS_LINKWITZ",
             "value": 4
           },
           {
-            "name": "BAND_PASS",
+            "name": "HIGH_PASS_LINKWITZ",
             "value": 5
           },
           {
-            "name": "NOTCH",
+            "name": "LOW_PASS_BUTTERWORTH",
             "value": 6
           },
           {
-            "name": "LOW_PASS_ORDER1",
+            "name": "HIGH_PASS_BUTTERWORTH",
             "value": 7
           },
           {
-            "name": "HIGH_PASS_ORDER1",
+            "name": "LOW_PASS_BESSEL",
             "value": 8
+          },
+          {
+            "name": "HIGH_PASS_BESSEL",
+            "value": 9
+          },
+          {
+            "name": "NOTCH",
+            "value": 10
           }
         ]
       },
@@ -1883,48 +1891,83 @@
             },
             "0x02": {
               "name": "MIC_GRAPH_EQ",
+              "plugin": "IIR_Turbo",
               "indexRule": {
-                "indexCount": 52,
-                "bandCount": 10,
-                "bandBaseIndex": 2,
-                "indexRange": "2-51",
-                "fieldsPerBand": 5,
-                "band": "(index-2)/5",
-                "field": "(index-2)%5",
+                "indexCount": 64,
+                "bandCount": 15,
+                "bandBaseIndex": 4,
+                "indexRange": "4-63",
+                "fieldsPerBand": 4,
+                "band": "(index-4)/4",
+                "field": "(index-4)%4",
                 "bandNumberBase": 1,
                 "nameTemplate": "band{band}_{field}",
                 "bandBaseIndices": {
                   "0": {
-                    "name": "pregain",
-                    "type": "q8_8_le",
+                    "name": "module_sel",
+                    "type": "uint16_le",
+                    "min": 0,
+                    "max": 1,
+                    "default": 1,
                     "applied": false
                   },
                   "1": {
-                    "name": "fixed_point_floating_point",
+                    "name": "channel",
                     "type": "uint16_le",
-                    "applied": false,
-                    "readOnly": true
+                    "min": 0,
+                    "max": 19,
+                    "default": 0,
+                    "applied": false
+                  },
+                  "2": {
+                    "name": "in_gain",
+                    "type": "int16_le",
+                    "min": -24,
+                    "max": 0,
+                    "default": 0,
+                    "applied": false
+                  },
+                  "3": {
+                    "name": "out_gain",
+                    "type": "int16_le",
+                    "min": -12,
+                    "max": 24,
+                    "default": 0,
+                    "applied": false
                   }
                 },
                 "fieldOrder": {
-                  "0": "enable",
-                  "1": "type",
-                  "2": "f0",
-                  "3": "q",
-                  "4": "gain"
+                  "0": "gain",
+                  "1": "f0",
+                  "2": "q",
+                  "3": "type"
                 },
                 "fieldTypes": {
-                  "enable": "uint16_le",
-                  "type": "int16_le",
+                  "gain": "int16_le",
                   "f0": "uint16_le",
-                  "q": "q6_10_le",
-                  "gain": "q8_8_le"
+                  "q": "uint16_le",
+                  "type": "uint16_le"
                 },
-                "fieldMetadata": {
-                  "enable": {
-                    "applied": false
+                "fieldLimit": {
+                  "gain": {
+                    "min": -12,
+                    "max": 12
+                  },
+                  "f0": {
+                    "min": 10,
+                    "max": 22000
+                  },
+                  "q": {
+                    "min": 1,
+                    "max": 1280
                   },
                   "type": {
+                    "min": 0,
+                    "max": 10
+                  }
+                },
+                "fieldMetadata": {
+                  "gain": {
                     "applied": false
                   },
                   "f0": {
@@ -1933,107 +1976,496 @@
                   "q": {
                     "applied": false
                   },
-                  "gain": {
+                  "type": {
                     "applied": false
+                  }
+                },
+                "bandOverrides": {
+                  "1": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 30
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "2": {
+                    "gain": {
+                      "default": 6
+                    },
+                    "f0": {
+                      "default": 148
+                    },
+                    "q": {
+                      "default": 20
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "3": {
+                    "gain": {
+                      "default": 4
+                    },
+                    "f0": {
+                      "default": 282
+                    },
+                    "q": {
+                      "default": 20
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "4": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 1000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "5": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 1500
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "6": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 2000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "7": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 3000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "8": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 4000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "9": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 8000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "10": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 16000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "11": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 2000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "12": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 4000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "13": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 300
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 1
+                    }
+                  },
+                  "14": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 1500
+                    },
+                    "q": {
+                      "default": 5
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "15": {
+                    "gain": {
+                      "default": 0
+                    },
+                    "f0": {
+                      "default": 5000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 3
+                    }
                   }
                 }
               }
             },
             "0x03": {
               "name": "MIC_ECHO_EFFECT",
+              "plugin": "Echo_200ms",
               "indices": {
                 "0": {
-                  "name": "cutoff_frequency",
+                  "name": "feedback",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 80,
+                  "default": 60,
                   "applied": false
                 },
                 "1": {
-                  "name": "attenuation",
-                  "type": "int16_le",
+                  "name": "dry_level",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 0,
                   "applied": false
                 },
                 "2": {
-                  "name": "delay",
+                  "name": "delay_time",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 200,
+                  "default": 190,
                   "applied": false
                 },
                 "3": {
-                  "name": "max_delay",
+                  "name": "delay_level",
                   "type": "uint16_le",
-                  "applied": false,
-                  "readOnly": true,
-                  "appFacing": false
+                  "min": 0,
+                  "max": 100,
+                  "default": 80,
+                  "applied": false
                 },
                 "4": {
-                  "name": "high_quality_enable",
-                  "type": "uint16_le",
+                  "name": "delay_pan",
+                  "type": "int16_le",
+                  "min": -50,
+                  "max": 50,
+                  "default": 0,
                   "applied": false
                 },
                 "5": {
-                  "name": "dry",
-                  "type": "int16_le",
+                  "name": "tap1_time",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 10,
                   "applied": false
                 },
                 "6": {
-                  "name": "wet",
-                  "type": "int16_le",
+                  "name": "tap1_level",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 20,
                   "applied": false
                 },
                 "7": {
+                  "name": "tap1_pan",
+                  "type": "int16_le",
+                  "min": -50,
+                  "max": 50,
+                  "default": 0,
+                  "applied": false
+                },
+                "8": {
+                  "name": "tap2_time",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 20,
+                  "applied": false
+                },
+                "9": {
+                  "name": "tap2_level",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 20,
+                  "applied": false
+                },
+                "10": {
+                  "name": "tap2_pan",
+                  "type": "int16_le",
+                  "min": -50,
+                  "max": 50,
+                  "default": 0,
+                  "applied": false
+                },
+                "11": {
+                  "name": "tap3_time",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 30,
+                  "applied": false
+                },
+                "12": {
+                  "name": "tap3_level",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 20,
+                  "applied": false
+                },
+                "13": {
+                  "name": "tap3_pan",
+                  "type": "int16_le",
+                  "min": -50,
+                  "max": 50,
+                  "default": 0,
+                  "applied": false
+                },
+                "14": {
                   "name": "enable",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 1,
                   "applied": false
                 }
               }
             },
             "0x04": {
               "name": "MIC_REVERB_EFFECT",
+              "plugin": "Reverb2Pro",
               "indices": {
                 "0": {
-                  "name": "high_cutoff_frequency",
-                  "type": "uint16_le",
+                  "name": "in_gain",
+                  "type": "int16_le",
+                  "min": -60,
+                  "max": 0,
+                  "default": -5,
                   "applied": false
                 },
                 "1": {
-                  "name": "modulation",
+                  "name": "band_width",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 70,
                   "applied": false
                 },
                 "2": {
-                  "name": "predelay",
+                  "name": "early_reflection",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 10,
                   "applied": false
                 },
                 "3": {
-                  "name": "diffusion",
+                  "name": "reverb_level",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 60,
                   "applied": false
                 },
                 "4": {
-                  "name": "decay",
+                  "name": "dry_level",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 0,
                   "applied": false
                 },
                 "5": {
                   "name": "damping",
                   "type": "uint16_le",
+                  "min": 1,
+                  "max": 100,
+                  "default": 100,
                   "applied": false
                 },
                 "6": {
-                  "name": "wetdrymix",
+                  "name": "diffusion",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 90,
+                  "default": 79,
                   "applied": false
                 },
                 "7": {
-                  "name": "max_predelay",
+                  "name": "decay_time",
                   "type": "uint16_le",
-                  "applied": false,
-                  "readOnly": true,
-                  "appFacing": false
+                  "min": 0,
+                  "max": 6000,
+                  "default": 3143,
+                  "applied": false
                 },
                 "8": {
+                  "name": "pre_delay",
+                  "type": "uint16_le",
+                  "min": 1,
+                  "max": 169,
+                  "default": 10,
+                  "applied": false
+                },
+                "9": {
+                  "name": "out_gain",
+                  "type": "int16_le",
+                  "min": -30,
+                  "max": 30,
+                  "default": 5,
+                  "applied": false
+                },
+                "10": {
+                  "name": "envelope_tap1",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 47,
+                  "applied": false
+                },
+                "11": {
+                  "name": "envelope_tap2",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 10,
+                  "applied": false
+                },
+                "12": {
+                  "name": "envelope_tap3",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 15,
+                  "applied": false
+                },
+                "13": {
+                  "name": "envelope_tap4",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 15,
+                  "applied": false
+                },
+                "14": {
+                  "name": "envelope_tap5",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 14,
+                  "applied": false
+                },
+                "15": {
+                  "name": "envelope_tap6",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 100,
+                  "default": 14,
+                  "applied": false
+                },
+                "16": {
+                  "name": "scale",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": false
+                },
+                "17": {
                   "name": "enable",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 1,
                   "applied": false
                 }
               }
@@ -2136,48 +2568,84 @@
             },
             "0x02": {
               "name": "MUSIC_GRAPH_EQ",
+              "plugin": "IIR_Turbo",
               "indexRule": {
-                "indexCount": 52,
-                "bandCount": 10,
-                "bandBaseIndex": 2,
-                "indexRange": "2-51",
-                "fieldsPerBand": 5,
-                "band": "(index-2)/5",
-                "field": "(index-2)%5",
+                "indexCount": 64,
+                "bandCount": 15,
+                "bandBaseIndex": 4,
+                "indexRange": "4-63",
+                "fieldsPerBand": 4,
+                "band": "(index-4)/4",
+                "field": "(index-4)%4",
                 "bandNumberBase": 1,
                 "nameTemplate": "band{band}_{field}",
                 "bandBaseIndices": {
                   "0": {
-                    "name": "pregain",
-                    "type": "q8_8_le",
+                    "name": "module_sel",
+                    "type": "uint16_le",
+                    "min": 0,
+                    "max": 1,
+                    "default": 0,
                     "applied": false
                   },
                   "1": {
-                    "name": "fixed_point_floating_point",
+                    "name": "channel",
                     "type": "uint16_le",
-                    "applied": false,
-                    "readOnly": true
+                    "min": 0,
+                    "max": 19,
+                    "default": 4,
+                    "applied": false
+                  },
+                  "2": {
+                    "name": "in_gain",
+                    "type": "int16_le",
+                    "min": -24,
+                    "max": 0,
+                    "default": 0,
+                    "applied": false
+                  },
+                  "3": {
+                    "name": "out_gain",
+                    "type": "int16_le",
+                    "min": -12,
+                    "max": 24,
+                    "default": 0,
+                    "applied": false
                   }
                 },
                 "fieldOrder": {
-                  "0": "enable",
-                  "1": "type",
-                  "2": "f0",
-                  "3": "q",
-                  "4": "gain"
+                  "0": "gain",
+                  "1": "f0",
+                  "2": "q",
+                  "3": "type"
                 },
                 "fieldTypes": {
-                  "enable": "uint16_le",
-                  "type": "int16_le",
+                  "gain": "int16_le",
                   "f0": "uint16_le",
-                  "q": "q6_10_le",
-                  "gain": "q8_8_le"
+                  "q": "uint16_le",
+                  "type": "uint16_le"
                 },
-                "fieldMetadata": {
-                  "enable": {
-                    "applied": false
+                "fieldLimit": {
+                  "gain": {
+                    "min": -12,
+                    "max": 12
+                  },
+                  "f0": {
+                    "min": 10,
+                    "max": 22000
+                  },
+                  "q": {
+                    "min": 1,
+                    "max": 1280
                   },
                   "type": {
+                    "min": 0,
+                    "max": 10
+                  }
+                },
+                "fieldMetadata": {
+                  "gain": {
+                    "default": 0,
                     "applied": false
                   },
                   "f0": {
@@ -2186,8 +2654,175 @@
                   "q": {
                     "applied": false
                   },
-                  "gain": {
+                  "type": {
                     "applied": false
+                  }
+                },
+                "bandOverrides": {
+                  "1": {
+                    "f0": {
+                      "default": 125
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "2": {
+                    "f0": {
+                      "default": 250
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "3": {
+                    "f0": {
+                      "default": 500
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "4": {
+                    "f0": {
+                      "default": 1000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "5": {
+                    "f0": {
+                      "default": 1500
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "6": {
+                    "f0": {
+                      "default": 2000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "7": {
+                    "f0": {
+                      "default": 3000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "8": {
+                    "f0": {
+                      "default": 4000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "9": {
+                    "f0": {
+                      "default": 8000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "10": {
+                    "f0": {
+                      "default": 16000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "11": {
+                    "f0": {
+                      "default": 2000
+                    },
+                    "q": {
+                      "default": 17
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "12": {
+                    "f0": {
+                      "default": 4000
+                    },
+                    "q": {
+                      "default": 17
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "13": {
+                    "f0": {
+                      "default": 300
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 1
+                    }
+                  },
+                  "14": {
+                    "f0": {
+                      "default": 1500
+                    },
+                    "q": {
+                      "default": 5
+                    },
+                    "type": {
+                      "default": 2
+                    }
+                  },
+                  "15": {
+                    "f0": {
+                      "default": 5000
+                    },
+                    "q": {
+                      "default": 7
+                    },
+                    "type": {
+                      "default": 3
+                    }
                   }
                 }
               }
@@ -2591,7 +3226,7 @@
                 "3": {
                   "name": "schema_crc16",
                   "type": "uint16_le",
-                  "default": 39209,
+                  "default": 6009,
                   "applied": false,
                   "readOnly": true
                 }
@@ -2682,6 +3317,8 @@
             {
               "confidence": "verified",
               "index": 0,
+              "max": 800,
+              "min": 0,
               "name": "Feedback",
               "role": "feedback",
               "scale": "value/1000",
@@ -2690,6 +3327,8 @@
             {
               "confidence": "verified",
               "index": 1,
+              "max": 100,
+              "min": 0,
               "name": "DryLevel",
               "role": "dry_level",
               "scale": "value/100",
@@ -2698,6 +3337,8 @@
             {
               "confidence": "verified",
               "index": 2,
+              "max": 2000,
+              "min": 0,
               "name": "DelayTime",
               "role": "delay_time",
               "scale": "value/10 ms @48kHz",
@@ -2706,6 +3347,8 @@
             {
               "confidence": "verified",
               "index": 3,
+              "max": 100,
+              "min": 0,
               "name": "DelayLevel",
               "role": "wet_level",
               "scale": "value/100",
@@ -2714,6 +3357,8 @@
             {
               "confidence": "verified",
               "index": 4,
+              "max": 50,
+              "min": -50,
               "name": "DelayPan",
               "role": "pan",
               "scale": "(value+50)/100",
@@ -2722,6 +3367,8 @@
             {
               "confidence": "verified",
               "index": 5,
+              "max": 100,
+              "min": 0,
               "name": "Tap1Time",
               "role": "tap_time",
               "scale": "value/100 * DelayTime",
@@ -2730,6 +3377,8 @@
             {
               "confidence": "verified",
               "index": 6,
+              "max": 100,
+              "min": 0,
               "name": "Tap1Level",
               "role": "tap_level",
               "scale": "value/100",
@@ -2738,6 +3387,8 @@
             {
               "confidence": "verified",
               "index": 7,
+              "max": 50,
+              "min": -50,
               "name": "Tap1Pan",
               "role": "tap_pan",
               "scale": "(value+50)/100",
@@ -2746,6 +3397,8 @@
             {
               "confidence": "verified",
               "index": 8,
+              "max": 100,
+              "min": 0,
               "name": "Tap2Time",
               "role": "tap_time",
               "scale": "value/100 * DelayTime",
@@ -2754,6 +3407,8 @@
             {
               "confidence": "verified",
               "index": 9,
+              "max": 100,
+              "min": 0,
               "name": "Tap2Level",
               "role": "tap_level",
               "scale": "value/100",
@@ -2762,6 +3417,8 @@
             {
               "confidence": "verified",
               "index": 10,
+              "max": 50,
+              "min": -50,
               "name": "Tap2Pan",
               "role": "tap_pan",
               "scale": "(value+50)/100",
@@ -2770,6 +3427,8 @@
             {
               "confidence": "verified",
               "index": 11,
+              "max": 100,
+              "min": 0,
               "name": "Tap3Time",
               "role": "tap_time",
               "scale": "value/100 * DelayTime",
@@ -2778,6 +3437,8 @@
             {
               "confidence": "verified",
               "index": 12,
+              "max": 100,
+              "min": 0,
               "name": "Tap3Level",
               "role": "tap_level",
               "scale": "value/100",
@@ -2786,6 +3447,8 @@
             {
               "confidence": "verified",
               "index": 13,
+              "max": 50,
+              "min": -50,
               "name": "Tap3Pan",
               "note": "plugin.skin mislabels this control 'Tap2Pan'; corrected to Tap3Pan",
               "role": "tap_pan",
@@ -2795,6 +3458,8 @@
             {
               "confidence": "code_derived",
               "index": 14,
+              "max": 1,
+              "min": 0,
               "name": "Enable",
               "polarityUnverified": true,
               "role": "enable",
@@ -2931,6 +3596,8 @@
             {
               "confidence": "verified",
               "index": 0,
+              "max": 0,
+              "min": -600,
               "name": "InputLevel",
               "role": "input_gain",
               "scale": "dBtoG(value/10)",
@@ -2939,47 +3606,59 @@
             {
               "confidence": "code_derived",
               "index": 1,
+              "max": 100,
+              "min": 0,
               "name": "Bandwidth",
               "role": "bandwidth",
               "scale": "0.5*cos(pi*value^2/10000)+0.5",
               "unit": "raw"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 2,
-              "name": "EarlyReflLevel",
+              "max": 100,
+              "min": 0,
+              "name": "earlyRef",
               "role": "early_reflection",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 3,
-              "name": "ReverbLevel",
+              "max": 100,
+              "min": 0,
+              "name": "RevbEff",
               "role": "reverb_level",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 4,
-              "name": "DryLevel",
+              "max": 100,
+              "min": 0,
+              "name": "DryPercent",
               "role": "dry_level",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 5,
-              "name": "Diffusion",
+              "max": 100,
+              "min": 1,
+              "name": "Damping",
               "role": "diffusion",
               "scale": "(100-value)/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 6,
-              "name": "RoomSize",
+              "max": 90,
+              "min": 0,
+              "name": "Diffusion",
               "role": "room_size",
               "scale": "value/100",
               "unit": "ratio"
@@ -2987,6 +3666,8 @@
             {
               "confidence": "code_derived",
               "index": 7,
+              "max": 6000,
+              "min": 0,
               "name": "DecayTime",
               "role": "decay_time",
               "scale": "Schroeder comb recompute (7 taps); unit ms or raw/100 gated by index16",
@@ -2995,6 +3676,8 @@
             {
               "confidence": "verified",
               "index": 8,
+              "max": 169,
+              "min": 1,
               "name": "PreDelay",
               "role": "pre_delay",
               "scale": "tram address += 48*value",
@@ -3003,55 +3686,69 @@
             {
               "confidence": "code_derived",
               "index": 9,
+              "max": 300,
+              "min": -300,
               "name": "OutputLevel",
               "role": "output_gain",
               "scale": "dBtoG(value/10)",
               "unit": "dB_x10"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 10,
-              "name": "Tone1",
+              "max": 100,
+              "min": 0,
+              "name": "EnvelopeTap1",
               "role": "tone_band",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 11,
-              "name": "Tone2",
+              "max": 100,
+              "min": 0,
+              "name": "EnvelopeTap2",
               "role": "tone_band",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 12,
-              "name": "Tone3",
+              "max": 100,
+              "min": 0,
+              "name": "EnvelopeTap3",
               "role": "tone_band",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 13,
-              "name": "Tone4",
+              "max": 100,
+              "min": 0,
+              "name": "EnvelopeTap4",
               "role": "tone_band",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 14,
-              "name": "Tone5",
+              "max": 100,
+              "min": 0,
+              "name": "EnvelopeTap5",
               "role": "tone_band",
               "scale": "value/100",
               "unit": "ratio"
             },
             {
-              "confidence": "unconfirmed",
+              "confidence": "ui_transcribed",
               "index": 15,
-              "name": "Tone6",
+              "max": 100,
+              "min": 0,
+              "name": "EnvelopeTap6",
               "role": "tone_band",
               "scale": "value/100",
               "unit": "ratio"
@@ -3059,6 +3756,8 @@
             {
               "confidence": "code_derived",
               "index": 16,
+              "max": 1,
+              "min": 0,
               "name": "DecayTimeUnitSwitch",
               "role": "decay_time_unit",
               "scale": "re-triggers index7's comb recompute with an alternate scale (value==0 ? /1000 : /100)",
@@ -3067,6 +3766,8 @@
             {
               "confidence": "code_derived",
               "index": 17,
+              "max": 1,
+              "min": 0,
               "name": "Enable",
               "polarityUnverified": true,
               "role": "enable",
@@ -3320,13 +4021,174 @@
         "MIC.MIC_COMMON.mic_middle": 0,
         "MIC.MIC_COMMON.mic_treb": 0,
         "MIC.MIC_COMMON.reverb_gain": 12,
+        "MIC.MIC_ECHO_EFFECT.delay_level": 80,
+        "MIC.MIC_ECHO_EFFECT.delay_pan": 0,
+        "MIC.MIC_ECHO_EFFECT.delay_time": 190,
+        "MIC.MIC_ECHO_EFFECT.dry_level": 0,
+        "MIC.MIC_ECHO_EFFECT.enable": 1,
+        "MIC.MIC_ECHO_EFFECT.feedback": 60,
+        "MIC.MIC_ECHO_EFFECT.tap1_level": 20,
+        "MIC.MIC_ECHO_EFFECT.tap1_pan": 0,
+        "MIC.MIC_ECHO_EFFECT.tap1_time": 10,
+        "MIC.MIC_ECHO_EFFECT.tap2_level": 20,
+        "MIC.MIC_ECHO_EFFECT.tap2_pan": 0,
+        "MIC.MIC_ECHO_EFFECT.tap2_time": 20,
+        "MIC.MIC_ECHO_EFFECT.tap3_level": 20,
+        "MIC.MIC_ECHO_EFFECT.tap3_pan": 0,
+        "MIC.MIC_ECHO_EFFECT.tap3_time": 30,
         "MIC.MIC_FBC.fbc_enable": 0,
+        "MIC.MIC_GRAPH_EQ.band10_f0": 16000,
+        "MIC.MIC_GRAPH_EQ.band10_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band10_q": 7,
+        "MIC.MIC_GRAPH_EQ.band10_type": 2,
+        "MIC.MIC_GRAPH_EQ.band11_f0": 2000,
+        "MIC.MIC_GRAPH_EQ.band11_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band11_q": 7,
+        "MIC.MIC_GRAPH_EQ.band11_type": 2,
+        "MIC.MIC_GRAPH_EQ.band12_f0": 4000,
+        "MIC.MIC_GRAPH_EQ.band12_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band12_q": 7,
+        "MIC.MIC_GRAPH_EQ.band12_type": 2,
+        "MIC.MIC_GRAPH_EQ.band13_f0": 300,
+        "MIC.MIC_GRAPH_EQ.band13_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band13_q": 7,
+        "MIC.MIC_GRAPH_EQ.band13_type": 1,
+        "MIC.MIC_GRAPH_EQ.band14_f0": 1500,
+        "MIC.MIC_GRAPH_EQ.band14_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band14_q": 5,
+        "MIC.MIC_GRAPH_EQ.band14_type": 2,
+        "MIC.MIC_GRAPH_EQ.band15_f0": 5000,
+        "MIC.MIC_GRAPH_EQ.band15_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band15_q": 7,
+        "MIC.MIC_GRAPH_EQ.band15_type": 3,
+        "MIC.MIC_GRAPH_EQ.band1_f0": 30,
+        "MIC.MIC_GRAPH_EQ.band1_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band1_q": 7,
+        "MIC.MIC_GRAPH_EQ.band1_type": 2,
+        "MIC.MIC_GRAPH_EQ.band2_f0": 148,
+        "MIC.MIC_GRAPH_EQ.band2_gain": 6,
+        "MIC.MIC_GRAPH_EQ.band2_q": 20,
+        "MIC.MIC_GRAPH_EQ.band2_type": 2,
+        "MIC.MIC_GRAPH_EQ.band3_f0": 282,
+        "MIC.MIC_GRAPH_EQ.band3_gain": 4,
+        "MIC.MIC_GRAPH_EQ.band3_q": 20,
+        "MIC.MIC_GRAPH_EQ.band3_type": 2,
+        "MIC.MIC_GRAPH_EQ.band4_f0": 1000,
+        "MIC.MIC_GRAPH_EQ.band4_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band4_q": 7,
+        "MIC.MIC_GRAPH_EQ.band4_type": 2,
+        "MIC.MIC_GRAPH_EQ.band5_f0": 1500,
+        "MIC.MIC_GRAPH_EQ.band5_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band5_q": 7,
+        "MIC.MIC_GRAPH_EQ.band5_type": 2,
+        "MIC.MIC_GRAPH_EQ.band6_f0": 2000,
+        "MIC.MIC_GRAPH_EQ.band6_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band6_q": 7,
+        "MIC.MIC_GRAPH_EQ.band6_type": 2,
+        "MIC.MIC_GRAPH_EQ.band7_f0": 3000,
+        "MIC.MIC_GRAPH_EQ.band7_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band7_q": 7,
+        "MIC.MIC_GRAPH_EQ.band7_type": 2,
+        "MIC.MIC_GRAPH_EQ.band8_f0": 4000,
+        "MIC.MIC_GRAPH_EQ.band8_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band8_q": 7,
+        "MIC.MIC_GRAPH_EQ.band8_type": 2,
+        "MIC.MIC_GRAPH_EQ.band9_f0": 8000,
+        "MIC.MIC_GRAPH_EQ.band9_gain": 0,
+        "MIC.MIC_GRAPH_EQ.band9_q": 7,
+        "MIC.MIC_GRAPH_EQ.band9_type": 2,
+        "MIC.MIC_GRAPH_EQ.channel": 0,
+        "MIC.MIC_GRAPH_EQ.in_gain": 0,
+        "MIC.MIC_GRAPH_EQ.module_sel": 1,
+        "MIC.MIC_GRAPH_EQ.out_gain": 0,
+        "MIC.MIC_REVERB_EFFECT.band_width": 70,
+        "MIC.MIC_REVERB_EFFECT.damping": 100,
+        "MIC.MIC_REVERB_EFFECT.decay_time": 3143,
+        "MIC.MIC_REVERB_EFFECT.diffusion": 79,
+        "MIC.MIC_REVERB_EFFECT.dry_level": 0,
+        "MIC.MIC_REVERB_EFFECT.early_reflection": 10,
+        "MIC.MIC_REVERB_EFFECT.enable": 1,
+        "MIC.MIC_REVERB_EFFECT.envelope_tap1": 47,
+        "MIC.MIC_REVERB_EFFECT.envelope_tap2": 10,
+        "MIC.MIC_REVERB_EFFECT.envelope_tap3": 15,
+        "MIC.MIC_REVERB_EFFECT.envelope_tap4": 15,
+        "MIC.MIC_REVERB_EFFECT.envelope_tap5": 14,
+        "MIC.MIC_REVERB_EFFECT.envelope_tap6": 14,
+        "MIC.MIC_REVERB_EFFECT.in_gain": -5,
+        "MIC.MIC_REVERB_EFFECT.out_gain": 5,
+        "MIC.MIC_REVERB_EFFECT.pre_delay": 10,
+        "MIC.MIC_REVERB_EFFECT.reverb_level": 60,
+        "MIC.MIC_REVERB_EFFECT.scale": 0,
         "MUSIC.MUSIC_COMMON.music_bass": 0,
         "MUSIC.MUSIC_COMMON.music_boostbass_enable": 0,
         "MUSIC.MUSIC_COMMON.music_enhancer_enable": 0,
         "MUSIC.MUSIC_COMMON.music_middle": 0,
         "MUSIC.MUSIC_COMMON.music_treb": 0,
         "MUSIC.MUSIC_COMMON.music_volume": 12,
+        "MUSIC.MUSIC_GRAPH_EQ.band10_f0": 16000,
+        "MUSIC.MUSIC_GRAPH_EQ.band10_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band10_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band10_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band11_f0": 2000,
+        "MUSIC.MUSIC_GRAPH_EQ.band11_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band11_q": 17,
+        "MUSIC.MUSIC_GRAPH_EQ.band11_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band12_f0": 4000,
+        "MUSIC.MUSIC_GRAPH_EQ.band12_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band12_q": 17,
+        "MUSIC.MUSIC_GRAPH_EQ.band12_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band13_f0": 300,
+        "MUSIC.MUSIC_GRAPH_EQ.band13_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band13_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band13_type": 1,
+        "MUSIC.MUSIC_GRAPH_EQ.band14_f0": 1500,
+        "MUSIC.MUSIC_GRAPH_EQ.band14_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band14_q": 5,
+        "MUSIC.MUSIC_GRAPH_EQ.band14_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band15_f0": 5000,
+        "MUSIC.MUSIC_GRAPH_EQ.band15_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band15_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band15_type": 3,
+        "MUSIC.MUSIC_GRAPH_EQ.band1_f0": 125,
+        "MUSIC.MUSIC_GRAPH_EQ.band1_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band1_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band1_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band2_f0": 250,
+        "MUSIC.MUSIC_GRAPH_EQ.band2_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band2_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band2_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band3_f0": 500,
+        "MUSIC.MUSIC_GRAPH_EQ.band3_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band3_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band3_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band4_f0": 1000,
+        "MUSIC.MUSIC_GRAPH_EQ.band4_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band4_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band4_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band5_f0": 1500,
+        "MUSIC.MUSIC_GRAPH_EQ.band5_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band5_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band5_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band6_f0": 2000,
+        "MUSIC.MUSIC_GRAPH_EQ.band6_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band6_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band6_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band7_f0": 3000,
+        "MUSIC.MUSIC_GRAPH_EQ.band7_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band7_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band7_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band8_f0": 4000,
+        "MUSIC.MUSIC_GRAPH_EQ.band8_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band8_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band8_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.band9_f0": 8000,
+        "MUSIC.MUSIC_GRAPH_EQ.band9_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.band9_q": 7,
+        "MUSIC.MUSIC_GRAPH_EQ.band9_type": 2,
+        "MUSIC.MUSIC_GRAPH_EQ.channel": 4,
+        "MUSIC.MUSIC_GRAPH_EQ.in_gain": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.module_sel": 0,
+        "MUSIC.MUSIC_GRAPH_EQ.out_gain": 0,
         "RECORDING.RECORDING_COMMON.rec_mix_effect_raw": 12,
         "RECORDING.RECORDING_COMMON.rec_mix_music": 12,
         "RECORDING.RECORDING_COMMON.rec_mix_raw": 12,
@@ -3336,7 +4198,7 @@
         "SYSTEM.SYSTEM_DEVICE_INFO.addrspace_version": 1,
         "SYSTEM.SYSTEM_DEVICE_INFO.dsp_id": 2,
         "SYSTEM.SYSTEM_DEVICE_INFO.product_id": 2,
-        "SYSTEM.SYSTEM_DEVICE_INFO.schema_crc16": 39209,
+        "SYSTEM.SYSTEM_DEVICE_INFO.schema_crc16": 6009,
         "SYSTEM.SYSTEM_MASTER_VOLUME.master_volume": 12,
         "SYSTEM.SYSTEM_STATUS.battery_mv": 3700,
         "SYSTEM.SYSTEM_STATUS.battery_percent": 100,
