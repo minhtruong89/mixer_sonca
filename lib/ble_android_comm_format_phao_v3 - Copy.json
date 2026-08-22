@@ -335,11 +335,12 @@
             },
             "0x02": {
               "name": "MIC_GRAPH_EQ",
+              "paramType": "EQParam",
               "indexRule": {
                 "indexCount": 52,
                 "bandCount": 10,
                 "bandBaseIndex": 2,
-                "indexRange": "2-51",
+				"indexRange": "2-51",
                 "fieldsPerBand": 5,
                 "band": "(index-2)/5",
                 "field": "(index-2)%5",
@@ -360,6 +361,8 @@
                     "readOnly": true
                   }
                 },
+                "band": "(index-2)/5",
+                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
@@ -376,27 +379,23 @@
                 },
                 "fieldLimit": {
                   "enable": {
-                    "min": 0,
-                    "max": 1
-                  },
-                  "type": {
-                    "min": 0,
-                    "max": 8
+                    "min": "0",
+                    "max": "1"
                   },
                   "f0": {
-                    "min": 20,
-                    "max": 24000
+                    "min": "20",
+                    "max": "20000"
                   },
                   "q": {
-                    "min": 1,
-                    "max": 32767
+                    "min": "0.0",
+                    "max": "31.9"
                   },
                   "gain": {
-                    "min": -9216,
-                    "max": 9216
+                    "min": "-12.0",
+                    "max": "12.0"
                   }
                 },
-                "fieldMetadata": {
+				"fieldMetadata": {
                   "enable": {
                     "default": 0,
                     "applied": true
@@ -426,6 +425,8 @@
                 "0": {
                   "name": "cutoff_frequency",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 24000,
                   "default": 9000,
                   "applied": false
                 },
@@ -440,8 +441,8 @@
                 "2": {
                   "name": "delay",
                   "type": "uint16_le",
-                  "min": 0,
-                  "max": 250,
+                  "min": 150,
+                  "max": "max_delay",
                   "default": 200,
                   "applied": true
                 },
@@ -464,12 +465,16 @@
                 "5": {
                   "name": "dry",
                   "type": "int16_le",
+                  "min": "0",
+                  "max": "100",
                   "default": 50,
                   "applied": false
                 },
                 "6": {
                   "name": "wet",
                   "type": "int16_le",
+                  "min": "0",
+                  "max": "100",
                   "default": 80,
                   "applied": false
                 },
@@ -489,6 +494,8 @@
                 "0": {
                   "name": "high_cutoff_frequency",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 24000,
                   "default": 9000,
                   "applied": false
                 },
@@ -501,12 +508,16 @@
                 "2": {
                   "name": "predelay",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": "max_predelay",
                   "default": 1200,
                   "applied": false
                 },
                 "3": {
                   "name": "diffusion",
                   "type": "uint16_le",
+                  "min": "0",
+                  "max": "100",
                   "default": 80,
                   "applied": false
                 },
@@ -521,6 +532,8 @@
                 "5": {
                   "name": "damping",
                   "type": "uint16_le",
+                  "min": 0,
+                  "max": 10000,
                   "default": 4000,
                   "applied": false
                 },
@@ -663,11 +676,12 @@
             },
             "0x02": {
               "name": "MUSIC_GRAPH_EQ",
+              "paramType": "EQParam",
               "indexRule": {
-                "indexCount": 52,
+				"indexCount": 52,
                 "bandCount": 10,
                 "bandBaseIndex": 2,
-                "indexRange": "2-51",
+				"indexRange": "2-51",
                 "fieldsPerBand": 5,
                 "band": "(index-2)/5",
                 "field": "(index-2)%5",
@@ -688,6 +702,9 @@
                     "readOnly": true
                   }
                 },
+                "fieldsPerBand": 5,
+                "band": "(index-2)/5",
+                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
@@ -704,27 +721,23 @@
                 },
                 "fieldLimit": {
                   "enable": {
-                    "min": 0,
-                    "max": 1
-                  },
-                  "type": {
-                    "min": 0,
-                    "max": 8
+                    "min": "0",
+                    "max": "1"
                   },
                   "f0": {
-                    "min": 20,
-                    "max": 24000
+                    "min": "20",
+                    "max": "20000"
                   },
                   "q": {
-                    "min": 1,
-                    "max": 32767
+                    "min": "0.0",
+                    "max": "31.9"
                   },
                   "gain": {
-                    "min": -9216,
-                    "max": 9216
+                    "min": "-12.0",
+                    "max": "12.0"
                   }
                 },
-                "fieldMetadata": {
+				"fieldMetadata": {
                   "enable": {
                     "default": 0,
                     "applied": true
@@ -1006,7 +1019,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 24,
-                  "default": 24,
+                  "default": 12,
                   "applied": false
                 },
                 "1": {
@@ -1022,7 +1035,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 24,
-                  "default": 24,
+                  "default": 12,
                   "applied": false
                 },
                 "3": {
@@ -1030,7 +1043,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 24,
-                  "default": 24,
+                  "default": 12,
                   "applied": false
                 },
                 "4": {
@@ -1038,7 +1051,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 24,
-                  "default": 24,
+                  "default": 12,
                   "applied": false
                 },
                 "5": {
@@ -1046,7 +1059,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 24,
-                  "default": 24,
+                  "default": 12,
                   "applied": false
                 },
                 "6": {
@@ -1056,6 +1069,93 @@
                   "max": 24,
                   "default": 12,
                   "applied": false
+                }
+              }
+            },
+            "0x02": {
+              "name": "RECORDING_GRAPH_EQ",
+              "paramType": "EQParam",
+              "indexRule": {
+				"indexCount": 52,
+                "bandCount": 10,
+                "bandBaseIndex": 2,
+				"indexRange": "2-51",
+                "fieldsPerBand": 5,
+                "band": "(index-2)/5",
+                "field": "(index-2)%5",
+                "bandNumberBase": 1,
+                "nameTemplate": "band{band}_{field}",
+                "bandBaseIndices": {
+                  "0": {
+                    "name": "pregain",
+                    "type": "q8_8_le",
+                    "default": 0,
+                    "applied": false
+                  },
+                  "1": {
+                    "name": "fixed_point_floating_point",
+                    "type": "uint16_le",
+                    "default": 0,
+                    "applied": false,
+                    "readOnly": true
+                  }
+                },
+                "fieldsPerBand": 5,
+                "band": "(index-2)/5",
+                "field": "(index-2)%5",
+                "fieldOrder": {
+                  "0": "enable",
+                  "1": "type",
+                  "2": "f0",
+                  "3": "q",
+                  "4": "gain"
+                },
+                "fieldTypes": {
+                  "enable": "uint16_le",
+                  "type": "int16_le",
+                  "f0": "uint16_le",
+                  "q": "q6_10_le",
+                  "gain": "q8_8_le"
+                },
+                "fieldLimit": {
+                  "enable": {
+                    "min": "0",
+                    "max": "1"
+                  },
+                  "f0": {
+                    "min": "20",
+                    "max": "20000"
+                  },
+                  "q": {
+                    "min": "0.0",
+                    "max": "31.9"
+                  },
+                  "gain": {
+                    "min": "-12.0",
+                    "max": "12.0"
+                  }
+                },
+				"fieldMetadata": {
+                  "enable": {
+                    "default": 0,
+                    "applied": true
+                  },
+                  "type": {
+                    "default": 0,
+                    "applied": true
+                  },
+                  "f0": {
+                    "default": 200,
+                    "applied": true
+                  },
+                  "q": {
+                    "default": 724,
+                    "applied": true
+                  },
+                  "gain": {
+                    "default": 0,
+                    "applied": true
+                  }
                 }
               }
             }
@@ -1075,6 +1175,10 @@
                   "default": 0,
                   "applied": false
                 }
+              },
+              "valueMap": {
+                "0": "mic",
+                "1": "guitar"
               }
             },
             "0x02": {
@@ -1088,6 +1192,10 @@
                   "default": 0,
                   "applied": false
                 }
+              },
+              "valueMap": {
+                "0": "mic",
+                "1": "guitar"
               }
             },
             "0x03": {
@@ -1101,6 +1209,13 @@
                   "default": 0,
                   "applied": false
                 }
+              },
+              "valueMap": {
+                "0": "Bluetooth",
+                "1": "USB",
+                "2": "LineIn",
+                "3": "SpdifIn",
+                "4": "HDMI"
               }
             }
           }
@@ -1121,7 +1236,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "1": {
                   "name": "master_mute",
@@ -1129,7 +1244,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": true
+                  "applied": false
                 }
               }
             },
@@ -1163,7 +1278,7 @@
                 }
               }
             },
-            "0x03": {
+			"0x03": {
               "name": "SYSTEM_DEVICE_INFO",
               "indices": {
                 "0": {
