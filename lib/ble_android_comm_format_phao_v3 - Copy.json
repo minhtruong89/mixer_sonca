@@ -1675,6 +1675,10 @@
         "source": "descriptors/IIR_Turbo filterModes",
         "values": [
           {
+            "name": "UNKNOWN",
+            "value": -1
+          },
+          {
             "name": "FLAT",
             "value": 0
           },
@@ -1918,7 +1922,7 @@
                   "2": {
                     "name": "in_gain",
                     "type": "int16_le",
-                    "min": -240,
+                    "min": -24,
                     "max": 0,
                     "default": 0,
                     "applied": false
@@ -1926,8 +1930,8 @@
                   "3": {
                     "name": "out_gain",
                     "type": "int16_le",
-                    "min": -120,
-                    "max": 240,
+                    "min": -12,
+                    "max": 24,
                     "default": 0,
                     "applied": false
                   }
@@ -1946,8 +1950,8 @@
                 },
                 "fieldLimit": {
                   "gain": {
-                    "min": -120,
-                    "max": 120
+                    "min": -12,
+                    "max": 12
                   },
                   "f0": {
                     "min": 10,
@@ -1979,7 +1983,7 @@
                 "bandOverrides": {
                   "1": {
                     "gain": {
-                      "default": 1
+                      "default": 0
                     },
                     "f0": {
                       "default": 30
@@ -1993,7 +1997,7 @@
                   },
                   "2": {
                     "gain": {
-                      "default": 60
+                      "default": 6
                     },
                     "f0": {
                       "default": 148
@@ -2007,7 +2011,7 @@
                   },
                   "3": {
                     "gain": {
-                      "default": 39
+                      "default": 4
                     },
                     "f0": {
                       "default": 282
@@ -2198,8 +2202,8 @@
                   "name": "feedback",
                   "type": "uint16_le",
                   "min": 0,
-                  "max": 800,
-                  "default": 600,
+                  "max": 80,
+                  "default": 60,
                   "applied": false
                 },
                 "1": {
@@ -2214,8 +2218,8 @@
                   "name": "delay_time",
                   "type": "uint16_le",
                   "min": 0,
-                  "max": 2000,
-                  "default": 1900,
+                  "max": 200,
+                  "default": 190,
                   "applied": false
                 },
                 "3": {
@@ -2323,9 +2327,9 @@
                 "0": {
                   "name": "in_gain",
                   "type": "int16_le",
-                  "min": -600,
+                  "min": -60,
                   "max": 0,
-                  "default": -50,
+                  "default": -5,
                   "applied": false
                 },
                 "1": {
@@ -2395,9 +2399,9 @@
                 "9": {
                   "name": "out_gain",
                   "type": "int16_le",
-                  "min": -300,
-                  "max": 300,
-                  "default": 50,
+                  "min": -30,
+                  "max": 30,
+                  "default": 5,
                   "applied": false
                 },
                 "10": {
@@ -2595,7 +2599,7 @@
                   "2": {
                     "name": "in_gain",
                     "type": "int16_le",
-                    "min": -240,
+                    "min": -24,
                     "max": 0,
                     "default": 0,
                     "applied": false
@@ -2603,8 +2607,8 @@
                   "3": {
                     "name": "out_gain",
                     "type": "int16_le",
-                    "min": -120,
-                    "max": 240,
+                    "min": -12,
+                    "max": 24,
                     "default": 0,
                     "applied": false
                   }
@@ -2623,8 +2627,8 @@
                 },
                 "fieldLimit": {
                   "gain": {
-                    "min": -120,
-                    "max": 120
+                    "min": -12,
+                    "max": 12
                   },
                   "f0": {
                     "min": 10,
@@ -3222,7 +3226,7 @@
                 "3": {
                   "name": "schema_crc16",
                   "type": "uint16_le",
-                  "default": 35152,
+                  "default": 6009,
                   "applied": false,
                   "readOnly": true
                 }
@@ -4019,10 +4023,10 @@
         "MIC.MIC_COMMON.reverb_gain": 12,
         "MIC.MIC_ECHO_EFFECT.delay_level": 80,
         "MIC.MIC_ECHO_EFFECT.delay_pan": 0,
-        "MIC.MIC_ECHO_EFFECT.delay_time": 1900,
+        "MIC.MIC_ECHO_EFFECT.delay_time": 190,
         "MIC.MIC_ECHO_EFFECT.dry_level": 0,
         "MIC.MIC_ECHO_EFFECT.enable": 1,
-        "MIC.MIC_ECHO_EFFECT.feedback": 600,
+        "MIC.MIC_ECHO_EFFECT.feedback": 60,
         "MIC.MIC_ECHO_EFFECT.tap1_level": 20,
         "MIC.MIC_ECHO_EFFECT.tap1_pan": 0,
         "MIC.MIC_ECHO_EFFECT.tap1_time": 10,
@@ -4058,15 +4062,15 @@
         "MIC.MIC_GRAPH_EQ.band15_q": 7,
         "MIC.MIC_GRAPH_EQ.band15_type": 3,
         "MIC.MIC_GRAPH_EQ.band1_f0": 30,
-        "MIC.MIC_GRAPH_EQ.band1_gain": 1,
+        "MIC.MIC_GRAPH_EQ.band1_gain": 0,
         "MIC.MIC_GRAPH_EQ.band1_q": 7,
         "MIC.MIC_GRAPH_EQ.band1_type": 2,
         "MIC.MIC_GRAPH_EQ.band2_f0": 148,
-        "MIC.MIC_GRAPH_EQ.band2_gain": 60,
+        "MIC.MIC_GRAPH_EQ.band2_gain": 6,
         "MIC.MIC_GRAPH_EQ.band2_q": 20,
         "MIC.MIC_GRAPH_EQ.band2_type": 2,
         "MIC.MIC_GRAPH_EQ.band3_f0": 282,
-        "MIC.MIC_GRAPH_EQ.band3_gain": 39,
+        "MIC.MIC_GRAPH_EQ.band3_gain": 4,
         "MIC.MIC_GRAPH_EQ.band3_q": 20,
         "MIC.MIC_GRAPH_EQ.band3_type": 2,
         "MIC.MIC_GRAPH_EQ.band4_f0": 1000,
@@ -4110,8 +4114,8 @@
         "MIC.MIC_REVERB_EFFECT.envelope_tap4": 15,
         "MIC.MIC_REVERB_EFFECT.envelope_tap5": 14,
         "MIC.MIC_REVERB_EFFECT.envelope_tap6": 14,
-        "MIC.MIC_REVERB_EFFECT.in_gain": -50,
-        "MIC.MIC_REVERB_EFFECT.out_gain": 50,
+        "MIC.MIC_REVERB_EFFECT.in_gain": -5,
+        "MIC.MIC_REVERB_EFFECT.out_gain": 5,
         "MIC.MIC_REVERB_EFFECT.pre_delay": 10,
         "MIC.MIC_REVERB_EFFECT.reverb_level": 60,
         "MIC.MIC_REVERB_EFFECT.scale": 0,
@@ -4194,7 +4198,7 @@
         "SYSTEM.SYSTEM_DEVICE_INFO.addrspace_version": 1,
         "SYSTEM.SYSTEM_DEVICE_INFO.dsp_id": 2,
         "SYSTEM.SYSTEM_DEVICE_INFO.product_id": 2,
-        "SYSTEM.SYSTEM_DEVICE_INFO.schema_crc16": 35152,
+        "SYSTEM.SYSTEM_DEVICE_INFO.schema_crc16": 6009,
         "SYSTEM.SYSTEM_MASTER_VOLUME.master_volume": 12,
         "SYSTEM.SYSTEM_STATUS.battery_mv": 3700,
         "SYSTEM.SYSTEM_STATUS.battery_percent": 100,

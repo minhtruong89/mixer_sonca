@@ -672,7 +672,7 @@
             "MIC FBC": {
               "category": "MIC",
               "command": "MIC_FBC",
-              "index": "feedback_cancel",
+              "index": "fbc_enable",
               "control": {
                 "typeDisplay": "switch button",
                 "valueType": "uint16"
