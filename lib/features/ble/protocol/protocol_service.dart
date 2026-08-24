@@ -79,59 +79,62 @@ class ProtocolService {
     }
   }
 
+  /// Get active schema name based on connected model
+  String get activeSchemaName {
+    try {
+      if (getIt.isRegistered<MixerService>()) {
+        return getIt<MixerService>().getSchemaNameForActiveModel();
+      }
+    } catch (_) {}
+    return 'defaultSchema';
+  }
+
+  /// Get all categories for active schema or specified schemaName/schemaVersion
+  Map<String, CategoryDefinition> getCategories({String? schemaName, int? schemaVersion}) {
+    if (!_isLoaded || _definition == null) return {};
+    final resolvedSchemaName = schemaName ?? (schemaVersion == null ? activeSchemaName : null);
+    return _definition!.getCategories(schemaName: resolvedSchemaName, schemaVersion: schemaVersion);
+  }
+
   /// Get category by name (e.g., "MIC", "MUSIC")
-  CategoryDefinition? getCategoryByName(String name, {int? schemaVersion}) {
+  CategoryDefinition? getCategoryByName(String name, {String? schemaName, int? schemaVersion}) {
     if (!_isLoaded || _definition == null) {
       throw Exception('Protocol not loaded. Call loadProtocolDefinition() first.');
     }
-    int? version = schemaVersion;
-    if (version == null) {
-      try {
-        if (getIt.isRegistered<MixerService>()) {
-          version = getIt<MixerService>().getSchemaVersionForActiveModel();
-        }
-      } catch (_) {}
-    }
-    return _definition!.getCategoryByName(name, schemaVersion: version);
+    final resolvedSchemaName = schemaName ?? (schemaVersion == null ? activeSchemaName : null);
+    return _definition!.getCategoryByName(name, schemaName: resolvedSchemaName, schemaVersion: schemaVersion);
   }
 
   /// Get category by ID (e.g., 0x01, 0x02)
-  CategoryDefinition? getCategoryById(int id, {int? schemaVersion}) {
+  CategoryDefinition? getCategoryById(int id, {String? schemaName, int? schemaVersion}) {
     if (!_isLoaded || _definition == null) {
       throw Exception('Protocol not loaded. Call loadProtocolDefinition() first.');
     }
-    int? version = schemaVersion;
-    if (version == null) {
-      try {
-        if (getIt.isRegistered<MixerService>()) {
-          version = getIt<MixerService>().getSchemaVersionForActiveModel();
-        }
-      } catch (_) {}
-    }
-    return _definition!.getCategoryById(id, schemaVersion: version);
+    final resolvedSchemaName = schemaName ?? (schemaVersion == null ? activeSchemaName : null);
+    return _definition!.getCategoryById(id, schemaName: resolvedSchemaName, schemaVersion: schemaVersion);
   }
 
   /// Get command by category name and command ID
-  CommandDefinition? getCommand(String categoryName, int cmdId, {int? schemaVersion}) {
-    final category = getCategoryByName(categoryName, schemaVersion: schemaVersion);
+  CommandDefinition? getCommand(String categoryName, int cmdId, {String? schemaName, int? schemaVersion}) {
+    final category = getCategoryByName(categoryName, schemaName: schemaName, schemaVersion: schemaVersion);
     return category?.getCommand(cmdId);
   }
 
   /// Get command by category name and command name
-  CommandDefinition? getCommandByName(String categoryName, String commandName, {int? schemaVersion}) {
-    final category = getCategoryByName(categoryName, schemaVersion: schemaVersion);
+  CommandDefinition? getCommandByName(String categoryName, String commandName, {String? schemaName, int? schemaVersion}) {
+    final category = getCategoryByName(categoryName, schemaName: schemaName, schemaVersion: schemaVersion);
     return category?.getCommandByName(commandName);
   }
 
   /// Get command by category ID and command ID
-  CommandDefinition? getCommandById(int categoryId, int cmdId, {int? schemaVersion}) {
-    final category = getCategoryById(categoryId, schemaVersion: schemaVersion);
+  CommandDefinition? getCommandById(int categoryId, int cmdId, {String? schemaName, int? schemaVersion}) {
+    final category = getCategoryById(categoryId, schemaName: schemaName, schemaVersion: schemaVersion);
     return category?.getCommand(cmdId);
   }
 
   /// Get IndexDefinition by category name, command name, and parameter name
-  IndexDefinition? getIndexDefinitionByParamName(String categoryName, String commandName, String paramName, {int? schemaVersion}) {
-    final command = getCommandByName(categoryName, commandName, schemaVersion: schemaVersion);
+  IndexDefinition? getIndexDefinitionByParamName(String categoryName, String commandName, String paramName, {String? schemaName, int? schemaVersion}) {
+    final command = getCommandByName(categoryName, commandName, schemaName: schemaName, schemaVersion: schemaVersion);
     if (command == null) return null;
     final idx = command.getIndexByName(paramName);
     if (idx == null) return null;
@@ -139,8 +142,8 @@ class ProtocolService {
   }
 
   /// Resolve numerical min for an IndexDefinition (resolves dynamic parameter references like "min_predelay")
-  double? resolveMin(String categoryName, String commandName, String paramName, {int? schemaVersion, Map<String, dynamic>? controlStates}) {
-    final indexDef = getIndexDefinitionByParamName(categoryName, commandName, paramName, schemaVersion: schemaVersion);
+  double? resolveMin(String categoryName, String commandName, String paramName, {String? schemaName, int? schemaVersion, Map<String, dynamic>? controlStates}) {
+    final indexDef = getIndexDefinitionByParamName(categoryName, commandName, paramName, schemaName: schemaName, schemaVersion: schemaVersion);
     if (indexDef == null) return null;
     if (indexDef.min != null) return indexDef.min!.toDouble();
 
@@ -154,7 +157,7 @@ class ProtocolService {
         }
       }
       // Fallback to default of the referenced parameter in the same command
-      final refDef = getIndexDefinitionByParamName(categoryName, commandName, refParamName, schemaVersion: schemaVersion);
+      final refDef = getIndexDefinitionByParamName(categoryName, commandName, refParamName, schemaName: schemaName, schemaVersion: schemaVersion);
       if (refDef?.defaultValue != null) {
         return refDef!.defaultValue!.toDouble();
       }
@@ -163,8 +166,8 @@ class ProtocolService {
   }
 
   /// Resolve numerical max for an IndexDefinition (resolves dynamic parameter references like "max_predelay")
-  double? resolveMax(String categoryName, String commandName, String paramName, {int? schemaVersion, Map<String, dynamic>? controlStates}) {
-    final indexDef = getIndexDefinitionByParamName(categoryName, commandName, paramName, schemaVersion: schemaVersion);
+  double? resolveMax(String categoryName, String commandName, String paramName, {String? schemaName, int? schemaVersion, Map<String, dynamic>? controlStates}) {
+    final indexDef = getIndexDefinitionByParamName(categoryName, commandName, paramName, schemaName: schemaName, schemaVersion: schemaVersion);
     if (indexDef == null) return null;
     if (indexDef.max != null) return indexDef.max!.toDouble();
 
@@ -178,7 +181,7 @@ class ProtocolService {
         }
       }
       // Fallback to default of the referenced parameter in the same command
-      final refDef = getIndexDefinitionByParamName(categoryName, commandName, refParamName, schemaVersion: schemaVersion);
+      final refDef = getIndexDefinitionByParamName(categoryName, commandName, refParamName, schemaName: schemaName, schemaVersion: schemaVersion);
       if (refDef?.defaultValue != null) {
         return refDef!.defaultValue!.toDouble();
       }
@@ -187,65 +190,65 @@ class ProtocolService {
   }
 
   /// Get index definition by category name, command ID, and index
-  IndexDefinition? getIndex(String categoryName, int cmdId, int index) {
-    final command = getCommand(categoryName, cmdId);
+  IndexDefinition? getIndex(String categoryName, int cmdId, int index, {String? schemaName, int? schemaVersion}) {
+    final command = getCommand(categoryName, cmdId, schemaName: schemaName, schemaVersion: schemaVersion);
     return command?.getIndex(index);
   }
 
   /// Get index by parameter name
-  int? getIndexByParameterName(String categoryName, int cmdId, String paramName) {
-    final command = getCommand(categoryName, cmdId);
+  int? getIndexByParameterName(String categoryName, int cmdId, String paramName, {String? schemaName, int? schemaVersion}) {
+    final command = getCommand(categoryName, cmdId, schemaName: schemaName, schemaVersion: schemaVersion);
     return command?.getIndexByName(paramName);
   }
 
   /// Get parameter type by name
-  String? getParameterType(String categoryName, int cmdId, String paramName) {
-    final index = getIndexByParameterName(categoryName, cmdId, paramName);
+  String? getParameterType(String categoryName, int cmdId, String paramName, {String? schemaName, int? schemaVersion}) {
+    final index = getIndexByParameterName(categoryName, cmdId, paramName, schemaName: schemaName, schemaVersion: schemaVersion);
     if (index == null) return null;
     
-    final indexDef = getIndex(categoryName, cmdId, index);
+    final indexDef = getIndex(categoryName, cmdId, index, schemaName: schemaName, schemaVersion: schemaVersion);
     return indexDef?.type;
   }
 
   /// Get EQ filter type by name
-  EqFilterType? getEqFilterType(String name) {
+  EqFilterType? getEqFilterType(String name, {String? schemaName, int? schemaVersion}) {
     if (!_isLoaded || _definition == null) {
       throw Exception('Protocol not loaded. Call loadProtocolDefinition() first.');
     }
-    return _definition!.eqFilterTypes[name];
+    final filters = getEqFilterTypes(schemaName: schemaName, schemaVersion: schemaVersion);
+    return filters[name];
   }
 
   /// Get all EQ filter types
-  Map<String, EqFilterType> getEqFilterTypes() {
+  Map<String, EqFilterType> getEqFilterTypes({String? schemaName, int? schemaVersion}) {
     if (!_isLoaded || _definition == null) {
       throw Exception('Protocol not loaded. Call loadProtocolDefinition() first.');
     }
-    return _definition!.eqFilterTypes;
+    final resolvedSchemaName = schemaName ?? (schemaVersion == null ? activeSchemaName : null);
+    return _definition!.getEqFilterTypes(schemaName: resolvedSchemaName, schemaVersion: schemaVersion);
   }
 
   /// Calculate EQ index from band and field name
-  int? calculateEqIndex(String categoryName, int cmdId, int band, String fieldName) {
-    final command = getCommand(categoryName, cmdId);
+  int? calculateEqIndex(String categoryName, int cmdId, int band, String fieldName, {String? schemaName, int? schemaVersion}) {
+    final command = getCommand(categoryName, cmdId, schemaName: schemaName, schemaVersion: schemaVersion);
     if (command == null || !command.isEqCommand) return null;
     
     return command.indexRule!.calculateIndex(band, fieldName);
   }
 
   /// Get field type for EQ command
-  String? getEqFieldType(String categoryName, int cmdId, String fieldName) {
-    final command = getCommand(categoryName, cmdId);
+  String? getEqFieldType(String categoryName, int cmdId, String fieldName, {String? schemaName, int? schemaVersion}) {
+    final command = getCommand(categoryName, cmdId, schemaName: schemaName, schemaVersion: schemaVersion);
     if (command == null || !command.isEqCommand) return null;
     
     return command.indexRule!.getFieldType(fieldName);
   }
 
   /// Find a command definition by parameter name (index name)
-  /// 
-  /// Example: findCommand('SYSTEM', 'app_mode') -> Returns command definition for ID 0x01
-  CommandDefinition? findCommand(String categoryName, String paramName) {
+  CommandDefinition? findCommand(String categoryName, String paramName, {String? schemaName, int? schemaVersion}) {
     if (!_isLoaded || _definition == null) return null;
 
-    final category = getCategoryByName(categoryName);
+    final category = getCategoryByName(categoryName, schemaName: schemaName, schemaVersion: schemaVersion);
     if (category == null) return null;
 
     // Search through all commands in the category

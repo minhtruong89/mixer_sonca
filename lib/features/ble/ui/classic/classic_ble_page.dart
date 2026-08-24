@@ -1805,6 +1805,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      final totalBands = section.totalEQBand ?? 10;
      final commandName = section.command ?? '';
      
+     final protocolService = getIt<ProtocolService>();
+     final activeSchemaName = getIt<MixerService>().getSchemaNameForActiveModel();
+
      // default parsing from control
      int defaultTypeEnum = 2; // Default to PEAKING (2)
      final typeValue = section.control?.rawConfig['type']?.toString();
@@ -1813,10 +1816,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
         if (parsedInt != null) {
            defaultTypeEnum = parsedInt;
         } else {
-           // Try to resolve by name
-           final protocolService = getIt<ProtocolService>();
+           // Try to resolve by name using active schema
            if (protocolService.isLoaded) {
-              final filterType = protocolService.definition!.eqFilterTypes[typeValue.toUpperCase()];
+              final filterType = protocolService.getEqFilterType(typeValue.toUpperCase(), schemaName: activeSchemaName);
               if (filterType != null) {
                  defaultTypeEnum = filterType.value;
               }
@@ -1829,13 +1831,12 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      // Calculate Q in double from Q8.8 (previously Q6.10/1024.0)
      final double qValue = defaultQ / 256.0;
      
-     final protocolService = getIt<ProtocolService>();
      String categoryName = '';
      Map<String, dynamic>? fieldLimits;
      
-     final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
-     for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
-       final cmd = protocolService.getCommandByName(cat.name, commandName, schemaVersion: activeSchemaVersion);
+     final categories = protocolService.getCategories(schemaName: activeSchemaName);
+     for (var cat in categories.values) {
+       final cmd = protocolService.getCommandByName(cat.name, commandName, schemaName: activeSchemaName);
        if (cmd != null) {
           categoryName = cat.name;
           // Get field limits from command index rule
@@ -1894,8 +1895,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
                     final rawF0 = viewModel.getControlValue("${commandName}_band${index}_f0", defaultValue: baseF0);
                     int currentF0 = (rawF0 is int) ? rawF0 : (rawF0 is double ? rawF0.toInt() : baseF0);
 
-                    final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
-                    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
+                    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaName: activeSchemaName);
 
                     final rawQ = viewModel.getControlValue("${commandName}_band${index}_q") ?? viewModel.getControlValue("${commandName}_band${index}_Q", defaultValue: defaultQ);
                     final qType = cmdDef?.indexRule?.fieldTypes['q'] ?? cmdDef?.indexRule?.fieldTypes['Q'];
@@ -1927,8 +1927,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
 
                     // Prepare filter types array for the dialog
                     Map<String, int> filterTypes = {};
-                    if (protocolService.isLoaded && protocolService.definition != null) {
-                       final activeFilterTypes = protocolService.definition!.getEqFilterTypes(schemaVersion: activeSchemaVersion);
+                    if (protocolService.isLoaded) {
+                       final activeFilterTypes = protocolService.getEqFilterTypes(schemaName: activeSchemaName);
                        for (var entry in activeFilterTypes.entries) {
                           filterTypes[entry.key] = entry.value.value;
                        }
@@ -1996,8 +1996,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      try {
         final builder = getIt<DynamicCommandBuilder>();
         final protocolService = getIt<ProtocolService>();
-        final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
-        final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
+        final activeSchemaName = getIt<MixerService>().getSchemaNameForActiveModel();
+        final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaName: activeSchemaName);
         if (cmdDef == null) return;
         final qType = cmdDef.indexRule?.fieldTypes['q'] ?? cmdDef.indexRule?.fieldTypes['Q'];
 
@@ -2060,8 +2060,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
     
     int rawValue = 0;
     final protocolService = getIt<ProtocolService>();
-    final activeSchemaVersion = getIt<MixerService>().getSchemaVersionForActiveModel();
-    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaVersion: activeSchemaVersion);
+    final activeSchemaName = getIt<MixerService>().getSchemaNameForActiveModel();
+    final cmdDef = protocolService.getCommandByName(categoryName, commandName, schemaName: activeSchemaName);
     final qType = cmdDef?.indexRule?.fieldTypes['q'] ?? cmdDef?.indexRule?.fieldTypes['Q'];
 
     if (fieldParam == 'gain') {
@@ -2157,8 +2157,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      
      // Get category name
      final protocolService = getIt<ProtocolService>();
+     final activeSchemaName = getIt<MixerService>().getSchemaNameForActiveModel();
      String categoryName = '';
-     for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+     for (var cat in protocolService.getCategories(schemaName: activeSchemaName).values) {
        if (cat.getCommandByName(commandName) != null) {
           categoryName = cat.name;
           break;
@@ -2175,7 +2176,7 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
          if (parsedInt != null) {
              defaultTypeEnum = parsedInt;
          } else if (protocolService.isLoaded) {
-             final filterType = protocolService.definition!.eqFilterTypes[typeValue.toUpperCase()];
+             final filterType = protocolService.getEqFilterType(typeValue.toUpperCase(), schemaName: activeSchemaName);
              if (filterType != null) defaultTypeEnum = filterType.value;
          }
      }
@@ -2217,8 +2218,9 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      
      // Get category name
      final protocolService = getIt<ProtocolService>();
+     final activeSchemaName = getIt<MixerService>().getSchemaNameForActiveModel();
      String categoryName = '';
-     for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+     for (var cat in protocolService.getCategories(schemaName: activeSchemaName).values) {
        if (cat.getCommandByName(commandName) != null) {
           categoryName = cat.name;
           break;
@@ -2232,7 +2234,8 @@ class _ClassicBlePageState extends State<ClassicBlePage> {
      // Resolve type names to values
      final Map<String, int> typeMap = {};
      if (protocolService.isLoaded) {
-        protocolService.definition!.eqFilterTypes.forEach((key, val) {
+        final activeFilters = protocolService.getEqFilterTypes(schemaName: activeSchemaName);
+        activeFilters.forEach((key, val) {
            typeMap[key.toUpperCase()] = val.value;
         });
      }

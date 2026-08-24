@@ -478,13 +478,13 @@ class BleViewModel extends ChangeNotifier {
            if (parsedInt != null) {
               defaultTypeEnum = parsedInt;
            } else {
-              final protocolService = getIt<ProtocolService>();
-              if (protocolService.isLoaded) {
-                 final filterType = protocolService.definition!.eqFilterTypes[typeValue.toUpperCase()];
-                 if (filterType != null) defaultTypeEnum = filterType.value;
-              }
-           }
-        }
+               final protocolService = getIt<ProtocolService>();
+               if (protocolService.isLoaded) {
+                  final filterType = protocolService.getEqFilterType(typeValue.toUpperCase());
+                  if (filterType != null) defaultTypeEnum = filterType.value;
+               }
+            }
+         }
         final defaultF0 = section.control?.rawConfig['f0']?.toString() ?? '0';
         final defaultQ = int.tryParse(section.control?.rawConfig['Q']?.toString() ?? '0') ?? 0;
         final double qValue = defaultQ / 256.0;
@@ -508,7 +508,7 @@ class BleViewModel extends ChangeNotifier {
              // Find category name for EQ Area command
              final protocolService = getIt<ProtocolService>();
              String categoryName = "";
-             for (var cat in protocolService.definition?.categories.values ?? <CategoryDefinition>[]) {
+             for (var cat in protocolService.getCategories().values) {
                if (cat.getCommandByName(commandName) != null) {
                  categoryName = cat.name;
                  break;
@@ -1412,6 +1412,7 @@ class BleViewModel extends ChangeNotifier {
     final mixerService = getIt<MixerService>();
     final protocolService = getIt<ProtocolService>();
     final builder = getIt<DynamicCommandBuilder>();
+    final activeSchemaName = mixerService.getSchemaNameForActiveModel();
     final activeSchemaVersion = mixerService.getSchemaVersionForActiveModel();
     
     final section = mixerService.getItemsForSection(sectionName);
@@ -1430,8 +1431,9 @@ class BleViewModel extends ChangeNotifier {
       CommandDefinition? cmdDef;
       String categoryName = "";
       if (protocolService.definition != null) {
-        for (var cat in protocolService.definition!.categories.values) {
-          final d = protocolService.getCommandByName(cat.name, commandName, schemaVersion: activeSchemaVersion);
+        final categories = protocolService.getCategories(schemaName: activeSchemaName);
+        for (var cat in categories.values) {
+          final d = protocolService.getCommandByName(cat.name, commandName, schemaName: activeSchemaName);
           if (d != null) {
             cmdDef = d;
             categoryName = cat.name;
@@ -1441,7 +1443,7 @@ class BleViewModel extends ChangeNotifier {
       }
 
       if (cmdDef == null) {
-        debugPrint('Protocol Warning: Command "$commandName" NOT FOUND in protocol definition (schemaVersion: $activeSchemaVersion)!');
+        debugPrint('Protocol Warning: Command "$commandName" NOT FOUND in protocol definition (schema: $activeSchemaName)!');
       } else if (cmdDef.indexRule == null) {
         debugPrint('Protocol Warning: Command "$commandName" found but HAS NO indexRule!');
       } else {
@@ -1496,9 +1498,9 @@ class BleViewModel extends ChangeNotifier {
           // Find command definition to get the correct ID
           CommandDefinition? cmdDef;
           if (item.command.isNotEmpty) {
-            cmdDef = protocolService.getCommandByName(item.category, item.command, schemaVersion: activeSchemaVersion);
+            cmdDef = protocolService.getCommandByName(item.category, item.command, schemaName: activeSchemaName);
           }
-          cmdDef ??= protocolService.findCommand(item.category, paramName);
+          cmdDef ??= protocolService.findCommand(item.category, paramName, schemaName: activeSchemaName);
               
           if (cmdDef == null) {
             debugPrint('Protocol Warning: Could NOT find command definition for item "${item.label}" (${item.category}.${item.command} -> $paramName)!');

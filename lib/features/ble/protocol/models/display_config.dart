@@ -39,13 +39,15 @@ class DisplayConfig {
 class ModelDisplayConfig {
   final String idx;
   final String nameDisplay;
+  final String? schema;
   final int schemaVersion;
   final Map<String, DisplaySection> sections;
 
   const ModelDisplayConfig({
     required this.idx,
     required this.nameDisplay,
-    required this.schemaVersion,
+    this.schema,
+    this.schemaVersion = 1,
     required this.sections,
   });
 
@@ -59,6 +61,7 @@ class ModelDisplayConfig {
     return ModelDisplayConfig(
       idx: json['idx']?.toString() ?? '',
       nameDisplay: json['nameDisplay']?.toString() ?? '',
+      schema: json['schema']?.toString(),
       schemaVersion: int.tryParse(json['schemaVersion']?.toString() ?? '1') ?? 1,
       sections: sectionsMap,
     );
@@ -66,10 +69,12 @@ class ModelDisplayConfig {
 }
 
 class DefaultDisplay {
+  final String schema;
   final int schemaVersion;
   final Map<String, DisplaySection> sections;
 
   const DefaultDisplay({
+    this.schema = 'defaultSchema',
     this.schemaVersion = 1,
     required this.sections,
   });
@@ -82,6 +87,7 @@ class DefaultDisplay {
       });
     }
     return DefaultDisplay(
+      schema: json['schema']?.toString() ?? 'defaultSchema',
       schemaVersion: int.tryParse(json['schemaVersion']?.toString() ?? '1') ?? 1,
       sections: sectionsMap,
     );

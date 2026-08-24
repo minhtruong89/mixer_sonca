@@ -5,35 +5,43 @@ library;
 class ModelEnumItem {
   final String idx;
   final String nameDisplay;
+  final String schema;
+  final String? defaultProfile;
 
   const ModelEnumItem({
     required this.idx,
     required this.nameDisplay,
+    this.schema = 'defaultSchema',
+    this.defaultProfile,
   });
 
   factory ModelEnumItem.fromJson(Map<String, dynamic> json) {
     return ModelEnumItem(
       idx: json['idx']?.toString() ?? '',
       nameDisplay: json['nameDisplay']?.toString() ?? '',
+      schema: json['schema']?.toString() ?? 'defaultSchema',
+      defaultProfile: json['defaultProfile']?.toString(),
     );
   }
 }
 
 /// Schema Item definition from protocol JSON
 class ProtocolSchemaItem {
+  final String name;
   final int schemaVersion;
   final FramingDefinition framing;
   final Map<String, EqFilterType> eqFilterTypes;
   final Map<String, CategoryDefinition> categories;
 
   const ProtocolSchemaItem({
+    this.name = 'defaultSchema',
     required this.schemaVersion,
     required this.framing,
     required this.eqFilterTypes,
     required this.categories,
   });
 
-  factory ProtocolSchemaItem.fromJson(Map<String, dynamic> json) {
+  factory ProtocolSchemaItem.fromJson(String name, Map<String, dynamic> json) {
     // Parse EQ filter types
     final eqFilterTypesMap = <String, EqFilterType>{};
     if (json['eqFilterTypes'] != null && json['eqFilterTypes']['values'] != null) {
@@ -52,6 +60,7 @@ class ProtocolSchemaItem {
     }
 
     return ProtocolSchemaItem(
+      name: name,
       schemaVersion: int.tryParse(json['schemaVersion']?.toString() ?? '1') ?? 1,
       framing: FramingDefinition.fromJson(json['framing'] ?? {}),
       eqFilterTypes: eqFilterTypesMap,
@@ -67,7 +76,7 @@ class ProtocolDefinition {
   final List<ModelEnumItem> modelEnum;
   final Map<String, EqFilterType> eqFilterTypes;
   final Map<String, CategoryDefinition> categories;
-  final List<ProtocolSchemaItem> schemas;
+  final Map<String, ProtocolSchemaItem> schemas;
   final ProtocolLimits limits;
 
   const ProtocolDefinition({
@@ -76,7 +85,7 @@ class ProtocolDefinition {
     required this.modelEnum,
     required this.eqFilterTypes,
     required this.categories,
-    this.schemas = const [],
+    this.schemas = const {},
     required this.limits,
   });
 
@@ -90,10 +99,19 @@ class ProtocolDefinition {
     }
 
     // Parse schemas
-    final schemasList = <ProtocolSchemaItem>[];
-    if (json['schemas'] != null && json['schemas'] is List) {
-      for (final item in json['schemas']) {
-        schemasList.add(ProtocolSchemaItem.fromJson(item));
+    final schemasMap = <String, ProtocolSchemaItem>{};
+    if (json['schemas'] != null) {
+      if (json['schemas'] is Map) {
+        (json['schemas'] as Map<String, dynamic>).forEach((key, value) {
+          if (value is Map<String, dynamic>) {
+            schemasMap[key] = ProtocolSchemaItem.fromJson(key, value);
+          }
+        });
+      } else if (json['schemas'] is List) {
+        for (final item in json['schemas']) {
+          final name = item['name']?.toString() ?? 'defaultSchema';
+          schemasMap[name] = ProtocolSchemaItem.fromJson(name, item);
+        }
       }
     }
 
@@ -104,8 +122,8 @@ class ProtocolDefinition {
         final filterType = EqFilterType.fromJson(item);
         eqFilterTypesMap[filterType.name] = filterType;
       }
-    } else if (schemasList.isNotEmpty) {
-      eqFilterTypesMap.addAll(schemasList.first.eqFilterTypes);
+    } else if (schemasMap.isNotEmpty) {
+      eqFilterTypesMap.addAll(schemasMap.values.first.eqFilterTypes);
     }
 
     // Parse categories (from top level or from first schema)
@@ -114,13 +132,13 @@ class ProtocolDefinition {
       (json['categories'] as Map<String, dynamic>).forEach((key, value) {
         categoriesMap[key] = CategoryDefinition.fromJson(key, value);
       });
-    } else if (schemasList.isNotEmpty) {
-      categoriesMap.addAll(schemasList.first.categories);
+    } else if (schemasMap.isNotEmpty) {
+      categoriesMap.addAll(schemasMap.values.first.categories);
     }
 
     final defaultFraming = json['framing'] != null
         ? FramingDefinition.fromJson(json['framing'])
-        : (schemasList.isNotEmpty ? schemasList.first.framing : const FramingDefinition(header: {}, crc16: {}, commandPayload: {}, dataPayload: {}));
+        : (schemasMap.isNotEmpty ? schemasMap.values.first.framing : const FramingDefinition(header: {}, crc16: {}, commandPayload: {}, dataPayload: {}));
 
     return ProtocolDefinition(
       protocol: json['protocol'] ?? '',
@@ -128,57 +146,82 @@ class ProtocolDefinition {
       modelEnum: modelEnumList,
       eqFilterTypes: eqFilterTypesMap,
       categories: categoriesMap,
-      schemas: schemasList,
+      schemas: schemasMap,
       limits: ProtocolLimits.fromJson(json['limits'] ?? {}),
     );
   }
 
+  /// Get specific schema by name (e.g. "defaultSchema", "b6", "bp10")
+  ProtocolSchemaItem? getSchemaByName(String name) {
+    if (schemas.containsKey(name)) {
+      return schemas[name];
+    }
+    return schemas.isNotEmpty ? schemas.values.first : null;
+  }
+
   /// Get specific schema by schemaVersion (fallback to version 1 or default schema)
   ProtocolSchemaItem? getSchemaByVersion(int version) {
-    for (final schema in schemas) {
+    for (final schema in schemas.values) {
       if (schema.schemaVersion == version) {
         return schema;
       }
     }
-    // Fallback to version 1 if available
-    for (final schema in schemas) {
+    // Fallback to defaultSchema or version 1 if available
+    if (schemas.containsKey('defaultSchema')) {
+      return schemas['defaultSchema'];
+    }
+    for (final schema in schemas.values) {
       if (schema.schemaVersion == 1) {
         return schema;
       }
     }
-    return schemas.isNotEmpty ? schemas.first : null;
+    return schemas.isNotEmpty ? schemas.values.first : null;
   }
 
-  /// Get eqFilterTypes for a specific schemaVersion (fallback to global eqFilterTypes)
-  Map<String, EqFilterType> getEqFilterTypes({int? schemaVersion}) {
+  /// Helper to resolve schema by schemaName or schemaVersion
+  ProtocolSchemaItem? resolveSchema({String? schemaName, int? schemaVersion}) {
+    if (schemaName != null && schemas.containsKey(schemaName)) {
+      return schemas[schemaName];
+    }
     if (schemaVersion != null && schemas.isNotEmpty) {
-      final schema = getSchemaByVersion(schemaVersion);
-      if (schema != null && schema.eqFilterTypes.isNotEmpty) {
-        return schema.eqFilterTypes;
-      }
+      return getSchemaByVersion(schemaVersion);
+    }
+    return null;
+  }
+
+  /// Get eqFilterTypes for a specific schemaName/schemaVersion (fallback to global eqFilterTypes)
+  Map<String, EqFilterType> getEqFilterTypes({String? schemaName, int? schemaVersion}) {
+    final schema = resolveSchema(schemaName: schemaName, schemaVersion: schemaVersion);
+    if (schema != null && schema.eqFilterTypes.isNotEmpty) {
+      return schema.eqFilterTypes;
     }
     return eqFilterTypes;
   }
 
-  /// Get category by name, optionally for a specific schemaVersion
-  CategoryDefinition? getCategoryByName(String name, {int? schemaVersion}) {
-    if (schemaVersion != null && schemas.isNotEmpty) {
-      final schema = getSchemaByVersion(schemaVersion);
-      if (schema != null && schema.categories.containsKey(name)) {
-        return schema.categories[name];
-      }
+  /// Get category by name, optionally for a specific schemaName/schemaVersion
+  CategoryDefinition? getCategoryByName(String name, {String? schemaName, int? schemaVersion}) {
+    final schema = resolveSchema(schemaName: schemaName, schemaVersion: schemaVersion);
+    if (schema != null && schema.categories.containsKey(name)) {
+      return schema.categories[name];
     }
     return categories[name];
   }
 
-  /// Get category by ID, optionally for a specific schemaVersion
-  CategoryDefinition? getCategoryById(int id, {int? schemaVersion}) {
+  /// Get all categories, optionally for a specific schemaName/schemaVersion
+  Map<String, CategoryDefinition> getCategories({String? schemaName, int? schemaVersion}) {
+    final schema = resolveSchema(schemaName: schemaName, schemaVersion: schemaVersion);
+    if (schema != null && schema.categories.isNotEmpty) {
+      return schema.categories;
+    }
+    return categories;
+  }
+
+  /// Get category by ID, optionally for a specific schemaName/schemaVersion
+  CategoryDefinition? getCategoryById(int id, {String? schemaName, int? schemaVersion}) {
     Map<String, CategoryDefinition> targetCategories = categories;
-    if (schemaVersion != null && schemas.isNotEmpty) {
-      final schema = getSchemaByVersion(schemaVersion);
-      if (schema != null && schema.categories.isNotEmpty) {
-        targetCategories = schema.categories;
-      }
+    final schema = resolveSchema(schemaName: schemaName, schemaVersion: schemaVersion);
+    if (schema != null && schema.categories.isNotEmpty) {
+      targetCategories = schema.categories;
     }
     return targetCategories.values.firstWhere(
       (cat) => cat.id == id,

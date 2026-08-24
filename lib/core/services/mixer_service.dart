@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mixer_sonca/injection.dart';
 import 'package:mixer_sonca/features/ble/protocol/models/display_config.dart';
+import 'package:mixer_sonca/features/ble/protocol/protocol_service.dart';
 
 class MixerService {
   static const String _displayUrl = 'http://data.soncamedia.com/firmware/smartbox/model_config_display.json';
@@ -89,22 +90,54 @@ class MixerService {
     } catch (e) {
       debugPrint('MixerService: Error saving last model idx: $e');
     }
-    debugPrint('MixerService: Active model idx set to "$idx" (schemaVersion: ${getSchemaVersionForActiveModel()})');
+    debugPrint('MixerService: Active model idx set to "$idx" (schema: ${getSchemaNameForActiveModel()}, schemaVersion: ${getSchemaVersionForActiveModel()})');
+  }
+
+  /// Get the active schema name based on connected model idx from ProtocolDefinition modelEnum, or fallback to defaultDisplay schema ("defaultSchema")
+  String getSchemaNameForActiveModel({String? modelIdx}) {
+    final targetIdx = modelIdx ?? _activeModelIdx;
+    if (targetIdx != null && targetIdx.isNotEmpty) {
+      try {
+        if (getIt.isRegistered<ProtocolService>()) {
+          final def = getIt<ProtocolService>().definition;
+          if (def != null) {
+            for (final item in def.modelEnum) {
+              if (item.idx == targetIdx) {
+                return item.schema;
+              }
+            }
+          }
+        }
+      } catch (_) {}
+
+      if (_displayConfig != null) {
+        final modelConfig = _displayConfig!.getModelDisplayByIdx(targetIdx);
+        if (modelConfig?.schema != null && modelConfig!.schema!.isNotEmpty) {
+          return modelConfig.schema!;
+        }
+      }
+    }
+
+    return _displayConfig?.defaultDisplay.schema ?? 'defaultSchema';
   }
 
   /// Get the active schemaVersion based on connected model idx, or fallback to defaultDisplay schemaVersion (1)
   int getSchemaVersionForActiveModel({String? modelIdx}) {
-    if (_displayConfig == null) return 1;
-
-    final targetIdx = modelIdx ?? _activeModelIdx;
-    if (targetIdx != null && targetIdx.isNotEmpty) {
-      final modelConfig = _displayConfig!.getModelDisplayByIdx(targetIdx);
-      if (modelConfig != null) {
-        return modelConfig.schemaVersion;
+    final schemaName = getSchemaNameForActiveModel(modelIdx: modelIdx);
+    try {
+      if (getIt.isRegistered<ProtocolService>()) {
+        final def = getIt<ProtocolService>().definition;
+        final schema = def?.getSchemaByName(schemaName);
+        if (schema != null) {
+          return schema.schemaVersion;
+        }
       }
-    }
+    } catch (_) {}
 
-    return _displayConfig!.defaultDisplay.schemaVersion;
+    if (schemaName == 'defaultSchema') return 1;
+    if (schemaName == 'b6' || schemaName == 'bp10') return 2;
+
+    return _displayConfig?.defaultDisplay.schemaVersion ?? 1;
   }
 
   /// Get items for a specific section (e.g., "Area 1", "Area 2") using active connected model if available
