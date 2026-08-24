@@ -361,8 +361,6 @@
                     "readOnly": true
                   }
                 },
-                "band": "(index-2)/5",
-                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
@@ -703,8 +701,6 @@
                   }
                 },
                 "fieldsPerBand": 5,
-                "band": "(index-2)/5",
-                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
@@ -1101,8 +1097,6 @@
                   }
                 },
                 "fieldsPerBand": 5,
-                "band": "(index-2)/5",
-                "field": "(index-2)%5",
                 "fieldOrder": {
                   "0": "enable",
                   "1": "type",
