@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Sonca Mixer',
+        title: 'DAURIS - MixGo Sonca',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
         home: const HomeSwitchPage(),
