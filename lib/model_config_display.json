@@ -538,7 +538,79 @@
             "16000"
           ]
         },
-        "Area 1": {
+        "Area RECORD MAIN": {
+          "desc": "Area for RECORD click main screen",
+          "areaType": "Overlay Area",
+          "items": {
+            "RECORD": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "indexList": [
+                "rec_mute",
+                "rec_volume"
+              ],
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Mix Mic": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "index": "rec_mix_mic",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Mix Raw": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "index": "rec_mix_raw",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Mix Music": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "index": "rec_mix_music",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Mix Effect": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "index": "rec_mix_effect",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Mix Effect Raw": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "index": "rec_mix_effect_raw",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Mix Effect Guitar": {
+              "category": "RECORDING",
+              "command": "RECORDING_COMMON",
+              "index": "rec_mix_guitar",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            }
+          },
+          "buttons": {
+            "RECORD": {
+              "event": {
+                "click": "Area RECORD EQ"
+              }
+            }
+          }
+        },
+		"Area 1": {
           "desc": "Area left side",
           "areaType": "Main Area",
           "items": {
@@ -628,7 +700,7 @@
                 "typeDisplay": "vertical slider"
               },
               "event": {
-                "click": "Area RECORD EQ"
+                "click": "Area RECORD MAIN"
               }
             }
           }
