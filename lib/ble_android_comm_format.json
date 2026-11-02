@@ -15,8 +15,8 @@
     {
       "idx": "1235",
       "nameDisplay": "BP10",
-      "schema": "bp10",
-      "defaultProfile": "bp10_base"
+      "schema": "hc6288",
+      "defaultProfile": "hc6288_base"
     }
   ],
   "protocol": "ble_android_comm",
@@ -2675,7 +2675,7 @@
         }
       }
     },
-    "bp10": {
+    "hc6288": {
       "schemaVersion": 2,
       "framing": {
         "header": {
@@ -2860,7 +2860,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "1": {
                   "name": "mic_master_mute",
@@ -2875,8 +2875,8 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 16,
-                  "default": 8,
-                  "applied": true
+                  "default": 10,
+                  "applied": false
                 },
                 "3": {
                   "name": "mic_1_mute",
@@ -2891,8 +2891,8 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 16,
-                  "default": 8,
-                  "applied": true
+                  "default": 10,
+                  "applied": false
                 },
                 "5": {
                   "name": "mic_2_mute",
@@ -2908,7 +2908,7 @@
                   "min": -12,
                   "max": 12,
                   "default": 0,
-                  "applied": true
+                  "applied": false
                 },
                 "7": {
                   "name": "mic_middle",
@@ -2916,7 +2916,7 @@
                   "min": -12,
                   "max": 12,
                   "default": 0,
-                  "applied": true
+                  "applied": false
                 },
                 "8": {
                   "name": "mic_treb",
@@ -2924,7 +2924,7 @@
                   "min": -12,
                   "max": 12,
                   "default": 0,
-                  "applied": true
+                  "applied": false
                 },
                 "9": {
                   "name": "mic_effect_gain",
@@ -2932,7 +2932,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "10": {
                   "name": "mic_1_state",
@@ -2958,7 +2958,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "13": {
                   "name": "echo_mute",
@@ -2972,9 +2972,9 @@
                   "name": "echo_delay",
                   "type": "uint16_le",
                   "min": 150,
-                  "max": 250,
+                  "max": 300,
                   "default": 200,
-                  "applied": true
+                  "applied": false
                 },
                 "15": {
                   "name": "reverb_gain",
@@ -2982,7 +2982,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "16": {
                   "name": "reverb_mute",
@@ -2991,6 +2991,18 @@
                   "max": 1,
                   "default": 0,
                   "applied": false
+                },
+                "17": {
+                  "name": "mic_1_pair_status",
+                  "type": "uint16_le",
+                  "applied": false,
+                  "readOnly": true
+                },
+                "18": {
+                  "name": "mic_2_pair_status",
+                  "type": "uint16_le",
+                  "applied": false,
+                  "readOnly": true
                 }
               }
             },
@@ -2998,10 +3010,10 @@
               "name": "MIC_GRAPH_EQ",
               "plugin": "IIR_Turbo",
               "indexRule": {
-                "indexCount": 64,
-                "bandCount": 15,
+                "indexCount": 44,
+                "bandCount": 10,
                 "bandBaseIndex": 4,
-                "indexRange": "4-63",
+                "indexRange": "4-43",
                 "fieldsPerBand": 4,
                 "band": "(index-4)/4",
                 "field": "(index-4)%4",
@@ -3048,23 +3060,27 @@
                   "3": "type"
                 },
                 "fieldTypes": {
-                  "gain": "q8_8_le",
+                  "gain": "int16_le",
                   "f0": "uint16_le",
-                  "q": "q8_8_le",
-                  "type": "int16_le"
+                  "q": "uint16_le",
+                  "type": "uint16_le"
                 },
                 "fieldLimit": {
                   "gain": {
-                    "min": "-12.0",
-                    "max": "12.0"
+                    "min": -12,
+                    "max": 12
                   },
                   "f0": {
-                    "min": "20",
-                    "max": "22000"
+                    "min": 10,
+                    "max": 22000
                   },
                   "q": {
-                    "min": "0.1",
-                    "max": "128"
+                    "min": 1,
+                    "max": 1280
+                  },
+                  "type": {
+                    "min": 0,
+                    "max": 10
                   }
                 },
                 "fieldMetadata": {
@@ -3221,83 +3237,13 @@
                     "type": {
                       "default": 2
                     }
-                  },
-                  "11": {
-                    "gain": {
-                      "default": 0
-                    },
-                    "f0": {
-                      "default": 2000
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "12": {
-                    "gain": {
-                      "default": 0
-                    },
-                    "f0": {
-                      "default": 4000
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "13": {
-                    "gain": {
-                      "default": 0
-                    },
-                    "f0": {
-                      "default": 300
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 1
-                    }
-                  },
-                  "14": {
-                    "gain": {
-                      "default": 0
-                    },
-                    "f0": {
-                      "default": 1500
-                    },
-                    "q": {
-                      "default": 5
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "15": {
-                    "gain": {
-                      "default": 0
-                    },
-                    "f0": {
-                      "default": 5000
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 3
-                    }
                   }
                 }
               }
             },
             "0x03": {
               "name": "MIC_ECHO_EFFECT",
-              "plugin": "Echo_200ms",
+              "plugin": "Echo_300ms",
               "indices": {
                 "0": {
                   "name": "feedback",
@@ -3319,7 +3265,7 @@
                   "name": "delay_time",
                   "type": "uint16_le",
                   "min": 0,
-                  "max": 200,
+                  "max": 300,
                   "default": 190,
                   "applied": false
                 },
@@ -3580,7 +3526,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": true
+                  "applied": false
                 }
               }
             }
@@ -3606,7 +3552,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": false
+                  "applied": true
                 },
                 "2": {
                   "name": "music_bass",
@@ -3654,7 +3600,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": false
+                  "applied": true
                 },
                 "8": {
                   "name": "music_three_d_enable",
@@ -3662,7 +3608,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": false
+                  "applied": true
                 },
                 "9": {
                   "name": "music_three_d_plus_enable",
@@ -3670,7 +3616,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": false
+                  "applied": true
                 },
                 "10": {
                   "name": "music_widener_enable",
@@ -3678,7 +3624,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 0,
-                  "applied": false
+                  "applied": true
                 }
               }
             },
@@ -3686,10 +3632,10 @@
               "name": "MUSIC_GRAPH_EQ",
               "plugin": "IIR_Turbo",
               "indexRule": {
-                "indexCount": 64,
-                "bandCount": 15,
+                "indexCount": 44,
+                "bandCount": 10,
                 "bandBaseIndex": 4,
-                "indexRange": "4-63",
+                "indexRange": "4-43",
                 "fieldsPerBand": 4,
                 "band": "(index-4)/4",
                 "field": "(index-4)%4",
@@ -3736,23 +3682,27 @@
                   "3": "type"
                 },
                 "fieldTypes": {
-                  "gain": "q8_8_le",
+                  "gain": "int16_le",
                   "f0": "uint16_le",
-                  "q": "q8_8_le",
-                  "type": "int16_le"
+                  "q": "uint16_le",
+                  "type": "uint16_le"
                 },
                 "fieldLimit": {
                   "gain": {
-                    "min": "-12.0",
-                    "max": "12.0"
+                    "min": -12,
+                    "max": 12
                   },
                   "f0": {
-                    "min": "20",
-                    "max": "22000"
+                    "min": 10,
+                    "max": 22000
                   },
                   "q": {
-                    "min": "0.1",
-                    "max": "128"
+                    "min": 1,
+                    "max": 1280
+                  },
+                  "type": {
+                    "min": 0,
+                    "max": 10
                   }
                 },
                 "fieldMetadata": {
@@ -3880,61 +3830,6 @@
                     "type": {
                       "default": 2
                     }
-                  },
-                  "11": {
-                    "f0": {
-                      "default": 2000
-                    },
-                    "q": {
-                      "default": 17
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "12": {
-                    "f0": {
-                      "default": 4000
-                    },
-                    "q": {
-                      "default": 17
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "13": {
-                    "f0": {
-                      "default": 300
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 1
-                    }
-                  },
-                  "14": {
-                    "f0": {
-                      "default": 1500
-                    },
-                    "q": {
-                      "default": 5
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "15": {
-                    "f0": {
-                      "default": 5000
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 3
-                    }
                   }
                 }
               }
@@ -3945,13 +3840,13 @@
                 "0": {
                   "name": "cutoff_frequency",
                   "type": "uint16_le",
-                  "default": 75,
+                  "default": 65,
                   "applied": false
                 },
                 "1": {
                   "name": "intensity",
                   "type": "uint16_le",
-                  "default": 10,
+                  "default": 5,
                   "applied": false
                 },
                 "2": {
@@ -3960,7 +3855,7 @@
                   "min": 0,
                   "max": 1,
                   "default": 1,
-                  "applied": false
+                  "applied": true
                 }
               }
             },
@@ -3970,7 +3865,7 @@
                 "0": {
                   "name": "cutoff_frequency",
                   "type": "uint16_le",
-                  "default": 1000,
+                  "default": 1500,
                   "applied": false
                 },
                 "1": {
@@ -3982,7 +3877,7 @@
                 "2": {
                   "name": "wet",
                   "type": "int16_le",
-                  "default": 100,
+                  "default": 80,
                   "applied": false
                 }
               }
@@ -4047,6 +3942,7 @@
                 "2": {
                   "name": "autowah_enable",
                   "type": "uint16_le",
+                  "default": 0,
                   "applied": false
                 },
                 "3": {
@@ -4067,7 +3963,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "6": {
                   "name": "gw_2_volume",
@@ -4197,7 +4093,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "1": {
                   "name": "rec_mute",
@@ -4221,7 +4117,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "4": {
                   "name": "rec_mix_music",
@@ -4229,7 +4125,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "5": {
                   "name": "rec_mix_effect_raw",
@@ -4237,10 +4133,18 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "6": {
                   "name": "rec_mix_effect",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 24,
+                  "default": 12,
+                  "applied": false
+                },
+                "7": {
+                  "name": "rec_mix_guitar",
                   "type": "uint16_le",
                   "min": 0,
                   "max": 24,
@@ -4253,10 +4157,10 @@
               "name": "RECORDING_GRAPH_EQ",
               "plugin": "IIR_Turbo",
               "indexRule": {
-                "indexCount": 64,
-                "bandCount": 15,
+                "indexCount": 44,
+                "bandCount": 10,
                 "bandBaseIndex": 4,
-                "indexRange": "4-63",
+                "indexRange": "4-43",
                 "fieldsPerBand": 4,
                 "band": "(index-4)/4",
                 "field": "(index-4)%4",
@@ -4303,23 +4207,27 @@
                   "3": "type"
                 },
                 "fieldTypes": {
-                  "gain": "q8_8_le",
+                  "gain": "int16_le",
                   "f0": "uint16_le",
-                  "q": "q8_8_le",
-                  "type": "int16_le"
+                  "q": "uint16_le",
+                  "type": "uint16_le"
                 },
                 "fieldLimit": {
                   "gain": {
-                    "min": "-12.0",
-                    "max": "12.0"
+                    "min": -12,
+                    "max": 12
                   },
                   "f0": {
-                    "min": "20",
-                    "max": "22000"
+                    "min": 10,
+                    "max": 22000
                   },
                   "q": {
-                    "min": "0.1",
-                    "max": "128"
+                    "min": 1,
+                    "max": 1280
+                  },
+                  "type": {
+                    "min": 0,
+                    "max": 10
                   }
                 },
                 "fieldMetadata": {
@@ -4447,61 +4355,6 @@
                     "type": {
                       "default": 2
                     }
-                  },
-                  "11": {
-                    "f0": {
-                      "default": 2000
-                    },
-                    "q": {
-                      "default": 17
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "12": {
-                    "f0": {
-                      "default": 4000
-                    },
-                    "q": {
-                      "default": 17
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "13": {
-                    "f0": {
-                      "default": 300
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 1
-                    }
-                  },
-                  "14": {
-                    "f0": {
-                      "default": 1500
-                    },
-                    "q": {
-                      "default": 5
-                    },
-                    "type": {
-                      "default": 2
-                    }
-                  },
-                  "15": {
-                    "f0": {
-                      "default": 5000
-                    },
-                    "q": {
-                      "default": 7
-                    },
-                    "type": {
-                      "default": 3
-                    }
                   }
                 }
               }
@@ -4519,13 +4372,9 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 1,
-                  "default": 0,
+                  "default": 1,
                   "applied": false
                 }
-              },
-              "valueMap": {
-                "0": "mic",
-                "1": "guitar"
               }
             },
             "0x02": {
@@ -4536,13 +4385,9 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 1,
-                  "default": 0,
+                  "default": 1,
                   "applied": false
                 }
-              },
-              "valueMap": {
-                "0": "mic",
-                "1": "guitar"
               }
             },
             "0x03": {
@@ -4556,13 +4401,6 @@
                   "default": 0,
                   "applied": false
                 }
-              },
-              "valueMap": {
-                "0": "Bluetooth",
-                "1": "USB",
-                "2": "LineIn",
-                "3": "SpdifIn",
-                "4": "HDMI"
               }
             }
           }
@@ -4583,7 +4421,7 @@
                   "min": 0,
                   "max": 24,
                   "default": 12,
-                  "applied": true
+                  "applied": false
                 },
                 "1": {
                   "name": "master_mute",
@@ -4603,16 +4441,14 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 100,
-                  "default": 100,
+                  "default": 0,
                   "applied": false,
                   "readOnly": true
                 },
                 "1": {
                   "name": "battery_mv",
                   "type": "uint16_le",
-                  "min": 0,
-                  "max": 30000,
-                  "default": 3700,
+                  "default": 0,
                   "applied": false,
                   "readOnly": true
                 },
@@ -4635,7 +4471,7 @@
                   "type": "uint16_le",
                   "min": 1,
                   "max": 2,
-                  "default": 2,
+                  "default": 1,
                   "applied": false,
                   "readOnly": true
                 },
@@ -4644,7 +4480,7 @@
                   "type": "uint16_le",
                   "min": 1,
                   "max": 2,
-                  "default": 2,
+                  "default": 1,
                   "applied": false,
                   "readOnly": true
                 },
@@ -4662,7 +4498,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 65535,
-                  "default": 6009,
+                  "default": 35253,
                   "applied": false,
                   "readOnly": true
                 }
@@ -4702,7 +4538,7 @@
                   "type": "uint16_le",
                   "min": 0,
                   "max": 1,
-                  "default": 0,
+                  "default": 1,
                   "applied": false,
                   "readOnly": true
                 },
@@ -4739,6 +4575,74 @@
                   "default": 0,
                   "applied": false,
                   "readOnly": true
+                },
+                "5": {
+                  "name": "tws_enabled",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 1,
+                  "applied": false
+                },
+                "6": {
+                  "name": "tws_pairing",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": false
+                },
+                "7": {
+                  "name": "tws_role",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 3,
+                  "default": 2,
+                  "applied": false,
+                  "readOnly": true
+                },
+                "8": {
+                  "name": "tws_pair_status",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 10,
+                  "default": 0,
+                  "applied": false,
+                  "readOnly": true
+                },
+                "9": {
+                  "name": "tws_disconnect",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": false
+                },
+                "10": {
+                  "name": "tws_clear_list",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": false
+                },
+                "11": {
+                  "name": "tws_paired",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "applied": false,
+                  "readOnly": true
+                },
+                "12": {
+                  "name": "tws_pair_remain",
+                  "type": "uint16_le",
+                  "min": 0,
+                  "max": 60,
+                  "default": 0,
+                  "applied": false,
+                  "readOnly": true
                 }
               }
             }
@@ -4746,8 +4650,310 @@
         }
       },
       "plugins": {
-        "Echo_200ms": {
-          "cfid": 69,
+        "echo": {
+          "cfid": null,
+          "paramCount": 8,
+          "params": [
+            {
+              "confidence": "verified",
+              "default": 9000,
+              "index": 0,
+              "max": 24000,
+              "min": 25,
+              "name": "cutoff_frequency",
+              "role": "filter_frequency",
+              "scale": "value Hz",
+              "unit": "Hz"
+            },
+            {
+              "confidence": "code_derived",
+              "default": -40,
+              "index": 1,
+              "max": -20,
+              "min": -100,
+              "name": "attenuation",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "attenuation",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "verified",
+              "default": 200,
+              "index": 2,
+              "max": 250,
+              "min": 0,
+              "name": "delay",
+              "role": "delay_time",
+              "scale": "value ms",
+              "unit": "ms"
+            },
+            {
+              "confidence": "verified",
+              "default": 250,
+              "index": 3,
+              "max": null,
+              "min": null,
+              "name": "max_delay",
+              "note": "Not a user control. Supplies the max of the paired delay field and is an allocation-time bound: changing it resizes effect memory.",
+              "role": "max_delay",
+              "scale": "value ms",
+              "unit": "ms"
+            },
+            {
+              "confidence": "code_derived",
+              "default": 1,
+              "index": 4,
+              "max": 1,
+              "min": 0,
+              "name": "high_quality_enable",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "high_quality_enable",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 10,
+              "index": 5,
+              "max": 100,
+              "min": 0,
+              "name": "dry",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "dry_level",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 80,
+              "index": 6,
+              "max": 100,
+              "min": 0,
+              "name": "wet",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "wet_level",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 1,
+              "index": 7,
+              "max": 1,
+              "min": 0,
+              "name": "enable",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "polarityUnverified": true,
+              "role": "enable",
+              "scale": null,
+              "unit": null
+            }
+          ],
+          "plugin": "echo",
+          "reachable": true,
+          "unreachableReason": null
+        },
+        "eq": {
+          "bandRule": {
+            "bandBaseIndex": 2,
+            "bandCount": 10,
+            "fieldOrder": [
+              "enable",
+              "type",
+              "f0",
+              "q",
+              "gain"
+            ],
+            "fieldScale": {
+              "enable": "bool",
+              "f0": "value Hz",
+              "gain": "value/256 dB",
+              "q": "value/1024",
+              "type": "enum (see filterModes)"
+            },
+            "fieldsPerBand": 5
+          },
+          "filterModes": [
+            {
+              "name": "PEAKING",
+              "value": 0
+            },
+            {
+              "name": "LOW_SHELF",
+              "value": 1
+            },
+            {
+              "name": "HIGH_SHELF",
+              "value": 2
+            },
+            {
+              "name": "LOW_PASS",
+              "value": 3
+            },
+            {
+              "name": "HIGH_PASS",
+              "value": 4
+            },
+            {
+              "name": "BAND_PASS",
+              "value": 5
+            },
+            {
+              "name": "NOTCH",
+              "value": 6
+            },
+            {
+              "name": "LOW_PASS_ORDER1",
+              "value": 7
+            },
+            {
+              "name": "HIGH_PASS_ORDER1",
+              "value": 8
+            }
+          ],
+          "globalParams": [
+            {
+              "confidence": "code_derived",
+              "default": 0,
+              "index": 0,
+              "max": null,
+              "min": null,
+              "name": "pregain",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "pregain",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 0,
+              "index": 1,
+              "max": null,
+              "min": null,
+              "name": "fixed_point_floating_point",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "calculation_mode",
+              "scale": null,
+              "unit": null
+            }
+          ],
+          "paramCount": 52,
+          "plugin": "eq"
+        },
+        "reverb_plate": {
+          "cfid": null,
+          "modelOnlyParams": [
+            {
+              "index": 7,
+              "name": "max_predelay",
+              "reason": "not a parameter of the reverb_plate plugin this product loads"
+            }
+          ],
+          "paramCount": 8,
+          "params": [
+            {
+              "confidence": "verified",
+              "default": 15000,
+              "index": 0,
+              "max": 24000,
+              "min": 25,
+              "name": "high_cutoff_frequency",
+              "role": "filter_frequency",
+              "scale": "value Hz",
+              "unit": "Hz"
+            },
+            {
+              "confidence": "code_derived",
+              "default": 1,
+              "index": 1,
+              "max": 1,
+              "min": 0,
+              "name": "modulation",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "modulation",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "verified",
+              "default": 50,
+              "index": 2,
+              "max": 50,
+              "min": 0,
+              "name": "predelay",
+              "role": "pre_delay",
+              "scale": "value ms",
+              "unit": "ms"
+            },
+            {
+              "confidence": "code_derived",
+              "default": 80,
+              "index": 3,
+              "max": 100,
+              "min": 0,
+              "name": "diffusion",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "diffusion",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 65,
+              "index": 4,
+              "max": 90,
+              "min": 0,
+              "name": "decay",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "decay_time",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 1500,
+              "index": 5,
+              "max": 1000,
+              "min": 0,
+              "name": "damping",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "damping",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 70,
+              "index": 6,
+              "max": 100,
+              "min": 0,
+              "name": "wetdrymix",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "role": "wet_dry_mix",
+              "scale": null,
+              "unit": null
+            },
+            {
+              "confidence": "code_derived",
+              "default": 1,
+              "index": 8,
+              "max": 1,
+              "min": 0,
+              "name": "enable",
+              "note": "Unit and scale are unresolved in the BP6 field model; tuning team must confirm before the app renders a typed control.",
+              "polarityUnverified": true,
+              "role": "enable",
+              "scale": null,
+              "unit": null
+            }
+          ],
+          "plugin": "reverb_plate",
+          "reachable": true,
+          "unreachableReason": null
+        },
+        "Echo_300ms": {
+          "cfid": 70,
           "paramCount": 15,
           "params": [
             {
@@ -4773,7 +4979,7 @@
             {
               "confidence": "verified",
               "index": 2,
-              "max": 2000,
+              "max": 3000,
               "min": 0,
               "name": "DelayTime",
               "role": "delay_time",
@@ -5485,31 +5691,66 @@
         "SYSTEM.SYSTEM_STATUS.charging": 0
       }
     },
-    "bp10_base": {
+    "hc6288_base": {
       "id": 1,
       "name": "base",
-      "description": "Factory defaults for the BP10 / HC6288 address space, in contract units",
-      "derivedFrom": "bp10",
+      "description": "Factory defaults for HC6288 speakers (BP10, X500XTR, X500XTRA), in contract units",
+      "derivedFrom": "hc6288",
       "values": {
-        "BLUETOOTH.BT_COMMON.bt_enabled": 0,
+        "BLUETOOTH.BT_COMMON.bt_enabled": 1,
         "BLUETOOTH.BT_COMMON.bt_paired": 0,
         "BLUETOOTH.BT_COMMON.bt_pairing": 0,
         "BLUETOOTH.BT_COMMON.bt_tws": 0,
         "BLUETOOTH.BT_COMMON.bt_visible": 0,
+        "BLUETOOTH.BT_COMMON.tws_clear_list": 0,
+        "BLUETOOTH.BT_COMMON.tws_disconnect": 0,
+        "BLUETOOTH.BT_COMMON.tws_enabled": 1,
+        "BLUETOOTH.BT_COMMON.tws_pair_remain": 0,
+        "BLUETOOTH.BT_COMMON.tws_pair_status": 0,
+        "BLUETOOTH.BT_COMMON.tws_paired": 0,
+        "BLUETOOTH.BT_COMMON.tws_pairing": 0,
+        "BLUETOOTH.BT_COMMON.tws_role": 2,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.attack": 0,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.band_width": 0,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.frequency_center": 0,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.range": 0,
+        "GUITAR.GUITAR_AUTOWAH_EFFECT.release": 0,
+        "GUITAR.GUITAR_COMMON.autowah_enable": 0,
+        "GUITAR.GUITAR_COMMON.distortor_enable": 0,
+        "GUITAR.GUITAR_COMMON.flanger_enable": 0,
+        "GUITAR.GUITAR_COMMON.guitar_gain": 0,
         "GUITAR.GUITAR_COMMON.gw_1_volume": 12,
-        "INPUT.INPUT_MIC_GUITAR_1.input_1_select": 0,
-        "INPUT.INPUT_MIC_GUITAR_2.input_2_select": 0,
+        "GUITAR.GUITAR_COMMON.gw_2_volume": 12,
+        "GUITAR.GUITAR_COMMON.vibrato_enable": 0,
+        "GUITAR.GUITAR_DISTORTOR_EFFECT.distorted": 0,
+        "GUITAR.GUITAR_DISTORTOR_EFFECT.threshold": 0,
+        "GUITAR.GUITAR_FLANGER_EFFECT.efflevel": 0,
+        "GUITAR.GUITAR_FLANGER_EFFECT.feedback": 0,
+        "GUITAR.GUITAR_FLANGER_EFFECT.osc_depth": 0,
+        "GUITAR.GUITAR_FLANGER_EFFECT.osc_freq": 0,
+        "GUITAR.GUITAR_VIBRATO_EFFECT.depth": 0,
+        "GUITAR.GUITAR_VIBRATO_EFFECT.freq": 0,
+        "GUITAR.GUITAR_VIBRATO_EFFECT.phase": 0,
+        "INPUT.INPUT_MIC_GUITAR_1.input_1_select": 1,
+        "INPUT.INPUT_MIC_GUITAR_2.input_2_select": 1,
         "INPUT.INPUT_MUSIC_MODE.music_mode": 0,
         "MIC.MIC_COMMON.echo_delay": 200,
         "MIC.MIC_COMMON.echo_gain": 12,
-        "MIC.MIC_COMMON.mic_1_volume": 8,
-        "MIC.MIC_COMMON.mic_2_volume": 8,
+        "MIC.MIC_COMMON.echo_mute": 0,
+        "MIC.MIC_COMMON.mic_1_mute": 0,
+        "MIC.MIC_COMMON.mic_1_state": 0,
+        "MIC.MIC_COMMON.mic_1_volume": 10,
+        "MIC.MIC_COMMON.mic_2_mute": 0,
+        "MIC.MIC_COMMON.mic_2_state": 0,
+        "MIC.MIC_COMMON.mic_2_volume": 10,
         "MIC.MIC_COMMON.mic_bass": 0,
         "MIC.MIC_COMMON.mic_effect_gain": 12,
+        "MIC.MIC_COMMON.mic_master_mute": 0,
         "MIC.MIC_COMMON.mic_master_volume": 12,
         "MIC.MIC_COMMON.mic_middle": 0,
         "MIC.MIC_COMMON.mic_treb": 0,
         "MIC.MIC_COMMON.reverb_gain": 12,
+        "MIC.MIC_COMMON.reverb_mute": 0,
         "MIC.MIC_ECHO_EFFECT.delay_level": 80,
         "MIC.MIC_ECHO_EFFECT.delay_pan": 0,
         "MIC.MIC_ECHO_EFFECT.delay_time": 190,
@@ -5530,26 +5771,6 @@
         "MIC.MIC_GRAPH_EQ.band10_gain": 0,
         "MIC.MIC_GRAPH_EQ.band10_q": 7,
         "MIC.MIC_GRAPH_EQ.band10_type": 2,
-        "MIC.MIC_GRAPH_EQ.band11_f0": 2000,
-        "MIC.MIC_GRAPH_EQ.band11_gain": 0,
-        "MIC.MIC_GRAPH_EQ.band11_q": 7,
-        "MIC.MIC_GRAPH_EQ.band11_type": 2,
-        "MIC.MIC_GRAPH_EQ.band12_f0": 4000,
-        "MIC.MIC_GRAPH_EQ.band12_gain": 0,
-        "MIC.MIC_GRAPH_EQ.band12_q": 7,
-        "MIC.MIC_GRAPH_EQ.band12_type": 2,
-        "MIC.MIC_GRAPH_EQ.band13_f0": 300,
-        "MIC.MIC_GRAPH_EQ.band13_gain": 0,
-        "MIC.MIC_GRAPH_EQ.band13_q": 7,
-        "MIC.MIC_GRAPH_EQ.band13_type": 1,
-        "MIC.MIC_GRAPH_EQ.band14_f0": 1500,
-        "MIC.MIC_GRAPH_EQ.band14_gain": 0,
-        "MIC.MIC_GRAPH_EQ.band14_q": 5,
-        "MIC.MIC_GRAPH_EQ.band14_type": 2,
-        "MIC.MIC_GRAPH_EQ.band15_f0": 5000,
-        "MIC.MIC_GRAPH_EQ.band15_gain": 0,
-        "MIC.MIC_GRAPH_EQ.band15_q": 7,
-        "MIC.MIC_GRAPH_EQ.band15_type": 3,
         "MIC.MIC_GRAPH_EQ.band1_f0": 30,
         "MIC.MIC_GRAPH_EQ.band1_gain": 0,
         "MIC.MIC_GRAPH_EQ.band1_q": 7,
@@ -5608,36 +5829,27 @@
         "MIC.MIC_REVERB_EFFECT.pre_delay": 10,
         "MIC.MIC_REVERB_EFFECT.reverb_level": 60,
         "MIC.MIC_REVERB_EFFECT.scale": 0,
+        "MUSIC.MUSIC_BOOSTBASS_EFFECT.cutoff_frequency": 65,
+        "MUSIC.MUSIC_BOOSTBASS_EFFECT.enhanced": 1,
+        "MUSIC.MUSIC_BOOSTBASS_EFFECT.intensity": 5,
         "MUSIC.MUSIC_COMMON.music_bass": 0,
         "MUSIC.MUSIC_COMMON.music_boostbass_enable": 0,
         "MUSIC.MUSIC_COMMON.music_enhancer_enable": 0,
         "MUSIC.MUSIC_COMMON.music_middle": 0,
+        "MUSIC.MUSIC_COMMON.music_mute": 0,
+        "MUSIC.MUSIC_COMMON.music_surround_enable": 0,
+        "MUSIC.MUSIC_COMMON.music_three_d_enable": 0,
+        "MUSIC.MUSIC_COMMON.music_three_d_plus_enable": 0,
         "MUSIC.MUSIC_COMMON.music_treb": 0,
         "MUSIC.MUSIC_COMMON.music_volume": 12,
+        "MUSIC.MUSIC_COMMON.music_widener_enable": 0,
+        "MUSIC.MUSIC_ENHANCER_EFFECT.cutoff_frequency": 1500,
+        "MUSIC.MUSIC_ENHANCER_EFFECT.dry": 100,
+        "MUSIC.MUSIC_ENHANCER_EFFECT.wet": 80,
         "MUSIC.MUSIC_GRAPH_EQ.band10_f0": 16000,
         "MUSIC.MUSIC_GRAPH_EQ.band10_gain": 0,
         "MUSIC.MUSIC_GRAPH_EQ.band10_q": 7,
         "MUSIC.MUSIC_GRAPH_EQ.band10_type": 2,
-        "MUSIC.MUSIC_GRAPH_EQ.band11_f0": 2000,
-        "MUSIC.MUSIC_GRAPH_EQ.band11_gain": 0,
-        "MUSIC.MUSIC_GRAPH_EQ.band11_q": 17,
-        "MUSIC.MUSIC_GRAPH_EQ.band11_type": 2,
-        "MUSIC.MUSIC_GRAPH_EQ.band12_f0": 4000,
-        "MUSIC.MUSIC_GRAPH_EQ.band12_gain": 0,
-        "MUSIC.MUSIC_GRAPH_EQ.band12_q": 17,
-        "MUSIC.MUSIC_GRAPH_EQ.band12_type": 2,
-        "MUSIC.MUSIC_GRAPH_EQ.band13_f0": 300,
-        "MUSIC.MUSIC_GRAPH_EQ.band13_gain": 0,
-        "MUSIC.MUSIC_GRAPH_EQ.band13_q": 7,
-        "MUSIC.MUSIC_GRAPH_EQ.band13_type": 1,
-        "MUSIC.MUSIC_GRAPH_EQ.band14_f0": 1500,
-        "MUSIC.MUSIC_GRAPH_EQ.band14_gain": 0,
-        "MUSIC.MUSIC_GRAPH_EQ.band14_q": 5,
-        "MUSIC.MUSIC_GRAPH_EQ.band14_type": 2,
-        "MUSIC.MUSIC_GRAPH_EQ.band15_f0": 5000,
-        "MUSIC.MUSIC_GRAPH_EQ.band15_gain": 0,
-        "MUSIC.MUSIC_GRAPH_EQ.band15_q": 7,
-        "MUSIC.MUSIC_GRAPH_EQ.band15_type": 3,
         "MUSIC.MUSIC_GRAPH_EQ.band1_f0": 125,
         "MUSIC.MUSIC_GRAPH_EQ.band1_gain": 0,
         "MUSIC.MUSIC_GRAPH_EQ.band1_q": 7,
@@ -5678,19 +5890,71 @@
         "MUSIC.MUSIC_GRAPH_EQ.in_gain": 0,
         "MUSIC.MUSIC_GRAPH_EQ.module_sel": 0,
         "MUSIC.MUSIC_GRAPH_EQ.out_gain": 0,
+        "MUSIC.MUSIC_THREE_D_EFFECT.intensity": 90,
+        "MUSIC.MUSIC_THREE_D_PLUS_EFFECT.intensity": 90,
+        "MUSIC.MUSIC_WIDENER_EFFECT.shaping": 0,
+        "RECORDING.RECORDING_COMMON.rec_mix_effect": 12,
         "RECORDING.RECORDING_COMMON.rec_mix_effect_raw": 12,
+        "RECORDING.RECORDING_COMMON.rec_mix_guitar": 12,
+        "RECORDING.RECORDING_COMMON.rec_mix_mic": 12,
         "RECORDING.RECORDING_COMMON.rec_mix_music": 12,
         "RECORDING.RECORDING_COMMON.rec_mix_raw": 12,
+        "RECORDING.RECORDING_COMMON.rec_mute": 0,
         "RECORDING.RECORDING_COMMON.rec_volume": 12,
+        "RECORDING.RECORDING_GRAPH_EQ.band10_f0": 16000,
+        "RECORDING.RECORDING_GRAPH_EQ.band10_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band10_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band10_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band1_f0": 125,
+        "RECORDING.RECORDING_GRAPH_EQ.band1_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band1_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band1_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band2_f0": 250,
+        "RECORDING.RECORDING_GRAPH_EQ.band2_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band2_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band2_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band3_f0": 500,
+        "RECORDING.RECORDING_GRAPH_EQ.band3_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band3_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band3_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band4_f0": 1000,
+        "RECORDING.RECORDING_GRAPH_EQ.band4_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band4_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band4_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band5_f0": 1500,
+        "RECORDING.RECORDING_GRAPH_EQ.band5_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band5_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band5_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band6_f0": 2000,
+        "RECORDING.RECORDING_GRAPH_EQ.band6_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band6_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band6_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band7_f0": 3000,
+        "RECORDING.RECORDING_GRAPH_EQ.band7_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band7_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band7_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band8_f0": 4000,
+        "RECORDING.RECORDING_GRAPH_EQ.band8_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band8_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band8_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.band9_f0": 8000,
+        "RECORDING.RECORDING_GRAPH_EQ.band9_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.band9_q": 7,
+        "RECORDING.RECORDING_GRAPH_EQ.band9_type": 2,
+        "RECORDING.RECORDING_GRAPH_EQ.channel": 4,
+        "RECORDING.RECORDING_GRAPH_EQ.in_gain": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.module_sel": 0,
+        "RECORDING.RECORDING_GRAPH_EQ.out_gain": 0,
         "SYSTEM.SYSTEM_CONFIG.config_reset": 0,
         "SYSTEM.SYSTEM_CONFIG.config_save": 0,
         "SYSTEM.SYSTEM_DEVICE_INFO.addrspace_version": 1,
-        "SYSTEM.SYSTEM_DEVICE_INFO.dsp_id": 2,
-        "SYSTEM.SYSTEM_DEVICE_INFO.product_id": 2,
-        "SYSTEM.SYSTEM_DEVICE_INFO.schema_crc16": 6009,
+        "SYSTEM.SYSTEM_DEVICE_INFO.dsp_id": 1,
+        "SYSTEM.SYSTEM_DEVICE_INFO.product_id": 1,
+        "SYSTEM.SYSTEM_DEVICE_INFO.schema_crc16": 35253,
+        "SYSTEM.SYSTEM_MASTER_VOLUME.master_mute": 0,
         "SYSTEM.SYSTEM_MASTER_VOLUME.master_volume": 12,
-        "SYSTEM.SYSTEM_STATUS.battery_mv": 3700,
-        "SYSTEM.SYSTEM_STATUS.battery_percent": 100,
+        "SYSTEM.SYSTEM_STATUS.battery_mv": 0,
+        "SYSTEM.SYSTEM_STATUS.battery_percent": 0,
         "SYSTEM.SYSTEM_STATUS.charging": 0
       }
     }
