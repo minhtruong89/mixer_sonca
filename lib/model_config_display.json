@@ -996,6 +996,54 @@
                 "typeDisplay": "vertical slider"
               }
             },
+			"Tap2 Time": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "tap2_time",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Tap2 Level": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "tap2_level",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Tap2 Pan": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "tap2_pan",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Tap3 Time": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "tap3_time",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Tap3 Level": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "tap3_level",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+            "Tap3 Pan": {
+              "category": "MIC",
+              "command": "MIC_ECHO_EFFECT",
+              "index": "tap3_pan",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
             "Echo Enable": {
               "category": "MIC",
               "command": "MIC_ECHO_EFFECT",
@@ -1106,6 +1154,46 @@
               "category": "MIC",
               "command": "MIC_REVERB_EFFECT",
               "index": "envelope_tap1",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Enve Tap2": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "envelope_tap2",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Enve Tap3": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "envelope_tap3",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Enve Tap4": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "envelope_tap4",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Enve Tap5": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "envelope_tap5",
+              "control": {
+                "typeDisplay": "vertical slider"
+              }
+            },
+			"Enve Tap6": {
+              "category": "MIC",
+              "command": "MIC_REVERB_EFFECT",
+              "index": "envelope_tap6",
               "control": {
                 "typeDisplay": "vertical slider"
               }
